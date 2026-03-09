@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import sharp from "sharp";
-import fs from "fs/promises";
-import path from "path";
-import { STORAGE_PATHS, generateSecureFilename, ensureDirectoryExists } from "@/lib/storage-config";
+import { uploadToBlob, deleteFromBlob, isBlobUrl, generateBlobPath } from "@/lib/blob-storage";
 
 export async function POST(request) {
   const session = await auth();
@@ -25,8 +23,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const maxSize = 5 * 1024 * 1024; // 5 MB
-    if (photo.size > maxSize) {
+    if (photo.size > 5 * 1024 * 1024) {
       return NextResponse.json({ error: "File must be less than 5 MB" }, { status: 400 });
     }
 
@@ -34,40 +31,33 @@ export async function POST(request) {
       return NextResponse.json({ error: "Only JPEG or PNG files are allowed" }, { status: 400 });
     }
 
-    // Verifica se o usuário já tem uma foto e exclui a antiga
+    // Delete old profile photo from Blob if exists
     const user = await prisma.user.findUnique({
       where: { id: userId },
       select: { image: true },
     });
 
-    if (user.image) {
-      const oldFilePath = path.join(process.cwd(), "public", user.image);
-      try {
-        await fs.unlink(oldFilePath);
-      } catch (err) {
-        console.warn("Não foi possível excluir a foto antiga:", err);
-      }
+    if (user?.image && isBlobUrl(user.image)) {
+      await deleteFromBlob(user.image);
     }
 
-    // Usar estrutura de pastas privadas
-    const uploadDir = STORAGE_PATHS.profiles.base;
-    await ensureDirectoryExists(uploadDir);
-    
-    const fileName = generateSecureFilename(`profile-${userId}.jpg`, 'profile');
-
-    // Processa e redimensiona a imagem para 200x200
+    // Process and resize image to 200x200
     const buffer = Buffer.from(await photo.arrayBuffer());
     const compressedPhoto = await sharp(buffer)
       .resize({ width: 200, height: 200, fit: "cover" })
       .jpeg({ quality: 70 })
       .toBuffer();
-    await fs.writeFile(path.join(uploadDir, fileName), compressedPhoto);
 
-    // Atualiza o campo `image` no modelo User com URL segura
-    const secureUrl = `/api/secure-files?path=users/profiles/${fileName}&type=profiles`;
+    const blobPath = generateBlobPath("profiles", userId, 1, "jpg");
+
+    const { url } = await uploadToBlob(compressedPhoto, blobPath, {
+      contentType: "image/jpeg",
+    });
+
+    // Update user.image with the Blob CDN URL
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { image: secureUrl },
+      data: { image: url },
     });
 
     return NextResponse.json({ message: "Photo uploaded successfully", image: updatedUser.image });

@@ -129,21 +129,14 @@ export default function ModernImageUpload({
   const handleRemoveImage = useCallback(async (index) => {
     const imageToRemove = images[index];
 
-    // Se a imagem não é uma URL HTTP (é um arquivo físico), deletar do servidor
-    if (imageToRemove && !imageToRemove.startsWith('http')) {
+    // Delete from Vercel Blob if it's a blob URL
+    if (imageToRemove && imageToRemove.startsWith('http')) {
       try {
-        await fetch('/api/upload/images', {
+        await fetch(`/api/upload/images?url=${encodeURIComponent(imageToRemove)}`, {
           method: 'DELETE',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            fileName: imageToRemove,
-            entityType: 'listing'
-          })
         });
       } catch (error) {
-        console.error('Error deleting physical file:', error);
+        console.error('Error deleting blob image:', error);
       }
     }
 

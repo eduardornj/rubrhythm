@@ -1,77 +1,87 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
-import { processVerificationUpload, VERIFICATION_CONFIG } from '@/lib/verification-upload';
 import crypto from 'crypto';
+import { uploadToBlob, generateBlobPath } from '@/lib/blob-storage';
 
-// POST - Submit verification request
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+
+function validateFile(file, fieldName) {
+  if (!file || !(file instanceof File)) {
+    return `${fieldName} is required`;
+  }
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return `${fieldName}: file type not allowed (${file.type}). Allowed: JPEG, PNG, WebP, PDF`;
+  }
+  if (file.size > MAX_FILE_SIZE) {
+    return `${fieldName}: file too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Max 5MB`;
+  }
+  return null;
+}
+
 export async function POST(request) {
   try {
     const session = await auth();
-
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const formData = await request.formData();
-    const message = formData.get('message') || '';
+    const userId = session.user.id;
 
-    // Extrair arquivos do FormData
-    const files = {
-      idDocument: formData.get('idDocument'),
-      selfiePhoto: formData.get('selfiePhoto'),
-      businessLicense: formData.get('businessLicense'),
-      proofOfAddress: formData.get('proofOfAddress'),
-      additionalDocument: formData.get('additionalDocument')
-    };
-
-    // Check if user already has a pending request
     const existingUser = await prisma.user.findUnique({
-      where: { id: session.user.id },
+      where: { id: userId },
       select: { verified: true, verificationrequest: true }
     });
 
     if (existingUser?.verified) {
-      return NextResponse.json(
-        { error: 'User is already verified' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'User is already verified' }, { status: 400 });
     }
 
-    // Check for pending verification requests
-    const pendingRequest = existingUser?.verificationrequest?.find(
-      req => req.status === 'pending'
+    const pendingRequest = existingUser?.verificationrequest?.find(r => r.status === 'pending');
+    if (pendingRequest) {
+      return NextResponse.json({ error: 'Verification request already pending' }, { status: 400 });
+    }
+
+    const formData = await request.formData();
+    const idDocument = formData.get('idDocument');
+    const selfiePhoto = formData.get('selfiePhoto');
+
+    // Validate required files
+    const idError = validateFile(idDocument, 'idDocument');
+    if (idError) {
+      return NextResponse.json({ error: idError }, { status: 400 });
+    }
+
+    const selfieError = validateFile(selfiePhoto, 'selfiePhoto');
+    if (selfieError) {
+      return NextResponse.json({ error: selfieError }, { status: 400 });
+    }
+
+    // Upload ID document to Vercel Blob
+    const idExt = idDocument.name.split('.').pop() || 'jpg';
+    const idBuffer = Buffer.from(await idDocument.arrayBuffer());
+    const idBlob = await uploadToBlob(
+      idBuffer,
+      generateBlobPath('verification', userId, 1, idExt),
+      { contentType: idDocument.type }
     );
 
-    if (pendingRequest) {
-      return NextResponse.json(
-        { error: 'Verification request already pending' },
-        { status: 400 }
-      );
-    }
+    // Upload selfie to Vercel Blob
+    const selfieExt = selfiePhoto.name.split('.').pop() || 'jpg';
+    const selfieBuffer = Buffer.from(await selfiePhoto.arrayBuffer());
+    const selfieBlob = await uploadToBlob(
+      selfieBuffer,
+      generateBlobPath('verification', userId, 2, selfieExt),
+      { contentType: selfiePhoto.type }
+    );
 
-    // Processar upload usando o sistema organizado
-    const uploadResult = await processVerificationUpload(session.user.id, files);
-
-    if (!uploadResult.success) {
-      return NextResponse.json(
-        {
-          error: 'Erro na validação dos arquivos',
-          details: uploadResult.errors
-        },
-        { status: 400 }
-      );
-    }
-
-    const savedFiles = uploadResult.files;
-
-    // Criar registro de verificação no banco
     const verificationRequest = await prisma.verificationrequest.create({
       data: {
         id: crypto.randomUUID(),
-        userId: session.user.id,
-        documentPath: savedFiles.idDocument?.path || '',
-        selfiePath: savedFiles.selfiePhoto?.path || '',
+        userId,
+        documentPath: idBlob.url,
+        selfiePath: selfieBlob.url,
         status: 'pending',
         createdAt: new Date()
       }
@@ -83,19 +93,14 @@ export async function POST(request) {
       status: 'pending'
     });
   } catch (error) {
-    console.error('Error submitting verification request:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Verification request error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-// GET - Get current user's verification status
 export async function GET() {
   try {
     const session = await auth();
-
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
@@ -111,8 +116,7 @@ export async function GET() {
           select: {
             id: true,
             status: true,
-            message: true,
-            submittedAt: true
+            createdAt: true
           }
         }
       }
@@ -124,10 +128,7 @@ export async function GET() {
 
     return NextResponse.json({ user });
   } catch (error) {
-    console.error('Error fetching verification status:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error('Verification status error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }

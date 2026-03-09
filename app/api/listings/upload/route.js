@@ -1,171 +1,110 @@
-/**
- * API de Upload para Fotos de Listings
- * 
- * Endpoint: POST /api/listings/upload
- * Implementa nomenclatura organizada: listingId_timestamp_sequencial.ext
- * Exemplo: cmfj5kaq80006u1cwrk51waqa_091425_01.jpg
- */
-
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { uploadListingFiles } from '@/lib/organized-upload-manager';
 import prisma from '@/lib/prisma';
+import { uploadToBlob, deleteManyFromBlob, generateBlobPath } from '@/lib/blob-storage';
+
+const MAX_PHOTOS = 20;
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+
+function getExtension(mimeType) {
+  const map = { 'image/jpeg': 'jpg', 'image/jpg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+  return map[mimeType] || 'webp';
+}
 
 /**
  * POST /api/listings/upload
- * Upload de fotos para listings com nomenclatura organizada
+ * Upload photos to Vercel Blob storage
  */
 export async function POST(request) {
   try {
-    // Verificar autenticação
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Usuário não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 });
     }
 
-    const userId = session.user.id;
-
-    // Processar dados do formulário
     const formData = await request.formData();
     const listingId = formData.get('listingId');
-    const files = [];
 
-    // Validar listingId
     if (!listingId) {
-      return NextResponse.json(
-        { error: 'listingId é obrigatório' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'listingId é obrigatório' }, { status: 400 });
     }
 
-    // Verificar se o listing existe e pertence ao usuário
     const listing = await prisma.listing.findUnique({
       where: { id: listingId },
-      select: {
-        id: true,
-        userId: true,
-        title: true,
-        images: true
-      }
+      select: { id: true, userId: true, title: true, images: true }
     });
 
     if (!listing) {
-      return NextResponse.json(
-        { error: 'Listing não encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Listing não encontrado' }, { status: 404 });
     }
 
-    // Verificar permissão (só o dono ou admin pode fazer upload)
-    if (listing.userId !== userId && session.user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Sem permissão para fazer upload neste listing' },
-        { status: 403 }
-      );
+    if (listing.userId !== session.user.id && session.user.role !== 'admin') {
+      return NextResponse.json({ error: 'Sem permissão para fazer upload neste listing' }, { status: 403 });
     }
 
-    // Extrair arquivos do FormData
+    // Extract files from FormData
+    const files = [];
     for (const [key, value] of formData.entries()) {
       if (key.startsWith('file') && value instanceof File) {
         files.push(value);
       }
     }
 
-    // Validar se há arquivos
     if (files.length === 0) {
-      return NextResponse.json(
-        { error: 'Nenhum arquivo foi enviado' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Nenhum arquivo foi enviado' }, { status: 400 });
     }
 
-    // Verificar limite de fotos por listing
     const currentImages = listing.images ? JSON.parse(listing.images) : [];
     const totalAfterUpload = currentImages.length + files.length;
-    const maxPhotos = 20; // Limite máximo de fotos por listing
 
-    if (totalAfterUpload > maxPhotos) {
-      return NextResponse.json(
-        {
-          error: `Limite de ${maxPhotos} fotos por listing. Atualmente: ${currentImages.length}, tentando adicionar: ${files.length}`,
-          currentCount: currentImages.length,
-          maxAllowed: maxPhotos
-        },
-        { status: 400 }
-      );
+    if (totalAfterUpload > MAX_PHOTOS) {
+      return NextResponse.json({
+        error: `Limite de ${MAX_PHOTOS} fotos por listing. Atualmente: ${currentImages.length}, tentando adicionar: ${files.length}`,
+        currentCount: currentImages.length,
+        maxAllowed: MAX_PHOTOS
+      }, { status: 400 });
     }
 
-    // Validar tipos de arquivo permitidos
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    // Validate file types and sizes
     for (const file of files) {
-      if (!allowedTypes.includes(file.type)) {
-        return NextResponse.json(
-          {
-            error: `Tipo de arquivo não permitido: ${file.type}. Permitidos: JPG, PNG, WEBP`,
-            fileName: file.name
-          },
-          { status: 400 }
-        );
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        return NextResponse.json({
+          error: `Tipo de arquivo não permitido: ${file.type}. Permitidos: JPG, PNG, WEBP`,
+          fileName: file.name
+        }, { status: 400 });
       }
-
-      // Validar tamanho (máximo 5MB por arquivo)
-      if (file.size > 5 * 1024 * 1024) {
-        return NextResponse.json(
-          {
-            error: `Arquivo muito grande: ${file.name}. Máximo 5MB por arquivo`,
-            fileName: file.name,
-            size: file.size
-          },
-          { status: 400 }
-        );
+      if (file.size > MAX_FILE_SIZE) {
+        return NextResponse.json({
+          error: `Arquivo muito grande: ${file.name}. Máximo 5MB por arquivo`,
+          fileName: file.name,
+          size: file.size
+        }, { status: 400 });
       }
     }
 
-    // Processar upload com nomenclatura organizada
-    // Formato: listingId_timestamp_sequencial.ext
-    const uploadResult = await uploadListingFiles(
-      listingId,
-      files
-    );
+    // Upload each file to Vercel Blob
+    const newImages = [];
 
-    // Stub the result structure expected below
-    const resultFiles = uploadResult.map((fileName, index) => ({
-      secureFileName: fileName,
-      originalName: files[index].name,
-      size: files[index].size,
-      sequence: currentImages.length + 1 + index,
-      apiUrl: `/private/storage/listing/${listingId}/${fileName}` // Simplification
-    }));
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const sequence = currentImages.length + 1 + i;
+      const ext = getExtension(file.type);
+      const pathname = generateBlobPath('listings', listingId, sequence, ext);
 
-    const formattedResult = {
-      success: true,
-      files: resultFiles,
-      totalFiles: resultFiles.length
-    };
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const blob = await uploadToBlob(buffer, pathname, { contentType: file.type });
 
-    if (!formattedResult.success) {
-      return NextResponse.json(
-        { error: 'Erro no upload dos arquivos', details: uploadResult },
-        { status: 500 }
-      );
+      newImages.push({
+        url: blob.url,
+        sequence,
+        uploadedAt: new Date().toISOString()
+      });
     }
 
-    // Atualizar campo images no listing
-    const newImages = uploadResult.files.map(file => ({
-      url: file.apiUrl,
-      fileName: file.secureFileName,
-      originalName: file.originalName,
-      size: file.size,
-      sequence: file.sequence,
-      uploadedAt: new Date().toISOString()
-    }));
-
+    // Update listing images in DB
     const updatedImages = [...currentImages, ...newImages];
 
-    // Atualizar listing no banco
     await prisma.listing.update({
       where: { id: listingId },
       data: {
@@ -174,40 +113,30 @@ export async function POST(request) {
       }
     });
 
-    // Resposta de sucesso
     return NextResponse.json({
       success: true,
       message: 'Fotos enviadas com sucesso',
       listingId,
       listingTitle: listing.title,
-      uploadedFiles: formattedResult.files.map(file => ({
-        fileName: file.secureFileName,
-        originalName: file.originalName,
-        size: file.size,
-        sequence: file.sequence,
-        url: file.apiUrl
-      })),
-      totalFiles: formattedResult.totalFiles,
+      uploadedFiles: newImages,
+      totalFiles: newImages.length,
       currentImageCount: updatedImages.length,
-      maxAllowed: maxPhotos
+      maxAllowed: MAX_PHOTOS
     });
 
   } catch (error) {
     console.error('Erro no upload de fotos do listing:', error);
-    return NextResponse.json(
-      {
-        error: 'Erro interno do servidor',
-        message: error.message,
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({
+      error: 'Erro interno do servidor',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    }, { status: 500 });
   }
 }
 
 /**
  * GET /api/listings/upload?listingId=...
- * Lista fotos de um listing específico
+ * List photos for a listing (from DB, blob URLs are always available)
  */
 export async function GET(request) {
   try {
@@ -215,95 +144,53 @@ export async function GET(request) {
     const listingId = searchParams.get('listingId');
 
     if (!listingId) {
-      return NextResponse.json(
-        { error: 'listingId é obrigatório' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'listingId é obrigatório' }, { status: 400 });
     }
 
-    // Buscar listing
     const listing = await prisma.listing.findUnique({
       where: { id: listingId },
-      select: {
-        id: true,
-        title: true,
-        images: true,
-        userId: true,
-        status: true,
-        isActive: true
-      }
+      select: { id: true, title: true, images: true, userId: true, status: true, isActive: true }
     });
 
     if (!listing) {
-      return NextResponse.json(
-        { error: 'Listing não encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Listing não encontrado' }, { status: 404 });
     }
 
-    // Verificar permissões de visualização
     const session = await auth();
     const isOwner = session?.user?.id === listing.userId;
     const isAdmin = session?.user?.role === 'admin';
     const isPublic = listing.status === 'approved' && listing.isActive;
 
     if (!isPublic && !isOwner && !isAdmin) {
-      return NextResponse.json(
-        { error: 'Sem permissão para visualizar este listing' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Sem permissão para visualizar este listing' }, { status: 403 });
     }
 
-    // Parsear imagens
     const images = listing.images ? JSON.parse(listing.images) : [];
-
-    // Usar o sistema de arquivos organizados para listar arquivos reais
-    const { listFiles } = await import('@/lib/organized-upload-manager');
-    const systemFiles = await listFiles('listing', listingId);
-
-    // Combinar dados do banco com arquivos do sistema
-    const combinedImages = images.map(img => {
-      const systemFile = systemFiles.find(f => f.fileName === img.fileName);
-      return {
-        ...img,
-        exists: !!systemFile,
-        actualSize: systemFile?.size,
-        actualPath: systemFile?.relativePath,
-        createdAt: systemFile?.createdAt
-      };
-    });
 
     return NextResponse.json({
       listingId,
       listingTitle: listing.title,
-      images: combinedImages,
-      totalImages: combinedImages.length,
-      systemFiles: systemFiles.length,
+      images,
+      totalImages: images.length,
       status: listing.status,
       isActive: listing.isActive
     });
 
   } catch (error) {
     console.error('Erro ao listar fotos do listing:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
 
 /**
- * DELETE /api/listings/upload
- * Remove fotos específicas de um listing
+ * DELETE /api/listings/upload?listingId=...&sequences=1,3,5
+ * Remove specific photos from a listing
  */
 export async function DELETE(request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Usuário não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Usuário não autenticado' }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
@@ -311,46 +198,35 @@ export async function DELETE(request) {
     const sequences = searchParams.get('sequences')?.split(',').map(Number) || [];
 
     if (!listingId) {
-      return NextResponse.json(
-        { error: 'listingId é obrigatório' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'listingId é obrigatório' }, { status: 400 });
     }
 
     if (sequences.length === 0) {
-      return NextResponse.json(
-        { error: 'sequences é obrigatório (ex: ?sequences=1,3,5)' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'sequences é obrigatório (ex: ?sequences=1,3,5)' }, { status: 400 });
     }
 
-    // Verificar permissões
     const listing = await prisma.listing.findUnique({
       where: { id: listingId },
       select: { userId: true, images: true }
     });
 
     if (!listing) {
-      return NextResponse.json(
-        { error: 'Listing não encontrado' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Listing não encontrado' }, { status: 404 });
     }
 
     if (listing.userId !== session.user.id && session.user.role !== 'admin') {
-      return NextResponse.json(
-        { error: 'Sem permissão para remover fotos deste listing' },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: 'Sem permissão para remover fotos deste listing' }, { status: 403 });
     }
 
-    // Remover arquivos do sistema
-    const { removeFiles } = await import('@/lib/organized-upload-manager');
-    const removeResult = await removeFiles('listing', listingId, sequences);
-
-    // Atualizar campo images no banco
     const currentImages = listing.images ? JSON.parse(listing.images) : [];
+    const imagesToRemove = currentImages.filter(img => sequences.includes(img.sequence));
     const updatedImages = currentImages.filter(img => !sequences.includes(img.sequence));
+
+    // Delete blobs by URL
+    const urlsToDelete = imagesToRemove.map(img => img.url).filter(Boolean);
+    if (urlsToDelete.length > 0) {
+      await deleteManyFromBlob(urlsToDelete);
+    }
 
     await prisma.listing.update({
       where: { id: listingId },
@@ -364,34 +240,12 @@ export async function DELETE(request) {
       success: true,
       message: 'Fotos removidas com sucesso',
       removedSequences: sequences,
-      removedFiles: removeResult.removed,
+      removedCount: imagesToRemove.length,
       remainingImages: updatedImages.length
     });
 
   } catch (error) {
     console.error('Erro ao remover fotos do listing:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Erro interno do servidor' }, { status: 500 });
   }
 }
-
-/**
- * Exemplo de uso:
- * 
- * // Upload de fotos
- * const formData = new FormData();
- * formData.append('listingId', 'cmfj5kaq80006u1cwrk51waqa');
- * formData.append('file1', photoFile1);
- * formData.append('file2', photoFile2);
- * 
- * const response = await fetch('/api/listings/upload', {
- *   method: 'POST',
- *   body: formData
- * });
- * 
- * // Resultado esperado:
- * // Arquivos salvos como: cmfj5kaq80006u1cwrk51waqa_091425_01.jpg
- * // Estrutura: /private/storage/listing/2024/01/cmfj5kaq80006u1cwrk51waqa_091425_01.jpg
- */

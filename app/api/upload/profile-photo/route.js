@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
-import { writeFile, mkdir } from "fs/promises";
-import { join } from "path";
 import prisma from "@lib/prisma.js";
 import { auth } from "@/auth";
-import { STORAGE_PATHS, generateSecureFilename, ensureDirectoryExists } from "@/lib/storage-config";
+import { uploadToBlob, deleteFromBlob, isBlobUrl, generateBlobPath } from "@/lib/blob-storage";
 
 export async function POST(request) {
   const session = await auth();
@@ -25,42 +23,43 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Validate file type
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json({ error: "Invalid file type. Only JPEG, PNG and WebP are allowed." }, { status: 400 });
     }
 
-    // Validate file size (5MB max)
     if (file.size > 5 * 1024 * 1024) {
       return NextResponse.json({ error: "File too large. Maximum size is 5MB." }, { status: 400 });
+    }
+
+    // Delete old profile photo from Blob if exists
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { image: true },
+    });
+
+    if (user?.image && isBlobUrl(user.image)) {
+      await deleteFromBlob(user.image);
     }
 
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Usar estrutura de pastas privadas para avatars
-    const uploadsDir = STORAGE_PATHS.profiles.avatars;
-    await ensureDirectoryExists(uploadsDir);
-
-    // Generate secure filename
     const fileExtension = file.name.split(".").pop();
-    const fileName = generateSecureFilename(`${userId}-${Date.now()}.${fileExtension}`, 'avatar');
-    const filePath = join(uploadsDir, fileName);
+    const blobPath = generateBlobPath("avatars", userId, 1, fileExtension);
 
-    // Write file
-    await writeFile(filePath, buffer);
-
-    // Update user profile in database with secure URL
-    const avatarUrl = `/api/secure-files?path=users/profiles/avatars/${fileName}&type=profiles`;
-    await prisma.user.update({
-      where: { id: userId },
-      data: { image: avatarUrl }
+    const { url } = await uploadToBlob(buffer, blobPath, {
+      contentType: file.type,
     });
 
-    return NextResponse.json({ 
+    await prisma.user.update({
+      where: { id: userId },
+      data: { image: url },
+    });
+
+    return NextResponse.json({
       message: "Profile photo uploaded successfully",
-      avatarUrl 
+      avatarUrl: url,
     }, { status: 200 });
 
   } catch (error) {

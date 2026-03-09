@@ -1,22 +1,15 @@
-/**
- * API de Upload para Verificação de Usuários
- * 
- * Endpoint: POST /api/verification/upload
- * Implementa nomenclatura organizada: userId_01.jpg, userId_02.jpg, etc.
- */
-
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-import { uploadVerificationFiles } from '@/lib/organized-upload-manager';
 import prisma from '@/lib/prisma';
 import { rateLimit } from '@/lib/rate-limit';
+import { uploadToBlob, deleteManyFromBlob, generateBlobPath } from '@/lib/blob-storage';
 
-const limiter = rateLimit({ interval: 60_000 * 60, limit: 3 }); // 3 per hour
+const limiter = rateLimit({ interval: 60_000 * 60, limit: 3 });
 
-/**
- * POST /api/verification/upload
- * Upload de documentos de verificação com nomenclatura organizada
- */
+const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
+const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILES = 5;
+
 export async function POST(request) {
   try {
     const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
@@ -25,189 +18,128 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
     }
 
-    // Verificar autenticação
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Usuário não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
     const userId = session.user.id;
 
-    // Verificar se usuário já tem verificação pendente ou aprovada
     const existingVerification = await prisma.verificationrequest.findFirst({
-      where: {
-        userId,
-        status: { in: ['pending', 'approved'] }
-      }
+      where: { userId, status: { in: ['pending', 'approved'] } }
     });
 
     if (existingVerification) {
       return NextResponse.json(
-        {
-          error: 'Usuário já possui verificação pendente ou aprovada',
-          status: existingVerification.status
-        },
+        { error: 'Verification already pending or approved', status: existingVerification.status },
         { status: 400 }
       );
     }
 
-    // Processar dados do formulário
     const formData = await request.formData();
     const files = [];
     const documentTypes = [];
 
-    // Extrair arquivos do FormData
     for (const [key, value] of formData.entries()) {
       if (key.startsWith('file_') && value instanceof File) {
         files.push(value);
-
-        // Extrair tipo de documento do nome do campo
-        const docType = key.replace('file_', '') || 'document';
-        documentTypes.push(docType);
+        documentTypes.push(key.replace('file_', '') || 'document');
       }
     }
 
-    // Validar se há arquivos
     if (files.length === 0) {
-      return NextResponse.json(
-        { error: 'Nenhum arquivo foi enviado' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'No files provided' }, { status: 400 });
     }
 
-    // Validar quantidade máxima de arquivos (máximo 5 para verificação)
-    if (files.length > 5) {
-      return NextResponse.json(
-        { error: 'Máximo de 5 arquivos permitidos para verificação' },
-        { status: 400 }
-      );
+    if (files.length > MAX_FILES) {
+      return NextResponse.json({ error: `Maximum ${MAX_FILES} files allowed` }, { status: 400 });
     }
 
-    // Validar tipos de arquivo permitidos
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
     for (const file of files) {
-      if (!allowedTypes.includes(file.type)) {
+      if (!ALLOWED_TYPES.includes(file.type)) {
         return NextResponse.json(
-          {
-            error: `Tipo de arquivo não permitido: ${file.type}. Permitidos: JPG, PNG, PDF`,
-            fileName: file.name
-          },
+          { error: `File type not allowed: ${file.type}. Allowed: JPG, PNG, PDF`, fileName: file.name },
           { status: 400 }
         );
       }
-
-      // Validar tamanho (máximo 10MB por arquivo)
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > MAX_FILE_SIZE) {
         return NextResponse.json(
-          {
-            error: `Arquivo muito grande: ${file.name}. Máximo 10MB por arquivo`,
-            fileName: file.name,
-            size: file.size
-          },
+          { error: `File too large: ${file.name}. Max 10MB`, fileName: file.name },
           { status: 400 }
         );
       }
     }
 
-    // Processar upload com nomenclatura organizada (formato: userId_01.jpg)
-    const uploadResult = await uploadVerificationFiles(
-      userId,
-      files
-    );
-    // Format mock result structure
-    const formattedResult = {
-      success: true,
-      files: uploadResult.map((fileName, index) => ({
-        fileName,
-        originalName: files[index].name,
-        size: files[index].size,
-        documentType: documentTypes[index] || 'document',
-        sequence: index + 1,
-        relativePath: `/private/storage/verify/${userId}/${fileName}`
-      })),
-      totalFiles: uploadResult.length
-    };
+    // Upload files to Vercel Blob
+    const uploadedFiles = [];
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const ext = file.name.split('.').pop() || 'jpg';
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const pathname = generateBlobPath('verification', userId, i + 1, ext);
 
-    if (!formattedResult.success) {
-      return NextResponse.json(
-        { error: 'Erro no upload dos arquivos', details: uploadResult },
-        { status: 500 }
-      );
+      const blob = await uploadToBlob(buffer, pathname, { contentType: file.type });
+      uploadedFiles.push({
+        url: blob.url,
+        pathname: blob.pathname,
+        originalName: file.name,
+        size: file.size,
+        documentType: documentTypes[i] || 'document',
+        sequence: i + 1
+      });
     }
 
-    // Criar registro de verificação no banco com nomenclatura organizada
     const verificationRequest = await prisma.verificationrequest.create({
       data: {
         id: `verify_${userId}_${Date.now()}`,
         userId,
-        documentPath: formattedResult.files[0]?.relativePath || '',
-        selfiePath: formattedResult.files[1]?.relativePath || formattedResult.files[0]?.relativePath || '',
+        documentPath: uploadedFiles[0]?.url || '',
+        selfiePath: uploadedFiles[1]?.url || uploadedFiles[0]?.url || '',
         status: 'pending'
       }
     });
 
-    // Criar notificação para admins
     await createAdminNotification({
-      title: 'Nova Solicitação de Verificação',
-      message: `Usuário ${session.user.name || userId} enviou documentos para verificação`,
+      title: 'New Verification Request',
+      message: `User ${session.user.name || userId} submitted verification documents`,
       type: 'verification_request',
       priority: 'medium',
       actionUrl: `/admin/verifications/${verificationRequest.id}`,
       userId
     });
 
-    // Resposta de sucesso
     return NextResponse.json({
       success: true,
-      message: 'Documentos enviados com sucesso',
+      message: 'Documents uploaded successfully',
       verificationId: verificationRequest.id,
-      uploadedFiles: formattedResult.files.map(file => ({
-        fileName: file.fileName,
-        originalName: file.originalName,
-        size: file.size,
-        documentType: file.documentType,
-        sequence: file.sequence
+      uploadedFiles: uploadedFiles.map(f => ({
+        originalName: f.originalName,
+        size: f.size,
+        documentType: f.documentType,
+        sequence: f.sequence
       })),
-      totalFiles: formattedResult.totalFiles,
+      totalFiles: uploadedFiles.length,
       status: 'pending',
-      estimatedReviewTime: '24-48 horas'
+      estimatedReviewTime: '24-48 hours'
     });
-
   } catch (error) {
-    console.error('Erro no upload de verificação:', error);
+    console.error('Verification upload error:', error);
     return NextResponse.json(
-      {
-        error: 'Erro interno do servidor',
-        message: error.message,
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
-      },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }
 }
 
-/**
- * GET /api/verification/upload
- * Retorna status da verificação do usuário atual
- */
-export async function GET(request) {
+export async function GET() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Usuário não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
-
-    // Buscar verificação mais recente
     const verification = await prisma.verificationrequest.findFirst({
-      where: { userId },
+      where: { userId: session.user.id },
       orderBy: { createdAt: 'desc' }
     });
 
@@ -215,7 +147,7 @@ export async function GET(request) {
       return NextResponse.json({
         hasVerification: false,
         status: 'not_requested',
-        message: 'Nenhuma solicitação de verificação encontrada'
+        message: 'No verification request found'
       });
     }
 
@@ -227,76 +159,51 @@ export async function GET(request) {
       rejectionReason: verification.rejectionReason,
       message: getStatusMessage(verification.status)
     });
-
   } catch (error) {
-    console.error('Erro ao buscar status de verificação:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    console.error('Verification status error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
-/**
- * DELETE /api/verification/upload
- * Cancela solicitação de verificação pendente
- */
-export async function DELETE(request) {
+export async function DELETE() {
   try {
     const session = await auth();
     if (!session?.user?.id) {
-      return NextResponse.json(
-        { error: 'Usuário não autenticado' },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const userId = session.user.id;
-
-    // Buscar verificação pendente
     const verification = await prisma.verificationrequest.findFirst({
-      where: {
-        userId,
-        status: 'pending'
-      }
+      where: { userId: session.user.id, status: 'pending' }
     });
 
     if (!verification) {
-      return NextResponse.json(
-        { error: 'Nenhuma verificação pendente encontrada' },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'No pending verification found' }, { status: 404 });
     }
 
-    // Remover arquivos do sistema
+    // Delete blobs from Vercel Blob storage
     try {
-      const { removeFiles } = await import('@/lib/organized-upload-manager');
-      await removeFiles('verification', userId);
-    } catch (fileError) {
-      console.error('Erro ao remover arquivos:', fileError);
-      // Continuar mesmo se não conseguir remover arquivos
+      const blobUrls = [verification.documentPath, verification.selfiePath].filter(Boolean);
+      const uniqueUrls = [...new Set(blobUrls)];
+      if (uniqueUrls.length > 0) {
+        await deleteManyFromBlob(uniqueUrls);
+      }
+    } catch (blobError) {
+      console.error('Error deleting blobs:', blobError);
     }
 
-    // Remover registro do banco
     await prisma.verificationrequest.delete({
       where: { id: verification.id }
     });
 
     return NextResponse.json({
       success: true,
-      message: 'Solicitação de verificação cancelada com sucesso'
+      message: 'Verification request cancelled successfully'
     });
-
   } catch (error) {
-    console.error('Erro ao cancelar verificação:', error);
-    return NextResponse.json(
-      { error: 'Erro interno do servidor' },
-      { status: 500 }
-    );
+    console.error('Verification delete error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-
-// Funções auxiliares
 
 async function createAdminNotification({ title, message, type, priority, actionUrl, userId }) {
   try {
@@ -313,36 +220,16 @@ async function createAdminNotification({ title, message, type, priority, actionU
       }
     });
   } catch (error) {
-    console.error('Erro ao criar notificação admin:', error);
-    // Não falhar o upload por causa da notificação
+    console.error('Admin notification error:', error);
   }
 }
 
 function getStatusMessage(status) {
   const messages = {
-    pending: 'Sua solicitação está sendo analisada. Aguarde 24-48 horas.',
-    approved: 'Sua conta foi verificada com sucesso!',
-    rejected: 'Sua solicitação foi rejeitada. Verifique o motivo e tente novamente.',
-    expired: 'Sua solicitação expirou. Envie novos documentos.'
+    pending: 'Your request is being reviewed. Allow 24-48 hours.',
+    approved: 'Your account has been verified!',
+    rejected: 'Your request was rejected. Check the reason and try again.',
+    expired: 'Your request has expired. Please submit new documents.'
   };
-
-  return messages[status] || 'Status desconhecido';
+  return messages[status] || 'Unknown status';
 }
-
-/**
- * Exemplo de uso do endpoint:
- * 
- * // Upload de verificação
- * const formData = new FormData();
- * formData.append('file_document', documentFile);
- * formData.append('file_selfie', selfieFile);
- * 
- * const response = await fetch('/api/verification/upload', {
- *   method: 'POST',
- *   body: formData
- * });
- * 
- * // Resultado esperado:
- * // Arquivos salvos como: userId_01.jpg, userId_02.jpg
- * // Estrutura: /private/storage/verification/2024/01/userId_01.jpg
- */
