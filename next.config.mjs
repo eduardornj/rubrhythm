@@ -2,8 +2,13 @@ import path from 'path';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Move the .next cache outside OneDrive to prevent sync corruption
-  distDir: 'C:/tmp/rubrhythm-next',
+  turbopack: {
+    resolveAlias: {
+      '@components': path.resolve('./components'),
+      '@app-components': path.resolve('./app/components'),
+      '@lib': path.resolve('./lib'),
+    },
+  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
