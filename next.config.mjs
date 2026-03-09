@@ -9,7 +9,6 @@ const nextConfig = {
         hostname: 'xyn3cm3fwwtbtsnu.public.blob.vercel-storage.com',
       },
     ],
-    unoptimized: true,
   },
   webpack: (config) => {
     config.resolve.alias = {

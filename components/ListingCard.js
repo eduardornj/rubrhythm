@@ -65,6 +65,7 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
           <img
             src={imageUrl}
             alt={listing.title}
+            loading={priority ? "eager" : "lazy"}
             className="absolute inset-0 w-full h-full object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-500"
             onLoad={(e) => detectFacePosition(e.target)}
             onError={(e) => { e.target.style.display = "none"; }}
