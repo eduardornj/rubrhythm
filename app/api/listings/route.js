@@ -89,6 +89,8 @@ export async function GET(request) {
         availableNow: true,
         availableUntil: true,
         isWhatsAppAvailable: true,
+        services: true,
+        availability: true,
         user: {
           select: {
             verified: true
@@ -107,8 +109,7 @@ export async function GET(request) {
         !l.featuredEndDate || new Date(l.featuredEndDate) > currentDate
       );
       // Apply weighted rotation (max 8 slots, 63% PREMIUM / 37% BASIC)
-      const { listings: rotated } = applyFeaturedRotation(filteredListings);
-      filteredListings = rotated;
+      filteredListings = applyFeaturedRotation(filteredListings);
     }
 
     // Process listings to parse JSON fields and format image URLs
