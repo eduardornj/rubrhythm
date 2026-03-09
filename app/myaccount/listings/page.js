@@ -351,11 +351,10 @@ export default function MyListings() {
                   {/* Image Area */}
                   <div className="w-full sm:w-56 h-56 sm:h-full flex-shrink-0 relative overflow-hidden bg-black/50 border-r border-white/5">
                     {imageUrl ? (
-                      <Image
+                      <img
                         src={imageUrl}
                         alt={listing.title || 'Listing image'}
-                        fill
-                        className="object-cover group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700 ease-out"
+                        className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700 ease-out"
                         onError={(e) => {
                           e.target.style.display = 'none';
                         }}
