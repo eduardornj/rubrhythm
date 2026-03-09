@@ -1,0 +1,63 @@
+PrismaClientValidationError: 
+Invalid `prisma.conversation.create()` invocation:
+
+{
+  data: {
+    id: "f0187731-27b8-49ef-b742-b8b713942e9b",
+    subject: "Inquiry via Sofia Massagem",
+    clientId: "1de87651-e8ff-406b-a598-8e6a2f91a1fe",
+    providerId: "998ec899-8006-42bb-b850-4d78bd427a21",
+    listingId: "8379a29f-7cef-4ca5-9352-5a7a28c7c1ba",
+    isAnonymous: false,
+    ~~~~~~~~~~~
+?   createdAt?: DateTime,
+?   updatedAt?: DateTime,
+?   message?: messageUncheckedCreateNestedManyWithoutConversationInput
+  },
+  include: {
+    user_conversation_clientIdTouser: {
+      select: {
+        id: true,
+        name: true,
+        image: true
+      }
+    },
+    user_conversation_providerIdTouser: {
+      select: {
+        id: true,
+        name: true,
+        image: true
+      }
+    },
+    listing: {
+      select: {
+        id: true,
+        title: true
+      }
+    }
+  }
+}
+
+Unknown argument `isAnonymous`. Available options are marked with ?.
+    at An (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\@prisma\client\runtime\library.js:29:1363)
+    at zn.handleRequestError (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\@prisma\client\runtime\library.js:121:7102)
+    at zn.handleAndLogRequestError (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\@prisma\client\runtime\library.js:121:6784)
+    at zn.request (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\@prisma\client\runtime\library.js:121:6491)
+    at async l (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\@prisma\client\runtime\library.js:130:9778)
+    at async POST (webpack-internal:///(rsc)/./app/api/messages/conversations/route.js:241:30)
+    at async AppRouteRouteModule.do (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:26:33891)
+    at async AppRouteRouteModule.handle (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\compiled\next-server\app-route.runtime.dev.js:26:41254)
+    at async doRender (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\base-server.js:1513:42)
+    at async DevServer.renderToResponseWithComponentsImpl (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\base-server.js:1915:28)
+    at async DevServer.renderPageComponent (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\base-server.js:2393:24)
+    at async DevServer.renderToResponseImpl (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\base-server.js:2430:32)
+    at async DevServer.pipeImpl (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\base-server.js:1003:25)
+    at async NextNodeServer.handleCatchallRenderRequest (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\next-server.js:304:17)
+    at async DevServer.handleRequestImpl (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\base-server.js:895:17)
+    at async C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\dev\next-dev-server.js:371:20
+    at async Span.traceAsyncFn (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\trace\trace.js:157:20)
+    at async DevServer.handleRequest (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\dev\next-dev-server.js:368:24)
+    at async invokeRender (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\lib\router-server.js:235:21)
+    at async handleRequest (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\lib\router-server.js:426:24)
+    at async requestHandlerImpl (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\lib\router-server.js:450:13)
+    at async Server.requestListener (C:\Users\eDuArDoXP\OneDrive\Documents\rubrhythm\node_modules\next\dist\server\lib\start-server.js:158:13)

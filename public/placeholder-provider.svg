@@ -1,0 +1,47 @@
+<svg width="800" height="1000" viewBox="0 0 800 1000" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Dark gradient background -->
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="800" y2="1000" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0f0f14"/>
+      <stop offset="100%" stop-color="#1a1020"/>
+    </linearGradient>
+    <linearGradient id="glow" x1="200" y1="300" x2="600" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e8459a" stop-opacity="0.15"/>
+      <stop offset="100%" stop-color="#9b2584" stop-opacity="0.05"/>
+    </linearGradient>
+    <radialGradient id="circle-glow" cx="400" cy="400" r="300" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#e8459a" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#0f0f14" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="1000" fill="url(#bg)"/>
+  <rect width="800" height="1000" fill="url(#glow)"/>
+  <ellipse cx="400" cy="420" rx="340" ry="340" fill="url(#circle-glow)"/>
+
+  <!-- Silhouette placeholder icon -->
+  <circle cx="400" cy="340" r="90" fill="#ffffff" fill-opacity="0.05" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1.5"/>
+  <!-- Head -->
+  <circle cx="400" cy="310" r="48" fill="#ffffff" fill-opacity="0.07"/>
+  <!-- Body -->
+  <ellipse cx="400" cy="410" rx="70" ry="50" fill="#ffffff" fill-opacity="0.05"/>
+
+  <!-- Camera icon (no photo) -->
+  <g opacity="0.25" transform="translate(370, 280)">
+    <rect x="0" y="5" width="60" height="48" rx="6" fill="white"/>
+    <circle cx="30" cy="29" r="14" fill="#0f0f14"/>
+    <circle cx="30" cy="29" r="10" fill="white" fill-opacity="0.15"/>
+    <rect x="16" y="0" width="28" height="10" rx="3" fill="white"/>
+  </g>
+
+  <!-- Horizontal rule -->
+  <line x1="280" y1="510" x2="520" y2="510" stroke="#ffffff" stroke-opacity="0.08" stroke-width="1"/>
+
+  <!-- No photo text -->
+  <text x="400" y="555" text-anchor="middle" font-family="Georgia, serif" font-size="22" fill="white" fill-opacity="0.35" letter-spacing="1">No Photo Available</text>
+  <text x="400" y="590" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" fill="white" fill-opacity="0.18">Provider photo coming soon</text>
+
+  <!-- Bottom accent bar -->
+  <rect x="360" y="620" width="80" height="2" rx="1" fill="#e8459a" fill-opacity="0.3"/>
+</svg>

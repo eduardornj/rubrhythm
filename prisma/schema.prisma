@@ -1,0 +1,602 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "./generated/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model account {
+  id                String  @id
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              user    @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Account_userId_fkey")
+
+  @@unique([provider, providerAccountId], map: "Account_provider_providerAccountId_key")
+  @@index([userId], map: "Account_userId_fkey")
+}
+
+
+
+model adminnotification {
+  id          String    @id
+  title       String
+  message     String    @db.Text
+  type        String
+  priority    String
+  targetRole  String
+  actionUrl   String?
+  read        Boolean   @default(false)
+  readAt      DateTime?
+  createdById String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime
+  user        user      @relation(fields: [createdById], references: [id], onDelete: Cascade, map: "AdminNotification_createdById_fkey")
+
+  @@index([createdAt], map: "AdminNotification_createdAt_idx")
+  @@index([createdById], map: "AdminNotification_createdById_fkey")
+  @@index([priority], map: "AdminNotification_priority_idx")
+  @@index([read], map: "AdminNotification_read_idx")
+  @@index([targetRole], map: "AdminNotification_targetRole_idx")
+  @@index([type], map: "AdminNotification_type_idx")
+}
+
+model campaign {
+  id             String          @id
+  userId         String
+  name           String
+  type           String
+  duration       Int
+  budget         Decimal  @db.Decimal(10, 2)
+  targetAudience String          @default("all")
+  description    String?
+  isActive       Boolean         @default(true)
+  startDate      DateTime        @default(now())
+  endDate        DateTime
+  pausedAt       DateTime?
+  resumedAt      DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @default(now())
+  user           user            @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Campaign_userId_fkey")
+  campaignclick  campaignclick[]
+  campaignview   campaignview[]
+
+  @@index([userId], map: "Campaign_userId_fkey")
+}
+
+model campaignclick {
+  id         String   @id
+  campaignId String
+  clickerId  String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  campaign   campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade, map: "CampaignClick_campaignId_fkey")
+
+  @@index([campaignId], map: "CampaignClick_campaignId_fkey")
+}
+
+model campaignview {
+  id         String   @id
+  campaignId String
+  viewerId   String?
+  ipAddress  String?
+  userAgent  String?
+  createdAt  DateTime @default(now())
+  campaign   campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade, map: "CampaignView_campaignId_fkey")
+
+  @@index([campaignId], map: "CampaignView_campaignId_fkey")
+}
+
+model conversation {
+  id                                 String    @id
+  subject                            String
+  clientId                           String
+  providerId                         String
+  listingId                          String?
+  isAnonymous                        Boolean   @default(false)
+  createdAt                          DateTime  @default(now())
+  updatedAt                          DateTime  @default(now())
+  user_conversation_clientIdTouser   user      @relation("conversation_clientIdTouser", fields: [clientId], references: [id], onDelete: Cascade, map: "Conversation_clientId_fkey")
+  listing                            listing?  @relation(fields: [listingId], references: [id], map: "Conversation_listingId_fkey")
+  user_conversation_providerIdTouser user      @relation("conversation_providerIdTouser", fields: [providerId], references: [id], onDelete: Cascade, map: "Conversation_providerId_fkey")
+  message                            message[]
+
+  @@unique([clientId, providerId, listingId], map: "Conversation_clientId_providerId_listingId_key")
+  @@index([listingId], map: "Conversation_listingId_fkey")
+  @@index([providerId], map: "Conversation_providerId_fkey")
+}
+
+model creditbalance {
+  id          String        @id
+  userId      String        @unique(map: "CreditBalance_userId_key")
+  balance     Decimal       @default(0) @db.Decimal(10, 2)
+  user        user          @relation(fields: [userId], references: [id], onDelete: Cascade, map: "CreditBalance_userId_fkey")
+  transaction transaction[]
+}
+
+model credittransaction {
+  id          String   @id
+  userId      String
+  amount      Decimal  @db.Decimal(10, 2)
+  type        String
+  description String
+  relatedId   String?
+  createdAt   DateTime @default(now())
+  user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "CreditTransaction_userId_fkey")
+
+  @@index([userId], map: "CreditTransaction_userId_fkey")
+}
+
+model escrow {
+  id                           String      @id
+  clientId                     String
+  providerId                   String
+  listingId                    String?
+  amount                       Decimal  @db.Decimal(10, 2)
+  description                  String
+  terms                        String?
+  status                       String      @default("pending")
+  disputeReason                String?
+  createdAt                    DateTime    @default(now())
+  updatedAt                    DateTime
+  fundedAt                     DateTime?
+  startedAt                    DateTime?
+  completedAt                  DateTime?
+  releasedAt                   DateTime?
+  disputedAt                   DateTime?
+  resolvedAt                   DateTime?
+  resolvedBy                   String?
+  cancelledAt                  DateTime?
+  refundedAt                   DateTime?
+  user_escrow_clientIdTouser   user        @relation("escrow_clientIdTouser", fields: [clientId], references: [id], onDelete: Cascade, map: "Escrow_clientId_fkey")
+  listing                      listing?    @relation(fields: [listingId], references: [id], map: "Escrow_listingId_fkey")
+  user_escrow_providerIdTouser user        @relation("escrow_providerIdTouser", fields: [providerId], references: [id], onDelete: Cascade, map: "Escrow_providerId_fkey")
+  escrowlog                    escrowlog[]
+
+  @@index([clientId], map: "Escrow_clientId_fkey")
+  @@index([listingId], map: "Escrow_listingId_fkey")
+  @@index([providerId], map: "Escrow_providerId_fkey")
+}
+
+model escrowlog {
+  id             String   @id
+  escrowId       String
+  userId         String
+  action         String
+  details        String?
+  previousStatus String?
+  newStatus      String?
+  createdAt      DateTime @default(now())
+  escrow         escrow   @relation(fields: [escrowId], references: [id], onDelete: Cascade, map: "EscrowLog_escrowId_fkey")
+  user           user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "EscrowLog_userId_fkey")
+
+  @@index([escrowId], map: "EscrowLog_escrowId_fkey")
+  @@index([userId], map: "EscrowLog_userId_fkey")
+}
+
+model favorite {
+  id        String   @id
+  userId    String
+  listingId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  listing   listing  @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "Favorite_listingId_fkey")
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Favorite_userId_fkey")
+
+  @@unique([userId, listingId], map: "Favorite_userId_listingId_key")
+  @@index([listingId], map: "Favorite_listingId_fkey")
+}
+
+model fraudreport {
+  id                                    String    @id
+  type                                  String
+  severity                              String
+  description                           String
+  evidence                              Json?
+  status                                String    @default("pending")
+  resolution                            String?
+  adminNotes                            String?
+  reporterId                            String
+  reportedUserId                        String?
+  listingId                             String?
+  resolvedAt                            DateTime?
+  resolvedBy                            String?
+  createdAt                             DateTime  @default(now())
+  updatedAt                             DateTime
+  listing                               listing?  @relation(fields: [listingId], references: [id], map: "FraudReport_listingId_fkey")
+  user_fraudreport_reportedUserIdTouser user?     @relation("fraudreport_reportedUserIdTouser", fields: [reportedUserId], references: [id], map: "FraudReport_reportedUserId_fkey")
+  user_fraudreport_reporterIdTouser     user      @relation("fraudreport_reporterIdTouser", fields: [reporterId], references: [id], onDelete: Cascade, map: "FraudReport_reporterId_fkey")
+
+  @@index([listingId], map: "FraudReport_listingId_fkey")
+  @@index([reportedUserId], map: "FraudReport_reportedUserId_fkey")
+  @@index([reporterId], map: "FraudReport_reporterId_fkey")
+  @@index([severity], map: "FraudReport_severity_idx")
+  @@index([status], map: "FraudReport_status_idx")
+  @@index([type], map: "FraudReport_type_idx")
+}
+
+model globalsettings {
+  id        Int      @id @default(autoincrement())
+  settings  Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+}
+
+model listing {
+  id               String         @id
+  title            String
+  bodyType         String?
+  ethnicity        String?
+  serviceLocation  String
+  description      String?        @db.Text
+  phoneArea        String?
+  phoneNumber      String?
+  country          String         @default("United States")
+  state            String
+  city             String
+  neighborhood     String?
+  websiteUrl       String?
+  status           String         @default("Incomplete")
+  added            DateTime       @default(now())
+  type             String?        @default("Standard Listing")
+  userId           String
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime
+  telegram         String?
+  whatsapp              String?
+  isWhatsAppAvailable   Boolean        @default(false)
+  images           Json
+  services         Json
+  priceRange       String?
+  hourlyRate       Int?
+  availability     Json
+  age              Int?
+  isApproved       Boolean        @default(false)
+  isActive         Boolean        @default(true)
+  isFeatured       Boolean        @default(false)
+  featureTier      String?        // "BASIC" | "PREMIUM" | null (null = not featured)
+  isHighlighted    Boolean        @default(false)
+  highlightEndDate DateTime?
+  featuredEndDate  DateTime?
+  lastBumpUp       DateTime?
+  availableNow     Boolean        @default(false)
+  availableUntil   DateTime?
+  viewCount        Int            @default(0)
+  averageRating    Float?         @default(0)
+  totalReviews     Int            @default(0)
+  rates            Json?          // [{duration:"30min",price:100},{duration:"1h",price:200},{duration:"2h",price:350}]
+  socialLinks      Json?          // {twitter:"",instagram:"",onlyfans:"",linktree:""}
+  autoBumpEnabled  Boolean        @default(false)
+  autoBumpHour     Int?           // 0-23 hour of day for auto-bump
+  autoRenewFeatured   Boolean     @default(false)
+  autoRenewHighlight  Boolean     @default(false)
+  autoRenewAvailable  Boolean     @default(false)
+  conversation     conversation[]
+  escrow           escrow[]
+  favorite         favorite[]
+  fraudreport      fraudreport[]
+  user             user           @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Listing_userId_fkey")
+  review           review[]
+  tip              tip[]
+  chat             chat[]
+
+  @@index([userId], map: "Listing_userId_fkey")
+  @@index([state, city, isApproved, isActive])
+  @@index([isApproved, isActive, isFeatured])
+  @@index([isApproved, isActive, availableNow])
+  @@index([isApproved, isActive, isHighlighted])
+}
+
+model message {
+  id             String       @id
+  content        String
+  senderId       String
+  conversationId String
+  readAt         DateTime?
+  createdAt      DateTime     @default(now())
+  conversation   conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade, map: "Message_conversationId_fkey")
+  user           user         @relation(fields: [senderId], references: [id], onDelete: Cascade, map: "Message_senderId_fkey")
+
+  @@index([conversationId], map: "Message_conversationId_fkey")
+  @@index([senderId], map: "Message_senderId_fkey")
+}
+
+model notification {
+  id        String    @id
+  userId    String
+  title     String
+  body      String
+  type      String    @default("general")
+  isRead    Boolean   @default(false)
+  data      String?
+  createdAt DateTime  @default(now())
+  readAt    DateTime?
+  user      user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Notification_userId_fkey")
+
+  @@index([userId], map: "Notification_userId_fkey")
+}
+
+
+
+model pushsubscription {
+  id        String   @id
+  userId    String   @unique(map: "PushSubscription_userId_key")
+  endpoint  String
+  p256dh    String
+  auth      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "PushSubscription_userId_fkey")
+}
+
+model review {
+  id                           String    @id
+  listingId                    String
+  reviewerId                   String?
+  rating                       Int
+  comment                      String?
+  isVerified                   Boolean   @default(false)
+  isAnonymous                  Boolean   @default(true)
+  status                       String    @default("pending")
+  rejectionReason              String?
+  providerResponse             String?   @db.Text
+  providerRespondedAt          DateTime?
+  reviewedBy                   String?
+  reviewedAt                   DateTime?
+  createdAt                    DateTime  @default(now())
+  updatedAt                    DateTime
+  listing                      listing   @relation(fields: [listingId], references: [id], onDelete: Cascade, map: "Review_listingId_fkey")
+  user_review_reviewedByTouser user?     @relation("review_reviewedByTouser", fields: [reviewedBy], references: [id], map: "Review_reviewedBy_fkey")
+  user_review_reviewerIdTouser user?     @relation("review_reviewerIdTouser", fields: [reviewerId], references: [id], onDelete: Cascade, map: "Review_reviewerId_fkey")
+
+  @@index([listingId], map: "Review_listingId_fkey")
+  @@index([reviewedBy], map: "Review_reviewedBy_fkey")
+  @@index([reviewerId], map: "Review_reviewerId_fkey")
+}
+
+
+
+model securitylog {
+  id        String   @id
+  type      String
+  severity  String
+  message   String
+  details   Json?
+  userId    String?
+  ipAddress String?
+  createdAt DateTime @default(now())
+  user      user?    @relation(fields: [userId], references: [id], map: "SecurityLog_userId_fkey")
+
+  @@index([createdAt], map: "SecurityLog_createdAt_idx")
+  @@index([severity], map: "SecurityLog_severity_idx")
+  @@index([type], map: "SecurityLog_type_idx")
+  @@index([userId], map: "SecurityLog_userId_fkey")
+}
+
+model session {
+  id           String   @id
+  sessionToken String   @unique(map: "Session_sessionToken_key")
+  userId       String
+  expires      DateTime
+  user         user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Session_userId_fkey")
+
+  @@index([userId], map: "Session_userId_fkey")
+}
+
+model suspiciousip {
+  id           String   @id
+  ipAddress    String   @unique(map: "SuspiciousIP_ipAddress_key")
+  riskLevel    String
+  status       String
+  reason       String
+  firstSeen    DateTime
+  lastSeen     DateTime
+  requestCount Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime
+
+  @@index([riskLevel], map: "SuspiciousIP_riskLevel_idx")
+  @@index([status], map: "SuspiciousIP_status_idx")
+}
+
+model tip {
+  id                        String   @id
+  amount                    Decimal  @db.Decimal(10, 2)
+  message                   String?  @db.Text
+  senderId                  String
+  receiverId                String
+  listingId                 String?
+  status                    String   @default("pending")
+  createdAt                 DateTime @default(now())
+  updatedAt                 DateTime
+  listing                   listing? @relation(fields: [listingId], references: [id], map: "Tip_listingId_fkey")
+  user_tip_receiverIdTouser user     @relation("tip_receiverIdTouser", fields: [receiverId], references: [id], onDelete: Cascade, map: "Tip_receiverId_fkey")
+  user_tip_senderIdTouser   user     @relation("tip_senderIdTouser", fields: [senderId], references: [id], onDelete: Cascade, map: "Tip_senderId_fkey")
+
+  @@index([createdAt], map: "Tip_createdAt_idx")
+  @@index([listingId], map: "Tip_listingId_idx")
+  @@index([receiverId], map: "Tip_receiverId_idx")
+  @@index([senderId], map: "Tip_senderId_idx")
+  @@index([status], map: "Tip_status_idx")
+}
+
+model transaction {
+  id            String        @id
+  userId        String
+  amount        Decimal       @db.Decimal(10, 2)
+  status        String        @default("completed")
+  createdAt     DateTime      @default(now())
+  creditbalance creditbalance @relation(fields: [userId], references: [userId], onDelete: Cascade, map: "Transaction_creditBalance_fkey")
+  user          user          @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Transaction_user_fkey")
+
+  @@index([userId], map: "Transaction_creditBalance_fkey")
+}
+
+model user {
+  id                                           String                @id
+  name                                         String?
+  email                                        String                @unique(map: "User_email_key")
+  emailVerified                                DateTime?
+  image                                        String?
+  password                                     String?
+  verified                                     Boolean               @default(false)
+  role                                         String                @default("user")
+  createdAt                                    DateTime              @default(now())
+  updatedAt                                    DateTime              @default(now())
+  isBanned                                     Boolean               @default(false)
+  credits                                      Decimal               @default(0) @db.Decimal(10, 2)
+  isFeatured                                   Boolean               @default(false)
+  featuredEndDate                              DateTime?
+  settings                                     Json?
+  lastSeen                                     DateTime?
+  referralCode                                 String?               @unique
+  referredBy                                   String?
+  account                                      account[]
+  blockedcontact                               blockedcontact[]
+  adminnotification                            adminnotification[]
+  campaign                                     campaign[]
+  conversation_conversation_clientIdTouser     conversation[]        @relation("conversation_clientIdTouser")
+  conversation_conversation_providerIdTouser   conversation[]        @relation("conversation_providerIdTouser")
+  creditbalance                                creditbalance?
+  credittransaction                            credittransaction[]
+  escrow_escrow_clientIdTouser                 escrow[]              @relation("escrow_clientIdTouser")
+  escrow_escrow_providerIdTouser               escrow[]              @relation("escrow_providerIdTouser")
+  escrowlog                                    escrowlog[]
+  favorite                                     favorite[]
+  fraudreport_fraudreport_reportedUserIdTouser fraudreport[]         @relation("fraudreport_reportedUserIdTouser")
+  fraudreport_fraudreport_reporterIdTouser     fraudreport[]         @relation("fraudreport_reporterIdTouser")
+  listing                                      listing[]
+  message                                      message[]
+  notification                                 notification[]
+  pushsubscription                             pushsubscription?
+  review_review_reviewedByTouser               review[]              @relation("review_reviewedByTouser")
+  review_review_reviewerIdTouser               review[]              @relation("review_reviewerIdTouser")
+  securitylog                                  securitylog[]
+  session                                      session[]
+  tip_tip_receiverIdTouser                     tip[]                 @relation("tip_receiverIdTouser")
+  tip_tip_senderIdTouser                       tip[]                 @relation("tip_senderIdTouser")
+  transaction                                  transaction[]
+  chat                                         chat[]
+  usernotification                             usernotification[]
+  verificationrequest                          verificationrequest[]
+}
+
+
+
+model usernotification {
+  id        String    @id
+  userId    String
+  title     String
+  message   String    @db.Text
+  type      String
+  priority  String
+  actionUrl String?
+  read      Boolean   @default(false)
+  readAt    DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime
+  user      user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "UserNotification_userId_fkey")
+
+  @@index([createdAt], map: "UserNotification_createdAt_idx")
+  @@index([read], map: "UserNotification_read_idx")
+  @@index([type], map: "UserNotification_type_idx")
+  @@index([userId], map: "UserNotification_userId_idx")
+}
+
+model verificationrequest {
+  id              String   @id
+  userId          String
+  documentPath    String
+  selfiePath      String
+  status          String   @default("pending")
+  rejectionReason String?
+  createdAt       DateTime @default(now())
+  user            user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "VerificationRequest_userId_fkey")
+
+  @@index([userId], map: "VerificationRequest_userId_fkey")
+}
+
+model verificationtoken {
+  identifier String
+  token      String   @unique(map: "VerificationToken_token_key")
+  expires    DateTime
+
+  @@unique([identifier, token], map: "VerificationToken_identifier_token_key")
+}
+
+model chat {
+  id                String        @id @default(cuid())
+  clientId          String        // Anonymous client identifier
+  providerId        String        // Massagist/provider user ID
+  listingId         String?       // Related listing ID (optional for anonymous chats)
+  messagesCount     Int           @default(0)
+  creditsRemaining  Int           @default(0)
+  totalPaid         Decimal       @default(0) @db.Decimal(10, 2)
+  isActive          Boolean       @default(true)
+  lastMessageAt     DateTime      @default(now())
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  provider          user          @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  listing           listing?      @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  messages          chatmessage[]
+  payments          chatpayment[]
+
+  @@index([clientId])
+  @@index([providerId])
+  @@index([listingId])
+  @@index([isActive])
+}
+
+model chatmessage {
+  id          String   @id @default(cuid())
+  chatId      String
+  senderId    String   // "client" or user ID for provider
+  senderType  String   // "client" or "provider"
+  content     String   @db.Text
+  isRead      Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  chat        chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([createdAt])
+}
+
+model chatpayment {
+  id            String   @id @default(cuid())
+  chatId        String
+  amount        Decimal  @db.Decimal(10, 2)  // $20.00
+  messagesCount Int      // 5 messages
+  paymentMethod String   // "stripe", "paypal", etc.
+  paymentId     String?  // External payment ID
+  status        String   @default("pending") // "pending", "completed", "failed"
+  createdAt     DateTime @default(now())
+  chat          chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+
+  @@index([chatId])
+  @@index([status])
+}
+
+model blockedcontact {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "phone" | "email"
+  value     String   // the blocked phone or email
+  note      String?  // optional reason
+  createdAt DateTime @default(now())
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, type, value])
+  @@index([userId])
+}

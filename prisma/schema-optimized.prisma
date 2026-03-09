@@ -1,0 +1,260 @@
+// Schema otimizado seguindo melhores práticas
+// Baseado em: https://www.prisma.io/docs/orm/prisma-schema/data-model/indexes
+// e melhores práticas de design de banco de dados
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// MODELOS DE AUTENTICAÇÃO E USUÁRIOS
+// ============================================================================
+
+model User {
+  id            String    @id @default(cuid()) @db.VarChar(191)
+  name          String?   @db.VarChar(255)
+  email         String    @unique @db.VarChar(255)
+  emailVerified DateTime?
+  image         String?   @db.Text
+  role          String    @default("user") @db.VarChar(50)
+  isVerified    Boolean   @default(false)
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  lastLoginAt   DateTime?
+  
+  // Relacionamentos
+  accounts              Account[]
+  sessions              Session[]
+  listings              Listing[]
+  favorites             Favorite[]
+  verificationRequests  VerificationRequest[] @relation("UserToVerificationRequest")
+  creditBalance         CreditBalance?
+  transactions          Transaction[]         @relation("UserTransactions")
+  reviews               Review[]              @relation("UserReviews")
+  clientEscrows         Escrow[]              @relation("ClientEscrows")
+  providerEscrows       Escrow[]              @relation("ProviderEscrows")
+  escrowLogs            EscrowLog[]           @relation("EscrowLogs")
+  creditTransactions    CreditTransaction[]   @relation("CreditTransactions")
+  clientConversations   Conversation[]        @relation("ClientConversations")
+  providerConversations Conversation[]        @relation("ProviderConversations")
+  sentMessages          Message[]             @relation("SentMessages")
+  pushSubscription      PushSubscription?     @relation("UserPushSubscription")
+  notifications         Notification[]        @relation("UserNotifications")
+  campaigns             Campaign[]            @relation("UserCampaigns")
+  gamification          UserGamification?     @relation("UserGamification")
+  securityLogs          SecurityLog[]
+  reporterFraudReports  FraudReport[]         @relation("ReporterFraudReports")
+  reportedUserFraudReports FraudReport[]      @relation("ReportedUserFraudReports")
+  adminNotificationsCreated AdminNotification[] @relation("AdminNotificationsCreated")
+  userNotifications     UserNotification[]    @relation("UserNotifications")
+  
+  // Índices otimizados
+  @@index([email])
+  @@index([role])
+  @@index([isActive])
+  @@index([createdAt])
+  @@index([isVerified])
+}
+
+model Account {
+  id                String  @id @default(cuid()) @db.VarChar(191)
+  userId            String  @db.VarChar(191)
+  type              String  @db.VarChar(50)
+  provider          String  @db.VarChar(100)
+  providerAccountId String  @db.VarChar(255)
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String? @db.VarChar(100)
+  scope             String? @db.Text
+  id_token          String? @db.Text
+  session_state     String? @db.Text
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid()) @db.VarChar(191)
+  sessionToken String   @unique @db.VarChar(255)
+  userId       String   @db.VarChar(191)
+  expires      DateTime
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([expires])
+}
+
+model VerificationToken {
+  identifier String   @db.VarChar(255)
+  token      String   @unique @db.VarChar(255)
+  expires    DateTime
+  
+  @@unique([identifier, token])
+}
+
+// ============================================================================
+// MODELOS DE NEGÓCIO PRINCIPAIS
+// ============================================================================
+
+model Listing {
+  id              String    @id @default(cuid()) @db.VarChar(191)
+  title           String    @db.VarChar(255)
+  bodyType        String?   @db.VarChar(100)
+  ethnicity       String?   @db.VarChar(100)
+  serviceLocation String    @db.VarChar(255)
+  description     String?   @db.Text
+  phoneArea       String?   @db.VarChar(10)
+  phoneNumber     String?   @db.VarChar(20)
+  country         String    @default("United States") @db.VarChar(100)
+  state           String    @db.VarChar(100)
+  city            String    @db.VarChar(100)
+  neighborhood    String?   @db.VarChar(100)
+  websiteUrl      String?   @db.VarChar(500)
+  status          String    @default("Incomplete") @db.VarChar(50)
+  type            String?   @default("Standard Listing") @db.VarChar(100)
+  telegram        String?   @db.VarChar(100)
+  whatsapp        String?   @db.VarChar(100)
+  images          Json      @default("[]")
+  services        Json      @default("[]")
+  priceRange      String?   @db.VarChar(50)
+  hourlyRate      Int?
+  availability    Json      @default("[]")
+  age             Int?
+  isApproved      Boolean   @default(false)
+  isActive        Boolean   @default(true)
+  isFeatured      Boolean   @default(false)
+  isHighlighted   Boolean   @default(false)
+  averageRating   Float?    @default(0)
+  totalReviews    Int       @default(0)
+  userId          String    @db.VarChar(191)
+  added           DateTime  @default(now())
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  highlightEndDate DateTime?
+  featuredEndDate DateTime?
+  
+  // Relacionamentos
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  favorites     Favorite[]
+  reviews       Review[]
+  escrows       Escrow[]
+  conversations Conversation[]
+  fraudReports  FraudReport[]
+  
+  // Índices otimizados para performance
+  @@index([userId])
+  @@index([status])
+  @@index([isActive])
+  @@index([isApproved])
+  @@index([isFeatured])
+  @@index([isHighlighted])
+  @@index([city, state])
+  @@index([serviceLocation])
+  @@index([createdAt])
+  @@index([averageRating])
+  @@index([priceRange])
+}
+
+// ============================================================================
+// SISTEMA DE VERIFICAÇÃO OTIMIZADO
+// ============================================================================
+
+model VerificationRequest {
+  id              String   @id @default(cuid()) @db.VarChar(191)
+  userId          String   @db.VarChar(191)
+  documentPath    String   @db.VarChar(500)  // Caminho organizado: /uploads/verification/{userId}/{timestamp}/document.jpg
+  selfiePath      String   @db.VarChar(500)  // Caminho organizado: /uploads/verification/{userId}/{timestamp}/selfie.jpg
+  status          String   @default("pending") @db.VarChar(50)
+  rejectionReason String?  @db.Text
+  reviewedBy      String?  @db.VarChar(191)  // Admin que revisou
+  reviewedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  user User @relation("UserToVerificationRequest", fields: [userId], references: [id], onDelete: Cascade)
+  
+  // Índices para admin dashboard
+  @@index([status])
+  @@index([createdAt])
+  @@index([userId])
+}
+
+// ============================================================================
+// CONFIGURAÇÕES GLOBAIS OTIMIZADAS
+// ============================================================================
+
+model GlobalSettings {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique @db.VarChar(100)  // Chave específica ao invés de JSON genérico
+  value     String   @db.Text                   // Valor da configuração
+  type      String   @db.VarChar(50)           // string, number, boolean, json
+  category  String   @db.VarChar(100)          // verification, payments, notifications, etc.
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([category])
+  @@index([key])
+}
+
+// Configurações específicas para verificação
+model VerificationSettings {
+  id                    Int     @id @default(autoincrement())
+  requireManualApproval Boolean @default(true)
+  maxFileSize           Int     @default(5242880) // 5MB em bytes
+  allowedFileTypes      Json    @default("[\"jpg\", \"jpeg\", \"png\", \"pdf\"]")
+  documentRetentionDays Int     @default(365)
+  autoDeleteRejected    Boolean @default(false)
+  updatedAt             DateTime @updatedAt
+}
+
+// ============================================================================
+// OUTROS MODELOS MANTIDOS (simplificados para exemplo)
+// ============================================================================
+
+// Manter todos os outros modelos existentes com otimizações similares...
+// (CreditBalance, Transaction, Review, Escrow, etc.)
+// Por brevidade, não incluindo todos aqui, mas seguindo o mesmo padrão
+
+model CreditBalance {
+  id           String        @id @default(cuid()) @db.VarChar(191)
+  userId       String        @unique @db.VarChar(191)
+  balance      Decimal       @default(0.00) @db.Decimal(10, 2)  // Usar Decimal para dinheiro
+  lastUpdated  DateTime      @default(now()) @updatedAt
+  
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[] @relation("TransactionCreditBalance")
+  
+  @@index([balance])
+}
+
+model Transaction {
+  id            String        @id @default(cuid()) @db.VarChar(191)
+  userId        String        @db.VarChar(191)
+  amount        Decimal       @db.Decimal(10, 2)  // Usar Decimal para valores monetários
+  type          String        @db.VarChar(50)     // purchase, deduction, refund
+  status        String        @default("completed") @db.VarChar(50)
+  description   String?       @db.VarChar(500)
+  referenceId   String?       @db.VarChar(191)    // ID de referência (escrow, listing, etc.)
+  createdAt     DateTime      @default(now())
+  
+  user          User          @relation("UserTransactions", fields: [userId], references: [id], onDelete: Cascade)
+  creditBalance CreditBalance @relation("TransactionCreditBalance", fields: [userId], references: [userId], onDelete: Cascade)
+  
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// Continuar com outros modelos seguindo as mesmas práticas...
