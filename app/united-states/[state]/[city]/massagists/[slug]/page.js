@@ -9,6 +9,7 @@ import FavoriteButton from "@components/FavoriteButton";
 import dynamic from "next/dynamic";
 const PhotoModal = dynamic(() => import("../../../../../components/PhotoModal"), { ssr: false });
 import { getFirstListingImage } from "@/lib/image-utils";
+import { detectFacePosition } from "@/lib/face-focus";
 import ReviewForm from "@/components/ReviewForm";
 import ListingCard from "@/components/ListingCard";
 import MiniCard from "@/components/MiniCard";
@@ -283,13 +284,11 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                 className="relative aspect-[16/10] cursor-pointer group overflow-hidden"
                 onClick={() => { setModalImageIndex(selectedPhoto); setIsModalOpen(true); }}
               >
-                <Image
+                <img
                   src={imgSrc(images[selectedPhoto] ?? images[0])}
                   alt={listing.title}
-                  fill
-                  unoptimized
-                  priority={selectedPhoto === 0}
-                  className="object-cover object-[center_20%] transition-transform duration-500 group-hover:scale-[1.02]"
+                  className="absolute inset-0 w-full h-full object-cover object-[center_30%] transition-transform duration-500 group-hover:scale-[1.02]"
+                  onLoad={(e) => detectFacePosition(e.target)}
                 />
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />

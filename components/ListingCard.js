@@ -9,7 +9,7 @@ import FavoriteButton from "@/app/components/FavoriteButton";
 import AnonymousChat from "@/app/components/AnonymousChat";
 import { getFirstListingImage } from "@/lib/image-utils";
 import ImageLightbox from "@/components/ImageLightbox";
-import Image from "next/image";
+import { detectFacePosition } from "@/lib/face-focus";
 
 export default function ListingCard({ listing, state, city, isFavorited: initialIsFavorited, priority = false }) {
   const { data: session } = useSession();
@@ -62,14 +62,12 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
       {/* FOTO */}
       <Link href={href} className="relative block w-full h-96 overflow-hidden bg-surface-hover flex-shrink-0">
         {imageUrl ? (
-          <Image
+          <img
             src={imageUrl}
             alt={listing.title}
-            fill
-            unoptimized
-            priority={priority}
-            className="object-cover object-[center_20%] group-hover:scale-105 transition-transform duration-500"
-            onError={(e) => { e.currentTarget.style.display = "none"; }}
+            className="absolute inset-0 w-full h-full object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-500"
+            onLoad={(e) => detectFacePosition(e.target)}
+            onError={(e) => { e.target.style.display = "none"; }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-white/5">
