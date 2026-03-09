@@ -41,6 +41,7 @@ export default function CreditosPage() {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
+                action: 'adjust',
                 type: 'adjust_credits',
                 userId: addModal.id,
                 amount: op === 'remove' ? -Number(amount) : Number(amount)
