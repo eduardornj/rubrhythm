@@ -97,7 +97,13 @@ function AddListing() {
         setNeighborhood(listing.neighborhood || '');
         setWebsiteUrl(listing.websiteUrl || '');
         setRates(listing.rates?.length ? listing.rates : [{ duration: '1 hour', price: '' }]);
-        setSocialLinks(listing.socialLinks || { twitter: '', instagram: '', onlyfans: '', linktree: '' });
+        const rawSocial = listing.socialLinks || { twitter: '', instagram: '', onlyfans: '', linktree: '' };
+        setSocialLinks({
+          twitter: (rawSocial.twitter || '').replace(/^(https?:\/\/)?(www\.)?(x\.com|twitter\.com)\/?/i, ''),
+          instagram: (rawSocial.instagram || '').replace(/^(https?:\/\/)?(www\.)?instagram\.com\/?/i, ''),
+          onlyfans: (rawSocial.onlyfans || '').replace(/^(https?:\/\/)?(www\.)?onlyfans\.com\/?/i, ''),
+          linktree: (rawSocial.linktree || '').replace(/^(https?:\/\/)?(www\.)?linktr\.ee\/?/i, ''),
+        });
         setImages(listing.images || []);
       }
     } catch (error) {
@@ -161,9 +167,17 @@ function AddListing() {
         : firstPrice <= 400 ? '$300-400'
         : '$400+';
 
+      // Build full URLs from usernames for social links
+      const fullSocialLinks = {
+        twitter: socialLinks.twitter ? `https://x.com/${socialLinks.twitter.replace(/^\//, '')}` : '',
+        instagram: socialLinks.instagram ? `https://instagram.com/${socialLinks.instagram.replace(/^\//, '')}` : '',
+        onlyfans: socialLinks.onlyfans ? `https://onlyfans.com/${socialLinks.onlyfans.replace(/^\//, '')}` : '',
+        linktree: socialLinks.linktree ? `https://linktr.ee/${socialLinks.linktree.replace(/^\//, '')}` : '',
+      };
+
       const listingData = {
         id: generatedId || undefined,
-        title, bodyType, ethnicity, serviceLocation, priceRange: autoPriceRange, hourlyRate: autoHourlyRate, age, availability, description, phoneArea, phoneNumber, isWhatsAppAvailable, country, state, city, neighborhood, websiteUrl, rates, socialLinks, images
+        title, bodyType, ethnicity, serviceLocation, priceRange: autoPriceRange, hourlyRate: autoHourlyRate, age, availability, description, phoneArea, phoneNumber, isWhatsAppAvailable, country, state, city, neighborhood, websiteUrl, rates, socialLinks: fullSocialLinks, images
       };
 
       const url = listingId ? `/api/listing?id=${listingId}` : '/api/listing';
@@ -533,7 +547,10 @@ function AddListing() {
                       Twitter / X
                     </span>
                   </label>
-                  <input id="al-twitter" type="url" value={socialLinks.twitter} onChange={(e) => setSocialLinks(prev => ({ ...prev, twitter: e.target.value }))} className={InputStyle} placeholder="https://x.com/username" />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/40 text-sm font-medium">x.com/</span>
+                    <input id="al-twitter" type="text" value={socialLinks.twitter} onChange={(e) => setSocialLinks(prev => ({ ...prev, twitter: e.target.value.replace(/^(https?:\/\/)?(www\.)?(x\.com|twitter\.com)\/?/i, '') }))} className={`${InputStyle} rounded-l-none`} placeholder="username" />
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="al-instagram" className={LabelStyle}>
@@ -542,7 +559,10 @@ function AddListing() {
                       Instagram
                     </span>
                   </label>
-                  <input id="al-instagram" type="url" value={socialLinks.instagram} onChange={(e) => setSocialLinks(prev => ({ ...prev, instagram: e.target.value }))} className={InputStyle} placeholder="https://instagram.com/username" />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/40 text-sm font-medium">instagram.com/</span>
+                    <input id="al-instagram" type="text" value={socialLinks.instagram} onChange={(e) => setSocialLinks(prev => ({ ...prev, instagram: e.target.value.replace(/^(https?:\/\/)?(www\.)?instagram\.com\/?/i, '') }))} className={`${InputStyle} rounded-l-none`} placeholder="username" />
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="al-onlyfans" className={LabelStyle}>
@@ -551,7 +571,10 @@ function AddListing() {
                       OnlyFans
                     </span>
                   </label>
-                  <input id="al-onlyfans" type="url" value={socialLinks.onlyfans} onChange={(e) => setSocialLinks(prev => ({ ...prev, onlyfans: e.target.value }))} className={InputStyle} placeholder="https://onlyfans.com/username" />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/40 text-sm font-medium">onlyfans.com/</span>
+                    <input id="al-onlyfans" type="text" value={socialLinks.onlyfans} onChange={(e) => setSocialLinks(prev => ({ ...prev, onlyfans: e.target.value.replace(/^(https?:\/\/)?(www\.)?onlyfans\.com\/?/i, '') }))} className={`${InputStyle} rounded-l-none`} placeholder="username" />
+                  </div>
                 </div>
                 <div>
                   <label htmlFor="al-linktree" className={LabelStyle}>
@@ -560,7 +583,10 @@ function AddListing() {
                       Linktree
                     </span>
                   </label>
-                  <input id="al-linktree" type="url" value={socialLinks.linktree} onChange={(e) => setSocialLinks(prev => ({ ...prev, linktree: e.target.value }))} className={InputStyle} placeholder="https://linktr.ee/username" />
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/40 text-sm font-medium">linktr.ee/</span>
+                    <input id="al-linktree" type="text" value={socialLinks.linktree} onChange={(e) => setSocialLinks(prev => ({ ...prev, linktree: e.target.value.replace(/^(https?:\/\/)?(www\.)?linktr\.ee\/?/i, '') }))} className={`${InputStyle} rounded-l-none`} placeholder="username" />
+                  </div>
                 </div>
               </div>
             </div>
