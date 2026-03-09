@@ -39,9 +39,10 @@ export async function POST(request) {
       referrer = await prisma.user.findFirst({ where: { referralCode }, select: { id: true } });
     }
 
+    const newUserId = randomUUID();
     await prisma.user.create({
       data: {
-        id: randomUUID(),
+        id: newUserId,
         name,
         email,
         password: hashedPassword,
@@ -51,10 +52,21 @@ export async function POST(request) {
       },
     });
 
+    // Sync creditbalance for new user if they got referral bonus
     if (referrer) {
+      await prisma.creditbalance.create({
+        data: { id: `cb_${Date.now()}_new`, userId: newUserId, balance: 5 },
+      }).catch(() => {}); // ignore if already exists
+
       await prisma.user.update({
         where: { id: referrer.id },
         data: { credits: { increment: 10 } },
+      });
+
+      await prisma.creditbalance.upsert({
+        where: { userId: referrer.id },
+        update: { balance: { increment: 10 } },
+        create: { userId: referrer.id, balance: 10, id: `cb_${Date.now()}_ref` },
       });
 
       await prisma.notification.create({

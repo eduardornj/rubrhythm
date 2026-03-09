@@ -32,19 +32,24 @@ export async function POST(request) {
 
     // Deduz os créditos
     const newBalance = creditBalance.balance - cost;
-    await prisma.creditBalance.update({
-      where: { userId },
-      data: { balance: newBalance },
-    });
 
-    // Registra a transação
-    await prisma.transaction.create({
-      data: {
-        userId,
-        amount: -cost, // Negativo pra dedução
-        status: "completed",
-      },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { credits: { decrement: cost } },
+      }),
+      prisma.creditBalance.update({
+        where: { userId },
+        data: { balance: newBalance },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId,
+          amount: -cost,
+          status: "completed",
+        },
+      }),
+    ]);
 
     // Aplica a funcionalidade
     if (action === "listing-fee") {

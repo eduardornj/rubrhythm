@@ -41,20 +41,26 @@ export async function POST(request) {
     }
 
     // Adiciona os créditos ao saldo (1 USD = 1 crédito)
-    const newBalance = creditBalance.balance + parseFloat(amount);
-    await prisma.creditBalance.update({
-      where: { userId },
-      data: { balance: newBalance },
-    });
+    const parsedAmount = parseFloat(amount);
+    const newBalance = creditBalance.balance + parsedAmount;
 
-    // Registra a transação
-    await prisma.transaction.create({
-      data: {
-        userId,
-        amount: parseFloat(amount),
-        status: "completed",
-      },
-    });
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: userId },
+        data: { credits: { increment: parsedAmount } },
+      }),
+      prisma.creditBalance.update({
+        where: { userId },
+        data: { balance: newBalance },
+      }),
+      prisma.transaction.create({
+        data: {
+          userId,
+          amount: parsedAmount,
+          status: "completed",
+        },
+      }),
+    ]);
 
     return NextResponse.json({ message: "Credits purchased successfully", newBalance });
   } catch (error) {

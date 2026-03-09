@@ -156,6 +156,10 @@ export async function POST(request) {
 
                         // Process payment to provider
                         await prisma.$transaction([
+                            prisma.user.update({
+                                where: { id: escrow.providerId },
+                                data: { credits: { increment: escrow.amount } }
+                            }),
                             prisma.creditbalance.upsert({
                                 where: { userId: escrow.providerId },
                                 update: { balance: { increment: escrow.amount } },
@@ -178,6 +182,10 @@ export async function POST(request) {
 
                         // Refund to client
                         await prisma.$transaction([
+                            prisma.user.update({
+                                where: { id: escrow.clientId },
+                                data: { credits: { increment: escrow.amount } }
+                            }),
                             prisma.creditbalance.upsert({
                                 where: { userId: escrow.clientId },
                                 update: { balance: { increment: escrow.amount } },

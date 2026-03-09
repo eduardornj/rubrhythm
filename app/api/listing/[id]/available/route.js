@@ -125,6 +125,11 @@ export async function PATCH(request, { params }) {
         where: { id: session.user.id },
         data: { credits: { decrement: AVAILABLE_NOW_COST } },
       }),
+      prisma.creditbalance.upsert({
+        where: { userId: session.user.id },
+        update: { balance: { decrement: AVAILABLE_NOW_COST } },
+        create: { userId: session.user.id, balance: -AVAILABLE_NOW_COST, id: `cb_${Date.now()}` },
+      }),
       prisma.credittransaction.create({
         data: {
           id: randomUUID(),
