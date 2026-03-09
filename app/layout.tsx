@@ -30,16 +30,8 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'RubRhythm - Authentic Massage Directory',
     description: 'Find trusted body rubs and massage providers right in your city. Safe, verified and professional.',
-    url: 'https://rubrhythm.com',
+    url: 'https://rubrhythm.bubblesenterprise.com',
     siteName: 'RubRhythm',
-    images: [
-      {
-        url: 'https://rubrhythm.com/og-image.jpg',
-        width: 1200,
-        height: 630,
-        alt: 'RubRhythm Preview',
-      },
-    ],
     locale: 'en_US',
     type: 'website',
   },
@@ -47,7 +39,6 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     title: 'RubRhythm - Body Rubs & Massage Directory',
     description: 'Find trusted body rubs and massage providers right in your city.',
-    images: ['https://rubrhythm.com/twitter-image.jpg'],
   },
 };
 
