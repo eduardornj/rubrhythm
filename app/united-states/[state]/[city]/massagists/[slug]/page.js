@@ -281,7 +281,7 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
             <div className="glass-card p-0 overflow-hidden">
               {/* Main Image */}
               <div
-                className="relative aspect-[16/10] cursor-pointer group overflow-hidden"
+                className="relative aspect-[4/5] cursor-pointer group overflow-hidden"
                 onClick={() => { setModalImageIndex(selectedPhoto); setIsModalOpen(true); }}
               >
                 <img
