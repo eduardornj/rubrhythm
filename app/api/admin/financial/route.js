@@ -218,6 +218,10 @@ export async function POST(request) {
             if (!userId || !amount) throw new Error('userId e amount requeridos');
 
             await prisma.$transaction([
+                prisma.user.update({
+                    where: { id: userId },
+                    data: { credits: { increment: amount } }
+                }),
                 prisma.creditbalance.upsert({
                     where: { userId },
                     update: { balance: { increment: amount } },
