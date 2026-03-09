@@ -8,7 +8,10 @@ import BanCheck from "@/components/BanCheck";
 import MyAccountSidebar from "./components/MyAccountSidebar";
 import MyAccountHeader from "./components/MyAccountHeader";
 
-const fetcher = (url) => fetch(url).then(res => res.json());
+const fetcher = (url) => fetch(url).then(res => {
+  if (!res.ok) throw new Error('Failed to fetch');
+  return res.json();
+});
 
 export default function MyAccountLayout({ children }) {
   const { data: session, status } = useSession();
@@ -21,7 +24,7 @@ export default function MyAccountLayout({ children }) {
     { refreshInterval: 10000 }
   );
 
-  const userCredits = creditsData?.balance || 0;
+  const userCredits = creditsData?.balance ?? 0;
 
   if (status === "loading") {
     return (

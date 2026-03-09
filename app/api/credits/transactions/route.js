@@ -49,22 +49,23 @@ export async function GET(request) {
     ]);
 
     // Normalize type and compute running balance for display
-    const currentBalance = userBalance?.balance || 0;
+    const currentBalance = Number(userBalance?.balance || 0);
     let runningBalance = currentBalance;
 
     // Transactions are desc, so we compute backwards
     const txWithBalance = transactions.map(t => {
+      const amt = Number(t.amount);
       const entry = {
         id: t.id,
-        amount: t.amount,
+        amount: amt,
         // Normalize admin_add and any positive-amount type to 'purchase' for UI
-        type: t.amount > 0 ? 'purchase' : 'spent',
+        type: amt > 0 ? 'purchase' : 'spent',
         description: t.description,
         createdAt: t.createdAt,
         relatedId: t.relatedId,
         balanceAfter: runningBalance
       };
-      runningBalance -= t.amount; // walk backwards
+      runningBalance -= amt; // walk backwards
       return entry;
     });
 

@@ -85,8 +85,11 @@ export default function VerificationPage() {
     setError("");
 
     try {
+      if (!session?.user?.id) {
+        throw new Error("Session expired. Please log in again.");
+      }
       const formData = new FormData();
-      formData.append("userId", session.user.id);
+      formData.append("userId", String(session.user.id));
       formData.append("idDocument", facePhoto);
       formData.append("selfiePhoto", selfiePhoto);
 

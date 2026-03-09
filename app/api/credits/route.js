@@ -29,7 +29,7 @@ export async function GET(request) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const balance = user.credits ?? 0;
+    const balance = Number(user.credits ?? 0);
 
     // Keep creditbalance in sync (upsert) so the transactions table balanceAfter is also accurate
     await prisma.creditbalance.upsert({
