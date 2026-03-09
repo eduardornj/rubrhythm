@@ -1,12 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { PrismaClient } from "@prisma/client";
+import prisma from "@/lib/prisma";
 import sharp from "sharp";
 import fs from "fs/promises";
 import path from "path";
 import { STORAGE_PATHS, generateSecureFilename, ensureDirectoryExists } from "@/lib/storage-config";
-
-const prisma = new PrismaClient();
 
 export async function POST(request) {
   const session = await auth();
