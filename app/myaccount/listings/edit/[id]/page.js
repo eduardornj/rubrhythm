@@ -16,8 +16,6 @@ export default function EditListing() {
   const [bodyType, setBodyType] = useState('');
   const [ethnicity, setEthnicity] = useState('');
   const [serviceLocation, setServiceLocation] = useState('');
-  const [priceRange, setPriceRange] = useState('');
-  const [hourlyRate, setHourlyRate] = useState('');
   const [age, setAge] = useState('');
   const [availability, setAvailability] = useState('');
   const [description, setDescription] = useState('');
@@ -30,7 +28,7 @@ export default function EditListing() {
   const [neighborhood, setNeighborhood] = useState('');
   const [websiteUrl, setWebsiteUrl] = useState('');
   const [images, setImages] = useState([]);
-  const [rates, setRates] = useState([]);
+  const [rates, setRates] = useState([{ duration: '1 hour', price: '' }]);
   const [socialLinks, setSocialLinks] = useState({ twitter: '', instagram: '', onlyfans: '', linktree: '' });
   const [loading, setLoading] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -66,8 +64,6 @@ export default function EditListing() {
         setBodyType(listing.bodyType || '');
         setEthnicity(listing.ethnicity || '');
         setServiceLocation(listing.serviceLocation || '');
-        setPriceRange(listing.priceRange || '');
-        setHourlyRate(listing.hourlyRate || '');
         setAge(listing.age || '');
         setAvailability(listing.availability || '');
         setDescription(listing.description || '');
@@ -80,8 +76,15 @@ export default function EditListing() {
         setNeighborhood(listing.neighborhood || '');
         setWebsiteUrl(listing.websiteUrl || '');
         setImages(listing.images || []);
-        setRates(listing.rates || []);
-        setSocialLinks(listing.socialLinks || { twitter: '', instagram: '', onlyfans: '', linktree: '' });
+        setRates(listing.rates?.length ? listing.rates : [{ duration: '1 hour', price: '' }]);
+        // Strip full URLs to usernames for display in prefixed inputs
+        const rawSocial = listing.socialLinks || { twitter: '', instagram: '', onlyfans: '', linktree: '' };
+        setSocialLinks({
+          twitter: (rawSocial.twitter || '').replace(/^(https?:\/\/)?(www\.)?(x\.com|twitter\.com)\/?/i, ''),
+          instagram: (rawSocial.instagram || '').replace(/^(https?:\/\/)?(www\.)?instagram\.com\/?/i, ''),
+          onlyfans: (rawSocial.onlyfans || '').replace(/^(https?:\/\/)?(www\.)?onlyfans\.com\/?/i, ''),
+          linktree: (rawSocial.linktree || '').replace(/^(https?:\/\/)?(www\.)?linktr\.ee\/?/i, ''),
+        });
       }
     } catch (error) {
       console.error('Error fetching listing:', error);
@@ -92,7 +95,20 @@ export default function EditListing() {
   const bodyTypes = ['Slim', 'Athletic', 'Average', 'Curvy', 'BBW', 'Muscular', 'Petite', 'Tall'];
   const ethnicities = ['Latina', 'Brazilian', 'Mexican', 'Puerto Rican', 'Venezuelan', 'Colombian', 'Asian', 'Ebony/Black', 'Caucasian/White', 'Mixed/Exotic'];
   const serviceLocations = ['Incall', 'Outcall', 'Both'];
-  const priceRanges = ['$0-100', '$100-200', '$200-300', '$300-400', '$400+'];
+  const durationOptions = ['15min', '30min', '45min', '1 hour', '1.5 hours', '2 hours', '3 hours'];
+
+  const addRate = () => {
+    setRates(prev => [...prev, { duration: '1 hour', price: '' }]);
+  };
+
+  const removeRate = (index) => {
+    setRates(prev => prev.filter((_, i) => i !== index));
+  };
+
+  const updateRate = (index, field, value) => {
+    setRates(prev => prev.map((rate, i) => i === index ? { ...rate, [field]: value } : rate));
+  };
+
   const titleHasVerified = /\bverified\b/i.test(title);
 
   const handleSubmit = async (e) => {
@@ -114,9 +130,26 @@ export default function EditListing() {
         return;
       }
 
+      // Auto-derive hourlyRate and priceRange from Session Rates table
+      const firstPrice = Number(rates[0]?.price) || 0;
+      const autoHourlyRate = firstPrice || '';
+      const autoPriceRange = firstPrice <= 100 ? '$0-100'
+        : firstPrice <= 200 ? '$100-200'
+        : firstPrice <= 300 ? '$200-300'
+        : firstPrice <= 400 ? '$300-400'
+        : '$400+';
+
+      // Build full URLs from usernames for social links
+      const fullSocialLinks = {
+        twitter: socialLinks.twitter ? `https://x.com/${socialLinks.twitter.replace(/^\//, '')}` : '',
+        instagram: socialLinks.instagram ? `https://instagram.com/${socialLinks.instagram.replace(/^\//, '')}` : '',
+        onlyfans: socialLinks.onlyfans ? `https://onlyfans.com/${socialLinks.onlyfans.replace(/^\//, '')}` : '',
+        linktree: socialLinks.linktree ? `https://linktr.ee/${socialLinks.linktree.replace(/^\//, '')}` : '',
+      };
+
       const listingData = {
         id: listingId,
-        title, bodyType, ethnicity, serviceLocation, priceRange, hourlyRate, age, availability, description, phoneArea, phoneNumber, isWhatsAppAvailable, country, state, city, neighborhood, websiteUrl, images, rates, socialLinks, userId: session.user.id
+        title, bodyType, ethnicity, serviceLocation, priceRange: autoPriceRange, hourlyRate: autoHourlyRate, age, availability, description, phoneArea, phoneNumber, isWhatsAppAvailable, country, state, city, neighborhood, websiteUrl, images, rates, socialLinks: fullSocialLinks, userId: session.user.id
       };
 
       const response = await fetch(`/api/listing`, {
@@ -153,6 +186,10 @@ export default function EditListing() {
     try {
       const formData = new FormData();
       files.forEach(file => formData.append('images', file));
+
+      if (listingId) {
+        formData.append('listingId', listingId);
+      }
 
       const response = await fetch('/api/upload/images', {
         method: 'POST',
@@ -320,67 +357,71 @@ export default function EditListing() {
               </select>
             </div>
 
-            <div>
-              <label htmlFor="el-hourlyrate" className={LabelStyle}>Session Rate <span className="text-white/40 font-normal lowercase">(Optional)</span></label>
-              <input id="el-hourlyrate" type="number" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} className={InputStyle} placeholder="e.g., 200" />
-            </div>
-
-            <div>
-              <label htmlFor="el-pricerange" className={LabelStyle}>Price Category <span className="text-red-500">*</span></label>
-              <select id="el-pricerange" value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className={SelectStyle} required>
-                <option value="">Select Price Range</option>
-                {priceRanges.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
           </div>
         </div>
 
         {/* SESSION RATES */}
         <div className="bg-[#0d0d15] rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all">
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none group-hover:bg-yellow-500/10 transition-all" />
           <h2 className="text-xl font-black text-white mb-6 uppercase tracking-wider border-b border-white/10 pb-4 flex items-center gap-3">
-            <span className="w-8 h-8 rounded-full bg-green-500/20 text-green-400 flex items-center justify-center text-sm font-bold">3</span>
+            <span className="w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-sm font-bold">3</span>
             Session Rates
           </h2>
+
           <div className="space-y-3 relative z-10">
+            {/* Table Header */}
+            <div className="grid grid-cols-[1fr_1fr_auto] gap-4 px-2">
+              <span className={LabelStyle}>Duration</span>
+              <span className={LabelStyle}>Price (USD)</span>
+              <span className="w-10" />
+            </div>
+
+            {/* Rate Rows */}
             {rates.map((rate, index) => (
-              <div key={index} className="flex items-center gap-3">
-                <input
-                  type="text"
+              <div key={index} className="grid grid-cols-[1fr_1fr_auto] gap-4 items-center">
+                <select
+                  id={`el-rate-duration-${index}`}
+                  name={`rate-duration-${index}`}
                   value={rate.duration}
-                  onChange={(e) => {
-                    const updated = [...rates];
-                    updated[index] = { ...updated[index], duration: e.target.value };
-                    setRates(updated);
-                  }}
-                  className={InputStyle}
-                  placeholder="e.g., 30 min, 1 hour"
-                />
-                <input
-                  type="text"
-                  value={rate.price}
-                  onChange={(e) => {
-                    const updated = [...rates];
-                    updated[index] = { ...updated[index], price: e.target.value };
-                    setRates(updated);
-                  }}
-                  className={InputStyle}
-                  placeholder="e.g., $200"
-                />
+                  onChange={(e) => updateRate(index, 'duration', e.target.value)}
+                  className={SelectStyle}
+                >
+                  {durationOptions.map(d => (
+                    <option key={d} value={d}>{d}</option>
+                  ))}
+                </select>
+                <div className="relative">
+                  <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/40 font-bold text-sm">$</span>
+                  <input
+                    id={`el-rate-price-${index}`}
+                    name={`rate-price-${index}`}
+                    type="number"
+                    min="0"
+                    value={rate.price}
+                    onChange={(e) => updateRate(index, 'price', e.target.value)}
+                    className={`${InputStyle} pl-8`}
+                    placeholder="0"
+                  />
+                </div>
                 <button
                   type="button"
-                  onClick={() => setRates(rates.filter((_, i) => i !== index))}
-                  className="w-10 h-10 flex-shrink-0 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-all"
+                  onClick={() => removeRate(index)}
+                  disabled={rates.length === 1}
+                  className="w-10 h-10 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 flex items-center justify-center hover:bg-red-500/20 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
                 >
-                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 12H4" /></svg>
                 </button>
               </div>
             ))}
+
+            {/* Add Row Button */}
             <button
               type="button"
-              onClick={() => setRates([...rates, { duration: '', price: '' }])}
-              className="px-4 py-2 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl text-sm font-bold hover:bg-green-500/20 transition-all"
+              onClick={addRate}
+              className="flex items-center gap-2 px-5 py-3 mt-2 rounded-xl bg-white/5 border border-white/10 text-white/70 hover:bg-white/10 hover:text-white hover:border-white/20 transition-all text-sm font-bold uppercase tracking-wider"
             >
-              + Add Rate
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+              Add Rate
             </button>
           </div>
         </div>
@@ -440,25 +481,60 @@ export default function EditListing() {
               <input id="el-website" type="text" value={websiteUrl} onChange={(e) => setWebsiteUrl(e.target.value)} className={InputStyle} placeholder="www.yourwebsite.com" />
             </div>
 
-            {/* Social Links */}
-            <div className="md:col-span-2 space-y-4 pt-4 border-t border-white/10">
-              <p className="text-white/50 text-xs font-bold uppercase tracking-wider">Social Links</p>
+            {/* SOCIAL LINKS */}
+            <div className="md:col-span-2 border-t border-white/10 pt-6 mt-2">
+              <h3 className="text-sm font-black text-white/60 uppercase tracking-wider mb-4 flex items-center gap-2">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                Social Links
+              </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label htmlFor="el-twitter" className={LabelStyle}>Twitter / X</label>
-                  <input id="el-twitter" type="text" value={socialLinks.twitter} onChange={(e) => setSocialLinks({ ...socialLinks, twitter: e.target.value })} className={InputStyle} placeholder="@handle" />
+                  <label htmlFor="el-twitter" className={LabelStyle}>
+                    <span className="inline-flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                      Twitter / X
+                    </span>
+                  </label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/40 text-sm font-medium">x.com/</span>
+                    <input id="el-twitter" type="text" value={socialLinks.twitter} onChange={(e) => setSocialLinks(prev => ({ ...prev, twitter: e.target.value.replace(/^(https?:\/\/)?(www\.)?(x\.com|twitter\.com)\/?/i, '') }))} className={`${InputStyle} rounded-l-none`} placeholder="username" />
+                  </div>
                 </div>
                 <div>
-                  <label htmlFor="el-instagram" className={LabelStyle}>Instagram</label>
-                  <input id="el-instagram" type="text" value={socialLinks.instagram} onChange={(e) => setSocialLinks({ ...socialLinks, instagram: e.target.value })} className={InputStyle} placeholder="@handle" />
+                  <label htmlFor="el-instagram" className={LabelStyle}>
+                    <span className="inline-flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+                      Instagram
+                    </span>
+                  </label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/40 text-sm font-medium">instagram.com/</span>
+                    <input id="el-instagram" type="text" value={socialLinks.instagram} onChange={(e) => setSocialLinks(prev => ({ ...prev, instagram: e.target.value.replace(/^(https?:\/\/)?(www\.)?instagram\.com\/?/i, '') }))} className={`${InputStyle} rounded-l-none`} placeholder="username" />
+                  </div>
                 </div>
                 <div>
-                  <label htmlFor="el-onlyfans" className={LabelStyle}>OnlyFans</label>
-                  <input id="el-onlyfans" type="text" value={socialLinks.onlyfans} onChange={(e) => setSocialLinks({ ...socialLinks, onlyfans: e.target.value })} className={InputStyle} placeholder="username" />
+                  <label htmlFor="el-onlyfans" className={LabelStyle}>
+                    <span className="inline-flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.373 0 0 5.373 0 12c0 6.627 5.373 12 12 12s12-5.373 12-12C24 5.373 18.627 0 12 0zm0 4.5c1.657 0 3 1.567 3 3.5 0 .766-.278 1.467-.736 2.02C15.36 11.076 16.5 12.708 16.5 14.625c0 2.485-2.015 4.5-4.5 4.5s-4.5-2.015-4.5-4.5c0-1.917 1.14-3.549 2.236-4.605A3.489 3.489 0 019 8c0-1.933 1.343-3.5 3-3.5z"/></svg>
+                      OnlyFans
+                    </span>
+                  </label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/40 text-sm font-medium">onlyfans.com/</span>
+                    <input id="el-onlyfans" type="text" value={socialLinks.onlyfans} onChange={(e) => setSocialLinks(prev => ({ ...prev, onlyfans: e.target.value.replace(/^(https?:\/\/)?(www\.)?onlyfans\.com\/?/i, '') }))} className={`${InputStyle} rounded-l-none`} placeholder="username" />
+                  </div>
                 </div>
                 <div>
-                  <label htmlFor="el-linktree" className={LabelStyle}>Linktree</label>
-                  <input id="el-linktree" type="text" value={socialLinks.linktree} onChange={(e) => setSocialLinks({ ...socialLinks, linktree: e.target.value })} className={InputStyle} placeholder="username" />
+                  <label htmlFor="el-linktree" className={LabelStyle}>
+                    <span className="inline-flex items-center gap-1.5">
+                      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M7.953 15.066c-.08.163-.08.324-.08.486.08 1.461.962 2.678 2.246 3.245a3.263 3.263 0 01-1.445.405c-.324 0-.567-.08-.891-.08.891 2.76 3.458 4.79 6.432 4.87-2.327 1.86-5.302 2.922-8.44 2.922-.567 0-1.053-.08-1.54-.162C7.14 28.834 10.6 30 14.302 30c10.2 0 15.826-8.603 15.826-16.072 0-.243 0-.486-.08-.729a11.3 11.3 0 002.836-2.922c-.972.486-2.085.81-3.218.891a5.698 5.698 0 002.489-3.164 10.56 10.56 0 01-3.539 1.375A5.559 5.559 0 0024.553 7.5c-3.137 0-5.626 2.597-5.626 5.74 0 .405.08.891.162 1.296-4.656-.243-8.843-2.516-11.61-5.982-.487.891-.73 1.862-.73 2.922 0 1.942.972 3.723 2.489 4.776-.891-.08-1.783-.243-2.489-.648v.08c0 2.76 1.944 5.09 4.514 5.576a5.277 5.277 0 01-1.458.162c-.406 0-.73 0-1.134-.08.81 2.435 3.055 4.216 5.786 4.297-2.085 1.7-4.757 2.678-7.634 2.678-.486 0-.972-.08-1.458-.08 2.73 1.78 5.948 2.76 9.407 2.76M7.5 2.25A3.75 3.75 0 1011.25 6 3.75 3.75 0 007.5 2.25zm0 6A2.25 2.25 0 119.75 6 2.25 2.25 0 017.5 8.25zm9 6A3.75 3.75 0 1020.25 18 3.75 3.75 0 0016.5 14.25zm0 6A2.25 2.25 0 1118.75 18a2.25 2.25 0 01-2.25 2.25z" /><path d="M19.5 2.25h-15A2.25 2.25 0 002.25 4.5v15a2.25 2.25 0 002.25 2.25h15a2.25 2.25 0 002.25-2.25v-15a2.25 2.25 0 00-2.25-2.25zm-9 15.75L6 13.5l1.5-1.5 3 3 6-6 1.5 1.5z"/></svg>
+                      Linktree
+                    </span>
+                  </label>
+                  <div className="flex">
+                    <span className="inline-flex items-center px-3 bg-white/5 border border-r-0 border-white/10 rounded-l-xl text-white/40 text-sm font-medium">linktr.ee/</span>
+                    <input id="el-linktree" type="text" value={socialLinks.linktree} onChange={(e) => setSocialLinks(prev => ({ ...prev, linktree: e.target.value.replace(/^(https?:\/\/)?(www\.)?linktr\.ee\/?/i, '') }))} className={`${InputStyle} rounded-l-none`} placeholder="username" />
+                  </div>
                 </div>
               </div>
             </div>

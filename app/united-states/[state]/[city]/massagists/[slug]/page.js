@@ -428,16 +428,45 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                 <StatPill icon="🌐" label="From" value={listing.country} />
               </div>
 
-              {/* Price */}
-              {(listing.priceRange || listing.hourlyRate) && (
-                <div className="flex items-center gap-3 bg-primary/10 border border-primary/20 rounded-xl px-4 py-2.5 mb-4">
-                  <span className="text-lg">💰</span>
-                  <div>
-                    {listing.priceRange && <p className="text-white font-semibold text-sm">{listing.priceRange}</p>}
-                    {listing.hourlyRate && <p className="text-primary text-xs">${listing.hourlyRate}/hour</p>}
+              {/* Session Rates + Price — prominent display */}
+              {(() => {
+                const rates = typeof listing.rates === 'string' ? (() => { try { return JSON.parse(listing.rates); } catch { return null; } })() : listing.rates;
+                const hasRates = rates && Array.isArray(rates) && rates.length > 0;
+                const hasPrice = listing.priceRange || listing.hourlyRate;
+                if (!hasRates && !hasPrice) return null;
+                return (
+                  <div className="bg-gradient-to-r from-purple-600/20 via-primary/15 to-purple-600/20 border border-purple-500/30 rounded-xl p-4 mb-4">
+                    <div className="flex items-center gap-2 mb-3">
+                      <div className="w-8 h-8 bg-purple-500/20 rounded-lg flex items-center justify-center">
+                        <svg className="w-4.5 h-4.5 text-purple-400" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-white font-bold text-sm uppercase tracking-wide">Session Rates</h3>
+                      {hasPrice && (
+                        <span className="ml-auto text-xs font-bold text-purple-300 bg-purple-500/20 px-2.5 py-1 rounded-full">
+                          {listing.hourlyRate ? `About $${listing.hourlyRate}` : listing.priceRange}
+                        </span>
+                      )}
+                    </div>
+                    {hasRates ? (
+                      <div className="space-y-1.5">
+                        {rates.map((rate, i) => (
+                          <div key={i} className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2.5">
+                            <span className="text-white/80 text-sm font-medium">{rate.duration || rate.label || rate.name}</span>
+                            <span className="text-white font-bold text-sm">${rate.price || rate.amount || rate.rate}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : hasPrice && (
+                      <div className="flex items-center justify-between bg-white/5 rounded-lg px-3 py-2.5">
+                        <span className="text-white/80 text-sm font-medium">Hourly Rate</span>
+                        <span className="text-white font-bold text-sm">${listing.hourlyRate}/hr</span>
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               {/* Availability */}
               {Array.isArray(listing.availability) && listing.availability.length > 0 && (
@@ -460,27 +489,6 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
               )}
             </div>
 
-            {/* ── SESSION RATES ────────────────────────────────────── */}
-            {(() => {
-              const rates = typeof listing.rates === 'string' ? (() => { try { return JSON.parse(listing.rates); } catch { return null; } })() : listing.rates;
-              if (!rates || !Array.isArray(rates) || rates.length === 0) return null;
-              return (
-                <div className="glass-card p-5">
-                  <div className="flex items-center gap-2 mb-4">
-                    <div className="w-1 h-5 bg-primary rounded-full" />
-                    <h2 className="text-white font-bold text-base">Session Rates</h2>
-                  </div>
-                  <div className="divide-y divide-white/8">
-                    {rates.map((rate, i) => (
-                      <div key={i} className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
-                        <span className="text-white/80 text-sm">{rate.duration || rate.label || rate.name}</span>
-                        <span className="text-white font-semibold text-sm">${rate.price || rate.amount || rate.rate}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              );
-            })()}
 
             {/* ── SERVICES ─────────────────────────────────────────── */}
             {services.length > 0 && (
