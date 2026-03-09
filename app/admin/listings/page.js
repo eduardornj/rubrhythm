@@ -323,12 +323,12 @@ export default function AnunciosPage() {
             {/* Listings Table */}
             <div className="bg-white/[0.015] border border-white/6 rounded-2xl overflow-hidden">
                 {/* Table Header */}
-                <div className="hidden sm:grid grid-cols-[56px_1fr_140px_100px_80px] gap-2 px-4 py-3 border-b border-white/6 bg-white/[0.02]">
+                <div className="hidden sm:grid grid-cols-[56px_1fr_140px_100px_100px] gap-2 px-4 py-3 border-b border-white/6 bg-white/[0.02]">
                     <span></span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Anuncio</span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Provider</span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Status</span>
-                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider text-right">Promo</span>
+                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider text-right">Ações</span>
                 </div>
 
                 {/* Rows */}
@@ -354,7 +354,7 @@ export default function AnunciosPage() {
                         <div key={l.id} className={`border-b border-white/4 transition-all ${isExpanded ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"}`}>
                             {/* Main Row */}
                             <div
-                                className="grid grid-cols-[56px_1fr_140px_100px_80px] gap-2 px-4 py-3 cursor-pointer items-center"
+                                className="grid grid-cols-[56px_1fr_140px_100px_100px] gap-2 px-4 py-3 cursor-pointer items-center"
                                 onClick={() => setExpandedId(isExpanded ? null : l.id)}
                             >
                                 {/* Thumbnail */}
@@ -394,15 +394,24 @@ export default function AnunciosPage() {
                                     </span>
                                 </div>
 
-                                {/* Promo Count */}
-                                <div className="text-right">
-                                    {promoCount > 0 ? (
+                                {/* Promo Count + Preview */}
+                                <div className="text-right flex items-center justify-end gap-2">
+                                    {promoCount > 0 && (
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
-                                            {promoCount} ativa{promoCount > 1 ? "s" : ""}
+                                            {promoCount}
                                         </span>
-                                    ) : (
-                                        <span className="text-white/15 text-[10px]">—</span>
                                     )}
+                                    <Link
+                                        href={`/united-states/${l.state?.toLowerCase().replace(/\s+/g, "-")}/${l.city?.toLowerCase().replace(/\s+/g, "-")}/massagists/${l.slug || l.id}`}
+                                        target="_blank"
+                                        onClick={e => e.stopPropagation()}
+                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-white/8 text-white/30 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+                                        title="Ver anúncio no site"
+                                    >
+                                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                        </svg>
+                                    </Link>
                                 </div>
                             </div>
 
