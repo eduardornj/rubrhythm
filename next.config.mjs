@@ -2,13 +2,6 @@ import path from 'path';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  turbopack: {
-    resolveAlias: {
-      '@components': path.resolve('./components'),
-      '@app-components': path.resolve('./app/components'),
-      '@lib': path.resolve('./lib'),
-    },
-  },
   webpack: (config) => {
     config.resolve.alias = {
       ...config.resolve.alias,
