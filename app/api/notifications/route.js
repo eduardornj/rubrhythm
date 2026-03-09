@@ -70,6 +70,7 @@ export async function POST(request) {
 
     const notification = await prisma.notification.create({
       data: {
+        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId: session.user.id,
         title,
         body,

@@ -173,6 +173,7 @@ export async function PATCH(request) {
             if (notif) {
                 await prisma.notification.create({
                     data: {
+                        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                         userId: updatedListing.userId,
                         title: notif.title,
                         body: notif.body,

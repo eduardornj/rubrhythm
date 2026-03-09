@@ -59,6 +59,7 @@ export async function POST(request) {
     // Log notification in database
     await prisma.notification.create({
       data: {
+        id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         userId,
         title,
         body,
@@ -143,6 +144,7 @@ export async function PUT(request) {
       subscriptions.map(subscription =>
         prisma.notification.create({
           data: {
+            id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             userId: subscription.userId,
             title,
             body,

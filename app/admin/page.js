@@ -23,10 +23,10 @@ async function getDashboardData() {
         }
         const baseUrl = `${protocol}://${host}`;
 
+        const cookie = reqHeaders.get("cookie") || "";
         const res = await fetch(`${baseUrl}/api/admin/system`, {
             method: "GET",
-            // Important to forward headers (the cookie for session auth) since this is an internal fetch
-            headers: reqHeaders,
+            headers: { cookie },
             cache: "no-store",
         });
 

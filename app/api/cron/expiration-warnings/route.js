@@ -111,6 +111,7 @@ export async function POST(request) {
 
         await prisma.notification.create({
           data: {
+            id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             userId: listing.userId,
             title: `${warning.featureType} Expiring Soon`,
             body: `Your ${warning.featureType.toLowerCase()} on "${listing.title}" expires on ${dateStr}. Renew now to keep your visibility.`,

@@ -90,6 +90,7 @@ export async function POST(request) {
             // 4. In-app notification
             await tx.notification.create({
                 data: {
+                    id: `notif_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
                     userId,
                     title: "⚡ Pagamento Bitcoin Confirmado!",
                     body: `Seu pagamento foi confirmado! ${credits} créditos foram adicionados à sua conta RubRhythm.`,
