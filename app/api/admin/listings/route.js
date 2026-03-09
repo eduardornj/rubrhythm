@@ -28,6 +28,7 @@ export async function GET(request) {
         if (search) where.OR = [
             { title: { contains: search } },
             { city: { contains: search } },
+            { user: { name: { contains: search } } },
         ];
 
         const [listings, total] = await Promise.all([

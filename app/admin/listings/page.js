@@ -50,6 +50,24 @@ function formatDate(d) {
     return new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "short", year: "2-digit" });
 }
 
+function formatCompactDate(d) {
+    if (!d) return "—";
+    return new Date(d).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
+function countImages(images) {
+    try {
+        const arr = typeof images === "string" ? JSON.parse(images) : images;
+        return arr?.length || 0;
+    } catch { return 0; }
+}
+
+function formatPrice(listing) {
+    if (listing.hourlyRate) return `R$${listing.hourlyRate}/h`;
+    if (listing.priceRange) return listing.priceRange;
+    return "—";
+}
+
 // ─── Expandable listing detail row ─────────────────────────────────────────────
 function ListingDetail({ listing, onAction, onDelete, actionLoading }) {
     const s = getStatus(listing);
@@ -328,7 +346,7 @@ function AnunciosPage() {
                     name="search"
                     value={search}
                     onChange={e => { setSearch(e.target.value); setPage(1); }}
-                    placeholder="Buscar por titulo ou cidade..."
+                    placeholder="Buscar por titulo, cidade ou provider..."
                     className="flex-1 min-w-48 bg-white/[0.03] border border-white/8 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/25 focus:outline-none focus:border-white/20 transition-all"
                 />
                 {[
@@ -353,12 +371,15 @@ function AnunciosPage() {
             {/* Listings Table */}
             <div className="bg-white/[0.015] border border-white/6 rounded-2xl overflow-hidden">
                 {/* Table Header */}
-                <div className="hidden sm:grid grid-cols-[56px_1fr_140px_100px_100px] gap-2 px-4 py-3 border-b border-white/6 bg-white/[0.02]">
+                <div className="hidden lg:grid grid-cols-[56px_1fr_140px_90px_60px_80px_100px_120px] gap-2 px-4 py-3 border-b border-white/6 bg-white/[0.02]">
                     <span></span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Anuncio</span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Provider</span>
+                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Preco</span>
+                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider text-center">Fotos</span>
+                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Criado</span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Status</span>
-                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider text-right">Ações</span>
+                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider text-right">Acoes</span>
                 </div>
 
                 {/* Rows */}
@@ -380,11 +401,15 @@ function AnunciosPage() {
                     const isAvailableNow = l.availableNow && l.availableUntil && new Date(l.availableUntil) > new Date();
                     const promoCount = [isAvailableNow, isHighlightActive, isFeaturedActive].filter(Boolean).length;
 
+                    const imgCount = countImages(l.images);
+                    const price = formatPrice(l);
+                    const quickBusy = (act) => actionLoading === l.id + act;
+
                     return (
                         <div key={l.id} className={`border-b border-white/4 transition-all ${isExpanded ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"}`}>
-                            {/* Main Row */}
+                            {/* Main Row — Desktop */}
                             <div
-                                className="grid grid-cols-[56px_1fr_140px_100px_100px] gap-2 px-4 py-3 cursor-pointer items-center"
+                                className="hidden lg:grid grid-cols-[56px_1fr_140px_90px_60px_80px_100px_120px] gap-2 px-4 py-3 cursor-pointer items-center"
                                 onClick={() => setExpandedId(isExpanded ? null : l.id)}
                             >
                                 {/* Thumbnail */}
@@ -416,6 +441,23 @@ function AnunciosPage() {
                                     </p>
                                 </div>
 
+                                {/* Price */}
+                                <div className="min-w-0">
+                                    <p className="text-white/50 text-xs font-medium truncate">{price}</p>
+                                </div>
+
+                                {/* Image Count */}
+                                <div className="text-center">
+                                    <span className={`text-xs font-medium ${imgCount === 0 ? "text-red-400/60" : "text-white/40"}`}>
+                                        {imgCount}
+                                    </span>
+                                </div>
+
+                                {/* Created Date */}
+                                <div>
+                                    <p className="text-white/35 text-[11px] font-medium">{formatCompactDate(l.createdAt)}</p>
+                                </div>
+
                                 {/* Status Badge */}
                                 <div>
                                     <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold px-2.5 py-1 rounded-full border ${cfg.bg} ${cfg.border} ${cfg.text}`}>
@@ -424,8 +466,32 @@ function AnunciosPage() {
                                     </span>
                                 </div>
 
-                                {/* Promo Count + Preview */}
-                                <div className="text-right flex items-center justify-end gap-2">
+                                {/* Quick Actions */}
+                                <div className="text-right flex items-center justify-end gap-1.5">
+                                    {s === "pending" && (
+                                        <>
+                                            <button
+                                                onClick={e => { e.stopPropagation(); doAction(l.id, "approve"); }}
+                                                disabled={quickBusy("approve")}
+                                                className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-green-500/25 text-green-400 hover:bg-green-500/15 transition-all disabled:opacity-40"
+                                                title="Aprovar"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                                </svg>
+                                            </button>
+                                            <button
+                                                onClick={e => { e.stopPropagation(); doAction(l.id, "reject"); }}
+                                                disabled={quickBusy("reject")}
+                                                className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-red-500/25 text-red-400 hover:bg-red-500/15 transition-all disabled:opacity-40"
+                                                title="Rejeitar"
+                                            >
+                                                <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                                                </svg>
+                                            </button>
+                                        </>
+                                    )}
                                     {promoCount > 0 && (
                                         <span className="inline-flex items-center gap-1 text-[10px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
                                             {promoCount}
@@ -435,13 +501,74 @@ function AnunciosPage() {
                                         href={`/united-states/${l.state?.toLowerCase().replace(/\s+/g, "-")}/${l.city?.toLowerCase().replace(/\s+/g, "-")}/massagists/${l.slug || l.id}`}
                                         target="_blank"
                                         onClick={e => e.stopPropagation()}
-                                        className="inline-flex items-center justify-center w-8 h-8 rounded-lg border border-white/8 text-white/30 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
-                                        title="Ver anúncio no site"
+                                        className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-white/8 text-white/30 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"
+                                        title="Ver no site"
                                     >
                                         <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
                                             <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 6H5.25A2.25 2.25 0 003 8.25v10.5A2.25 2.25 0 005.25 21h10.5A2.25 2.25 0 0018 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
                                         </svg>
                                     </Link>
+                                </div>
+                            </div>
+
+                            {/* Main Row — Mobile/Tablet */}
+                            <div
+                                className="lg:hidden flex items-start gap-3 px-4 py-3 cursor-pointer"
+                                onClick={() => setExpandedId(isExpanded ? null : l.id)}
+                            >
+                                {/* Thumbnail */}
+                                <div className="relative w-11 h-11 shrink-0">
+                                    <Image
+                                        src={imgSrc(l.images)}
+                                        alt={l.title}
+                                        fill
+                                        unoptimized
+                                        className="object-cover rounded-xl"
+                                        onError={e => { e.currentTarget.src = "/placeholder-provider.svg"; }}
+                                    />
+                                    {s === "pending" && (
+                                        <div className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-yellow-400 border-2 border-[#0a0a0a] animate-pulse" />
+                                    )}
+                                </div>
+
+                                {/* Content */}
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center justify-between gap-2">
+                                        <p className="text-white text-sm font-semibold truncate">{l.title}</p>
+                                        <span className={`shrink-0 inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border ${cfg.bg} ${cfg.border} ${cfg.text}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`}></span>
+                                            {cfg.label}
+                                        </span>
+                                    </div>
+                                    <p className="text-white/30 text-[11px] truncate">{l.city}, {l.state}</p>
+                                    <div className="flex items-center gap-3 mt-1.5 text-[11px] text-white/35">
+                                        <span className="flex items-center gap-1">
+                                            <span className="text-white/50 font-medium">{l.user?.name || "—"}</span>
+                                            {l.user?.verified && <span className="text-blue-400 text-[10px]">&#10003;</span>}
+                                        </span>
+                                        <span>{price}</span>
+                                        <span>{imgCount} fotos</span>
+                                        <span>{formatCompactDate(l.createdAt)}</span>
+                                    </div>
+                                    {/* Quick actions for pending — mobile */}
+                                    {s === "pending" && (
+                                        <div className="flex items-center gap-2 mt-2">
+                                            <button
+                                                onClick={e => { e.stopPropagation(); doAction(l.id, "approve"); }}
+                                                disabled={quickBusy("approve")}
+                                                className="px-3 py-1 rounded-lg text-[11px] font-semibold border border-green-500/25 text-green-400 hover:bg-green-500/15 transition-all disabled:opacity-40"
+                                            >
+                                                {quickBusy("approve") ? "..." : "Aprovar"}
+                                            </button>
+                                            <button
+                                                onClick={e => { e.stopPropagation(); doAction(l.id, "reject"); }}
+                                                disabled={quickBusy("reject")}
+                                                className="px-3 py-1 rounded-lg text-[11px] font-semibold border border-red-500/25 text-red-400 hover:bg-red-500/15 transition-all disabled:opacity-40"
+                                            >
+                                                {quickBusy("reject") ? "..." : "Rejeitar"}
+                                            </button>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
