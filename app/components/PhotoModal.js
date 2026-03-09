@@ -183,7 +183,7 @@ const PhotoModal = ({ images, isOpen, onClose, initialIndex = 0, listingTitle })
 
       {/* Thumbnails — hidden on mobile to avoid "double photo" appearance */}
       {processedImages.length > 1 && (
-        <div className="photo-modal-thumbs hidden sm:block">
+        <div className="photo-modal-thumbs">
           <Swiper
             onSwiper={setThumbsSwiper}
             modules={[FreeMode, Navigation, Thumbs]}
@@ -446,6 +446,10 @@ const PhotoModal = ({ images, isOpen, onClose, initialIndex = 0, listingTitle })
 
         /* Responsividade */
         @media (max-width: 768px) {
+          .photo-modal-thumbs {
+            display: none;
+          }
+
           .photo-modal-header {
             padding: 16px 20px;
           }
