@@ -289,7 +289,7 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                   fill
                   unoptimized
                   priority={selectedPhoto === 0}
-                  className="object-cover object-top transition-transform duration-500 group-hover:scale-[1.02]"
+                  className="object-cover object-[center_20%] transition-transform duration-500 group-hover:scale-[1.02]"
                 />
                 {/* Gradient overlay */}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />

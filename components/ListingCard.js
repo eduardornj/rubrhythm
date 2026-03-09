@@ -8,12 +8,14 @@ import useFilterStore from "@/store/useFilterStore";
 import FavoriteButton from "@/app/components/FavoriteButton";
 import AnonymousChat from "@/app/components/AnonymousChat";
 import { getFirstListingImage } from "@/lib/image-utils";
+import ImageLightbox from "@/components/ImageLightbox";
 import Image from "next/image";
 
 export default function ListingCard({ listing, state, city, isFavorited: initialIsFavorited, priority = false }) {
   const { data: session } = useSession();
   const { onlyVerified } = useFilterStore();
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
   if (onlyVerified && !listing.user?.verified) return null;
 
@@ -66,7 +68,7 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
             fill
             unoptimized
             priority={priority}
-            className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
+            className="object-cover object-[center_20%] group-hover:scale-105 transition-transform duration-500"
             onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         ) : (
@@ -78,6 +80,19 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
         )}
         {/* Gradient */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+
+        {/* Expand photo button */}
+        {imageUrl && (
+          <button
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsLightboxOpen(true); }}
+            className="absolute bottom-3 right-3 z-20 w-8 h-8 flex items-center justify-center rounded-lg bg-black/50 border border-white/20 text-white/70 hover:text-white hover:bg-black/70 transition-all opacity-0 group-hover:opacity-100"
+            title="View full photo"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7" />
+            </svg>
+          </button>
+        )}
 
         {/* ── PREMIUM BANNER — full-width animated, imposing ── */}
         {isFeaturedValid && isPremium && (
@@ -201,6 +216,13 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
         onClose={() => setIsChatOpen(false)}
         listing={listing}
         providerId={listing.userId}
+      />
+
+      <ImageLightbox
+        src={imageUrl}
+        alt={listing.title}
+        isOpen={isLightboxOpen}
+        onClose={() => setIsLightboxOpen(false)}
       />
     </div>
   );

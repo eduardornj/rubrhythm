@@ -354,7 +354,7 @@ export default function MyListings() {
                       <img
                         src={imageUrl}
                         alt={listing.title || 'Listing image'}
-                        className="absolute inset-0 w-full h-full object-cover object-top group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700 ease-out"
+                        className="absolute inset-0 w-full h-full object-cover object-[center_20%] group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700 ease-out"
                         onError={(e) => {
                           e.target.style.display = 'none';
                         }}
