@@ -32,7 +32,7 @@ export default function MiniCard({ listing, state, city }) {
       className={`group glass-card p-0 overflow-hidden transition-all duration-300 block border ${cardBorder}`}
     >
       <div className="relative w-full h-full aspect-[3/4] overflow-hidden">
-        <Image src={img ? imgSrc(img) : PLACEHOLDER} alt={listing.title} fill unoptimized className="object-cover group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.src = PLACEHOLDER; }} />
+        <Image src={img ? imgSrc(img) : PLACEHOLDER} alt={listing.title} fill unoptimized className="object-cover object-top group-hover:scale-105 transition-transform duration-500" onError={(e) => { e.currentTarget.src = PLACEHOLDER; }} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
         {/* Available Now badge */}

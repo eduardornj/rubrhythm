@@ -58,7 +58,7 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
     <div className={`glass-card p-0 relative group flex flex-col h-full overflow-hidden rounded-2xl border ${cardBorder} transition-all duration-300`}>
 
       {/* FOTO */}
-      <Link href={href} className="relative block w-full h-80 overflow-hidden bg-surface-hover flex-shrink-0">
+      <Link href={href} className="relative block w-full h-96 overflow-hidden bg-surface-hover flex-shrink-0">
         {imageUrl ? (
           <Image
             src={imageUrl}
@@ -66,7 +66,7 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
             fill
             unoptimized
             priority={priority}
-            className="object-cover group-hover:scale-105 transition-transform duration-500"
+            className="object-cover object-top group-hover:scale-105 transition-transform duration-500"
             onError={(e) => { e.currentTarget.style.display = "none"; }}
           />
         ) : (
