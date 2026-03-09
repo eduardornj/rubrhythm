@@ -60,7 +60,7 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
     <div className={`glass-card p-0 relative group flex flex-col h-full overflow-hidden rounded-2xl border ${cardBorder} transition-all duration-300`}>
 
       {/* FOTO */}
-      <Link href={href} className="relative block w-full h-[28rem] overflow-hidden bg-surface-hover flex-shrink-0">
+      <Link href={href} className="relative block w-full h-[32rem] overflow-hidden bg-surface-hover flex-shrink-0">
         {imageUrl ? (
           <img
             src={imageUrl}

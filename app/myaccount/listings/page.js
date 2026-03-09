@@ -349,7 +349,7 @@ export default function MyListings() {
                 <div className="flex flex-col sm:flex-row h-full relative z-10">
 
                   {/* Image Area */}
-                  <div className="w-full sm:w-64 h-64 sm:h-full flex-shrink-0 relative overflow-hidden bg-black/50 border-r border-white/5">
+                  <div className="w-full sm:w-56 h-56 sm:h-full flex-shrink-0 relative overflow-hidden bg-black/50 border-r border-white/5">
                     {imageUrl ? (
                       <img
                         src={imageUrl}
