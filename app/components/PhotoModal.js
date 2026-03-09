@@ -181,9 +181,9 @@ const PhotoModal = ({ images, isOpen, onClose, initialIndex = 0, listingTitle })
         </button>
       </div>
 
-      {/* Thumbnails */}
+      {/* Thumbnails — hidden on mobile to avoid "double photo" appearance */}
       {processedImages.length > 1 && (
-        <div className="photo-modal-thumbs">
+        <div className="photo-modal-thumbs hidden sm:block">
           <Swiper
             onSwiper={setThumbsSwiper}
             modules={[FreeMode, Navigation, Thumbs]}
