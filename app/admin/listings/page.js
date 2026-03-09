@@ -1,5 +1,6 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -202,7 +203,18 @@ function ListingDetail({ listing, onAction, onDelete, actionLoading }) {
 }
 
 // ─── Main Page ─────────────────────────────────────────────────────────────────
-export default function AnunciosPage() {
+export default function AnunciosPageWrapper() {
+    return (
+        <Suspense fallback={<div className="flex justify-center items-center py-16"><div className="w-8 h-8 rounded-full border-2 border-white/10 border-t-white/50 animate-spin" /></div>}>
+            <AnunciosPage />
+        </Suspense>
+    );
+}
+
+function AnunciosPage() {
+    const searchParams = useSearchParams();
+    const userIdFilter = searchParams.get("userId");
+
     const [listings, setListings] = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -212,6 +224,7 @@ export default function AnunciosPage() {
     const [toast, setToast] = useState(null);
     const [actionLoading, setActionLoading] = useState(null);
     const [expandedId, setExpandedId] = useState(null);
+    const [filterUserName, setFilterUserName] = useState(null);
 
     const LIMIT = 20;
 
@@ -224,12 +237,17 @@ export default function AnunciosPage() {
         setLoading(true);
         const params = new URLSearchParams({ page, limit: LIMIT, search });
         if (statusFilter !== "all") params.set("status", statusFilter);
+        if (userIdFilter) params.set("userId", userIdFilter);
         const res = await fetch(`/api/admin/listings?${params}`);
         const json = await res.json();
-        setListings(json.data?.listings || []);
+        const fetched = json.data?.listings || [];
+        setListings(fetched);
         setTotal(json.data?.total || 0);
+        if (userIdFilter && fetched.length > 0 && !filterUserName) {
+            setFilterUserName(fetched[0].user?.name || fetched[0].user?.email || "Usuário");
+        }
         setLoading(false);
-    }, [page, search, statusFilter]);
+    }, [page, search, statusFilter, userIdFilter]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -277,12 +295,24 @@ export default function AnunciosPage() {
                 </div>
             )}
 
+            {/* User filter banner */}
+            {userIdFilter && (
+                <div className="flex items-center gap-3 bg-blue-500/10 border border-blue-500/20 rounded-xl px-4 py-2.5">
+                    <span className="text-blue-400 text-sm font-semibold">
+                        Filtrando por: {filterUserName || "..."}
+                    </span>
+                    <Link href="/admin/listings" className="text-xs text-white/40 hover:text-white border border-white/10 px-3 py-1 rounded-lg hover:bg-white/5 transition-all">
+                        Ver todos
+                    </Link>
+                </div>
+            )}
+
             {/* Header */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-black text-white tracking-tight">Moderacao de Anuncios</h1>
                     <p className="text-white/40 text-sm mt-0.5">
-                        {total} anuncios
+                        {total} anuncio{total !== 1 ? "s" : ""}
                         {pendingCount > 0 && <span className="ml-2 text-yellow-400 font-semibold">{pendingCount} pendentes nesta pagina</span>}
                     </p>
                 </div>
