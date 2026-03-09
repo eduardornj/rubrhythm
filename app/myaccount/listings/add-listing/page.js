@@ -152,9 +152,18 @@ function AddListing() {
       }
 
 
+      // Auto-derive hourlyRate and priceRange from Session Rates table
+      const firstPrice = Number(rates[0]?.price) || 0;
+      const autoHourlyRate = firstPrice || hourlyRate || '';
+      const autoPriceRange = firstPrice <= 100 ? '$0-100'
+        : firstPrice <= 200 ? '$100-200'
+        : firstPrice <= 300 ? '$200-300'
+        : firstPrice <= 400 ? '$300-400'
+        : '$400+';
+
       const listingData = {
         id: generatedId || undefined,
-        title, bodyType, ethnicity, serviceLocation, priceRange, hourlyRate, age, availability, description, phoneArea, phoneNumber, isWhatsAppAvailable, country, state, city, neighborhood, websiteUrl, rates, socialLinks, images
+        title, bodyType, ethnicity, serviceLocation, priceRange: autoPriceRange, hourlyRate: autoHourlyRate, age, availability, description, phoneArea, phoneNumber, isWhatsAppAvailable, country, state, city, neighborhood, websiteUrl, rates, socialLinks, images
       };
 
       const url = listingId ? `/api/listing?id=${listingId}` : '/api/listing';
@@ -386,18 +395,6 @@ function AddListing() {
               </select>
             </div>
 
-            <div>
-              <label htmlFor="al-hourlyrate" className={LabelStyle}>Session Rate <span className="text-white/40 font-normal lowercase">(Optional)</span></label>
-              <input id="al-hourlyrate" type="number" value={hourlyRate} onChange={(e) => setHourlyRate(e.target.value)} className={InputStyle} placeholder="e.g., 200" />
-            </div>
-
-            <div>
-              <label htmlFor="al-pricerange" className={LabelStyle}>Price Category <span className="text-red-500">*</span></label>
-              <select id="al-pricerange" value={priceRange} onChange={(e) => setPriceRange(e.target.value)} className={SelectStyle} required>
-                <option value="">Select Price Range</option>
-                {priceRanges.map(p => <option key={p} value={p}>{p}</option>)}
-              </select>
-            </div>
           </div>
         </div>
 
