@@ -394,7 +394,7 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                       className={`relative flex-shrink-0 w-16 h-16 rounded-xl overflow-hidden border-2 transition-all duration-200 ${selectedPhoto === i ? "border-primary shadow-md shadow-primary/30 scale-105" : "border-transparent opacity-60 hover:opacity-100"
                         }`}
                     >
-                      <Image src={imgSrc(img)} alt="" fill sizes="64px" className="object-cover" />
+                      <Image src={imgSrc(img)} alt="" fill sizes="64px" unoptimized className="object-cover" />
                     </button>
                   ))}
                 </div>
@@ -797,6 +797,7 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                             fill
                             sizes="80px"
                             loading="lazy"
+                            unoptimized
                             className="object-cover"
                             onError={(e) => { e.currentTarget.src = "/default-image.jpg"; }}
                           />
