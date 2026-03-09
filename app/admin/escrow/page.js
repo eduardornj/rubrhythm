@@ -33,8 +33,10 @@ export default function EscrowPage() {
       // Frontend uses: complete, refund, activate, cancel
       // Backend expects: force_complete, force_refund, etc.
       let backendAction = action;
-      if (action === "complete") backendAction = "resolve_dispute"; // assuming old "complete" on dispute meant resolve
+      if (action === "complete") backendAction = "resolve_dispute";
       if (action === "refund") backendAction = "force_refund";
+      if (action === "activate") backendAction = "force_complete";
+      if (action === "cancel") backendAction = "force_refund";
 
       const res = await fetch("/api/admin/financial", {
         method: "POST",

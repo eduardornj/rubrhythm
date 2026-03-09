@@ -91,7 +91,7 @@ export default function UsuariosPage() {
             const res = await fetch("/api/admin/financial", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ type: 'adjust_credits', userId: creditModal.id, amount: creditOp === 'add' ? Number(creditAmount) : -Number(creditAmount) }),
+                body: JSON.stringify({ action: 'adjust', type: 'adjust_credits', userId: creditModal.id, amount: creditOp === 'add' ? Number(creditAmount) : -Number(creditAmount) }),
             });
             const json = await res.json();
             if (res.ok) { showToast(json.data?.message || "Créditos ajustados"); setCreditModal(null); setCreditAmount(""); await load(); }

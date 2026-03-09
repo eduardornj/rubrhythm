@@ -37,7 +37,8 @@ export default function RelatoriosPage() {
     const exportUsers = async () => {
         setLoad("users", true);
         const res = await fetch("/api/admin/users");
-        const { users } = await res.json();
+        const json = await res.json();
+        const users = json.data || [];
         const rows = users.map(u => ({
             id: u.id, nome: u.name || "", email: u.email || "",
             perfil: u.role, verificado: u.verified ? "Sim" : "Não",
@@ -51,8 +52,9 @@ export default function RelatoriosPage() {
     const exportVerifications = async () => {
         setLoad("verif", true);
         const res = await fetch("/api/admin/verifications");
-        const { verifications } = await res.json();
-        const rows = (verifications || []).map(v => ({
+        const json2 = await res.json();
+        const verifications = json2.data?.verifications || [];
+        const rows = verifications.map(v => ({
             id: v.id, usuario: v.userName, email: v.userEmail, status: v.status,
             enviado: v.submittedAt ? new Date(v.submittedAt).toLocaleDateString("pt-BR") : "",
             revisado: v.reviewedAt ? new Date(v.reviewedAt).toLocaleDateString("pt-BR") : "",
@@ -65,8 +67,9 @@ export default function RelatoriosPage() {
     const exportListings = async () => {
         setLoad("listings", true);
         const res = await fetch("/api/admin/listings?limit=500");
-        const { listings } = await res.json();
-        const rows = (listings || []).map(l => ({
+        const json3 = await res.json();
+        const listings = json3.data?.listings || [];
+        const rows = listings.map(l => ({
             id: l.id, titulo: l.title, cidade: l.city, estado: l.state,
             aprovado: l.isApproved ? "Sim" : "Não", ativo: l.isActive ? "Sim" : "Não",
             destaque: l.isFeatured ? "Sim" : "Não",

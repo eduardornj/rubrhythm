@@ -37,8 +37,8 @@ export async function GET(request, { params }) {
       );
     }
 
-    // Check if user is part of this conversation
-    if (conversation.clientId !== session.user.id && conversation.providerId !== session.user.id) {
+    // Check if user is part of this conversation (admin can view all)
+    if (conversation.clientId !== session.user.id && conversation.providerId !== session.user.id && session.user.role !== 'admin') {
       return NextResponse.json(
         { error: 'Access denied' },
         { status: 403 }
