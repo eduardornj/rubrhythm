@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import MainLayout from "@components/MainLayout";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -45,7 +45,15 @@ const RoleCard = ({ role, selected, onSelect, icon, title, description, perks })
   </button>
 );
 
-export default function RegisterOnRubrhythm() {
+export default function RegisterOnRubrhythmPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <RegisterOnRubrhythm />
+    </Suspense>
+  );
+}
+
+function RegisterOnRubrhythm() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

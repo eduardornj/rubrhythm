@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
-export default function PaymentSuccessPage() {
+export default function PaymentSuccessPageWrapper() {
+    return (
+        <Suspense fallback={<div className="min-h-screen bg-background" />}>
+            <PaymentSuccessPage />
+        </Suspense>
+    );
+}
+
+function PaymentSuccessPage() {
     const params = useSearchParams();
     const orderId = params.get("orderId");
     const [status, setStatus] = useState("pending"); // pending | confirmed | timeout

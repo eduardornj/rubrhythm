@@ -1,12 +1,20 @@
 "use client";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import locations from '../../../../data/datalocations';
 import ModernImageUpload from '@/components/ModernImageUpload';
 
-export default function AddListing() {
+export default function AddListingPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <AddListing />
+    </Suspense>
+  );
+}
+
+function AddListing() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();

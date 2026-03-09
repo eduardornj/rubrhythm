@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -17,7 +17,15 @@ function formatTimeLeft(endDate) {
   return h > 0 ? `${h}h ${m}m remaining` : `${m}m remaining`;
 }
 
-export default function HighlightListings() {
+export default function HighlightListingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <HighlightListings />
+    </Suspense>
+  );
+}
+
+function HighlightListings() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const preselectedId = searchParams.get('id');

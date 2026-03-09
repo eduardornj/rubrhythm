@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
@@ -70,7 +70,15 @@ const TIERS = {
   },
 };
 
-export default function FeatureListings() {
+export default function FeatureListingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <FeatureListings />
+    </Suspense>
+  );
+}
+
+function FeatureListings() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();

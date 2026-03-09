@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
@@ -145,7 +145,15 @@ const COLOR_MAP = {
   },
 };
 
-export default function BoostHubPage() {
+export default function BoostHubPageWrapper() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <BoostHubPage />
+    </Suspense>
+  );
+}
+
+function BoostHubPage() {
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();

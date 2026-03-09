@@ -1,13 +1,21 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { getFirstListingImage } from "@/lib/image-utils";
 
-export default function BumpUpListings() {
+export default function BumpUpListingsPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <BumpUpListings />
+    </Suspense>
+  );
+}
+
+function BumpUpListings() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const preselectedId = searchParams.get('id');
