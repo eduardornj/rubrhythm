@@ -1,7 +1,9 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import sharp from 'sharp';
 import { uploadToBlob, deleteFromBlob, generateBlobPath } from '@/lib/blob-storage';
 import { generateSecureId } from '@/lib/file-naming';
+import { applyWatermark } from '@/lib/watermark';
 
 const MAX_FILES = 5;
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -43,13 +45,27 @@ export async function POST(request) {
       }
     }
 
+    const MAX_DIMENSION = 1600; // Max width or height in pixels
+
     const urls = [];
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
-      const buffer = Buffer.from(await file.arrayBuffer());
-      const ext = getExtensionFromMime(file.type);
-      const pathname = generateBlobPath('listings', listingId, i + 1, ext);
-      const { url } = await uploadToBlob(buffer, pathname, { contentType: file.type });
+      let buffer = Buffer.from(await file.arrayBuffer());
+
+      // Resize if larger than MAX_DIMENSION (keeps aspect ratio)
+      const metadata = await sharp(buffer).metadata();
+      if (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION) {
+        buffer = await sharp(buffer)
+          .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 90 })
+          .toBuffer();
+      }
+
+      // Apply watermark
+      buffer = await applyWatermark(buffer);
+
+      const pathname = generateBlobPath('listings', listingId, i + 1, 'jpg');
+      const { url } = await uploadToBlob(buffer, pathname, { contentType: 'image/jpeg' });
       urls.push(url);
     }
 
