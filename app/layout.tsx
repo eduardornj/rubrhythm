@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import ClientFloatingBar from "../components/ClientFloatingBar";
 import SessionWrapper from "../components/SessionWrapper";
 import PWAManager from "../components/PWAManager";
+import AgeGate from "../components/AgeGate";
 import "./tailwind.css";
 import { ReactNode } from "react";
 import { Metadata } from "next";
@@ -74,6 +75,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen relative`}>
         <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary z-50"></div>
+        <AgeGate />
         <PWAManager>
           <SessionWrapper>
             <div className="flex-grow max-w-[85ch] md:max-w-none mx-auto w-full pb-14">

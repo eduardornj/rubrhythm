@@ -613,3 +613,5 @@ model blockedcontact {
   @@unique([userId, type, value])
   @@index([userId])
 }
+
+

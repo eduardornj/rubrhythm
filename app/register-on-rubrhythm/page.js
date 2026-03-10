@@ -65,6 +65,7 @@ function RegisterOnRubrhythm() {
   const [referralCode, setReferralCode] = useState("");
   const [captchaAnswer, setCaptchaAnswer] = useState("");
   const [captcha, setCaptcha] = useState({ a: 0, b: 0 });
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -82,6 +83,11 @@ function RegisterOnRubrhythm() {
 
     if (!role) {
       setError("Please select your account type before continuing.");
+      return;
+    }
+
+    if (!termsAccepted) {
+      setError("You must confirm you are 18+ and agree to the Terms of Service.");
       return;
     }
 
@@ -255,10 +261,27 @@ function RegisterOnRubrhythm() {
                 </div>
               </div>
 
+              {/* Age + Terms Checkbox */}
+              <label className="flex items-start gap-3 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="mt-0.5 w-4 h-4 rounded border-white/20 bg-white/5 text-primary accent-primary flex-shrink-0 cursor-pointer"
+                />
+                <span className="text-xs text-white/50 group-hover:text-white/70 transition-colors leading-relaxed">
+                  I confirm I am <strong className="text-white/80">18 years of age or older</strong>, I have read and agree to the{" "}
+                  <Link href="/info/terms" className="text-primary hover:underline" target="_blank">Terms of Service</Link>,{" "}
+                  <Link href="/info/privacy-policy" className="text-primary hover:underline" target="_blank">Privacy Policy</Link>, and{" "}
+                  <Link href="/info/law-and-legal" className="text-primary hover:underline" target="_blank">Legal Notice</Link>.
+                  I understand this platform is for legal massage services only.
+                </span>
+              </label>
+
               {/* Submit */}
               <button
                 type="submit"
-                disabled={isLoading || !role}
+                disabled={isLoading || !role || !termsAccepted}
                 className="w-full p-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
@@ -271,11 +294,6 @@ function RegisterOnRubrhythm() {
                 )}
               </button>
 
-              {/* Terms */}
-              <p className="text-center text-xs text-text-muted">
-                By registering you agree to our{" "}
-                <Link href="/info/terms" className="text-primary hover:underline">Terms of Service</Link>
-              </p>
             </form>
 
             {/* Footer */}

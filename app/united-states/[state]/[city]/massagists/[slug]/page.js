@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
 import FavoriteButton from "@/app/components/FavoriteButton";
+import ReportButton from "@/components/ReportButton";
 import dynamic from "next/dynamic";
 const PhotoModal = dynamic(() => import("../../../../../components/PhotoModal"), { ssr: false });
 import { getFirstListingImage } from "@/lib/image-utils";
@@ -870,6 +871,13 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
         onClose={() => setIsModalOpen(false)}
         listingTitle={listing?.title}
       />
+
+      {/* ── REPORT ───────────────────────────────────────────────────── */}
+      {listing && (
+        <div className="max-w-6xl mx-auto px-4 pb-4 flex justify-end">
+          <ReportButton listingId={listing.id} listingName={listing.title} />
+        </div>
+      )}
     </MainLayout>
   );
 }
