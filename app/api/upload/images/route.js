@@ -52,14 +52,13 @@ export async function POST(request) {
       const file = files[i];
       let buffer = Buffer.from(await file.arrayBuffer());
 
-      // Resize if larger than MAX_DIMENSION (keeps aspect ratio)
-      const metadata = await sharp(buffer).metadata();
-      if (metadata.width > MAX_DIMENSION || metadata.height > MAX_DIMENSION) {
-        buffer = await sharp(buffer)
-          .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
-          .jpeg({ quality: 90 })
-          .toBuffer();
-      }
+      // Always normalize: resize to max dimension (keeps aspect ratio, never enlarges)
+      // and convert to JPEG for consistent format + smaller file size
+      buffer = await sharp(buffer)
+        .rotate() // auto-rotate based on EXIF orientation
+        .resize(MAX_DIMENSION, MAX_DIMENSION, { fit: 'inside', withoutEnlargement: true })
+        .jpeg({ quality: 88 })
+        .toBuffer();
 
       // Apply watermark
       buffer = await applyWatermark(buffer);
