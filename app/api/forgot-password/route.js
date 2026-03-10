@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
 import prisma from "@/lib/prisma";
-import { sendPasswordResetEmail } from "@/lib/email";
+import { sendPasswordResetEmail, sendNoAccountEmail } from "@/lib/email";
 
 const SITE = process.env.NEXTAUTH_URL || "https://rubrhythm.com";
 
@@ -34,8 +34,9 @@ export async function POST(request) {
 
     const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
 
-    // Always return success — never reveal if email exists
+    // Send "no account" email and return success — never reveal via HTTP response if email exists
     if (!user) {
+      await sendNoAccountEmail(email.toLowerCase().trim());
       return NextResponse.json({ success: true });
     }
 
