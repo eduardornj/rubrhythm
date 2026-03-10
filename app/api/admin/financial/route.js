@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
@@ -243,6 +244,25 @@ export async function POST(request) {
                     }
                 })
             ]);
+
+            // Audit log
+            await prisma.securitylog.create({
+                data: {
+                    id: `sl_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
+                    type: "ADMIN_ACTION",
+                    severity: "warning",
+                    message: `Admin credit adjustment: ${amount > 0 ? '+' : ''}${amount} credits`,
+                    details: {
+                        action: "credit_adjustment",
+                        targetUserId: userId,
+                        amount,
+                        reason: reason || "No reason provided",
+                        adminId: session.user.id
+                    },
+                    userId: session.user.id,
+                    ipAddress: request?.headers?.get("x-forwarded-for") || "unknown",
+                }
+            });
 
             return NextResponse.json({
                 success: true,

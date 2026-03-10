@@ -15,6 +15,7 @@ export default function CreditosPage() {
     const [search, setSearch] = useState("");
     const [addModal, setAddModal] = useState(null);
     const [amount, setAmount] = useState("");
+    const [reason, setReason] = useState("");
     const [op, setOp] = useState("add");
     const [toast, setToast] = useState(null);
     const [saving, setSaving] = useState(false);
@@ -44,11 +45,12 @@ export default function CreditosPage() {
                 action: 'adjust',
                 type: 'adjust_credits',
                 userId: addModal.id,
-                amount: op === 'remove' ? -Number(amount) : Number(amount)
+                amount: op === 'remove' ? -Number(amount) : Number(amount),
+                reason: reason || undefined
             }),
         });
         const d = await res.json();
-        if (res.ok) { showToast(d.data?.message || "Sucesso!"); setAddModal(null); setAmount(""); await load(); }
+        if (res.ok) { showToast(d.data?.message || "Sucesso!"); setAddModal(null); setAmount(""); setReason(""); await load(); }
         else showToast(d.error?.message || d.error || "Erro", "error");
         setSaving(false);
     };
@@ -78,6 +80,8 @@ export default function CreditosPage() {
                             ))}
                         </div>
                         <input type="number" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Quantidade"
+                            className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-white/20 focus:outline-none focus:border-primary/50 mb-4" />
+                        <input type="text" value={reason} onChange={e => setReason(e.target.value)} placeholder="Motivo do ajuste (ex: Bônus promocional, Correção de erro...)"
                             className="w-full bg-white/5 border border-white/10 rounded-xl px-3 py-2.5 text-white text-sm placeholder-white/20 focus:outline-none focus:border-primary/50 mb-4" />
                         <div className="flex gap-2">
                             <button onClick={() => setAddModal(null)} className="flex-1 py-2.5 rounded-xl border border-white/10 text-white/50 text-sm">Cancelar</button>
