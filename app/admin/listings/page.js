@@ -191,6 +191,20 @@ function ListingDetail({ listing, onAction, onDelete, actionLoading }) {
                     </div>
                 </div>
 
+                {/* Available Now Actions */}
+                <div>
+                    <p className="text-[10px] text-white/30 font-bold uppercase tracking-wider mb-2">Available Now</p>
+                    <div className="flex flex-wrap gap-2">
+                        <ActionBtn action="available-now" label="1 hora" extra={{ hours: 1 }} color="border-green-500/30 text-green-400 hover:bg-green-500/10" />
+                        <ActionBtn action="available-now" label="2 horas" extra={{ hours: 2 }} color="border-green-500/30 text-green-400 hover:bg-green-500/10" />
+                        <ActionBtn action="available-now" label="4 horas" extra={{ hours: 4 }} color="border-green-500/30 text-green-400 hover:bg-green-500/10" />
+                        <ActionBtn action="available-now" label="8 horas" extra={{ hours: 8 }} color="border-green-500/30 text-green-400 hover:bg-green-500/10" />
+                        {isAvailableNow && (
+                            <ActionBtn action="unavailable" label="Remover Available" color="border-red-500/20 text-red-400/70 hover:bg-red-500/10" />
+                        )}
+                    </div>
+                </div>
+
                 {/* Feature Actions */}
                 <div>
                     <p className="text-[10px] text-white/30 font-bold uppercase tracking-wider mb-2">Feature</p>

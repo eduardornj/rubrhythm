@@ -71,7 +71,7 @@ export async function PATCH(request) {
             }, { status: 401 });
         }
 
-        const { listingId, action, days } = await request.json();
+        const { listingId, action, days, hours } = await request.json();
         if (!listingId || !action) {
             return NextResponse.json({
                 success: false,
@@ -131,6 +131,17 @@ export async function PATCH(request) {
             case "unfeature":
                 updateData = { isFeatured: false, featuredEndDate: null, featureTier: null };
                 message = "Destaque (Feature) removido do anúncio.";
+                break;
+            case "available-now": {
+                const availableUntil = new Date();
+                availableUntil.setHours(availableUntil.getHours() + (hours || 1));
+                updateData = { availableNow: true, availableUntil };
+                message = `Available Now ativado por ${hours || 1} hora(s).`;
+                break;
+            }
+            case "unavailable":
+                updateData = { availableNow: false, availableUntil: null };
+                message = "Available Now desativado.";
                 break;
             default:
                 return NextResponse.json({
