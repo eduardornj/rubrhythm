@@ -76,6 +76,7 @@ async function getListings(state, city) {
       age: true,
       userId: true,
       createdAt: true,
+      lastBumpUp: true,
       isFeatured: true,
       featureTier: true,
       featuredEndDate: true,
@@ -90,7 +91,7 @@ async function getListings(state, city) {
         select: { verified: true }
       }
     },
-    orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+    orderBy: [{ isFeatured: 'desc' }, { lastBumpUp: 'desc' }, { isHighlighted: 'desc' }, { createdAt: 'desc' }],
     take: 24,
   });
 

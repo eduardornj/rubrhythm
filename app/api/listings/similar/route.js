@@ -47,7 +47,7 @@ export async function GET(request) {
         isActive: true,
       },
       select: FIELDS,
-      orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+      orderBy: [{ isFeatured: 'desc' }, { lastBumpUp: 'desc' }, { isHighlighted: 'desc' }, { createdAt: 'desc' }],
       take: limit,
     });
 
@@ -63,7 +63,7 @@ export async function GET(request) {
           isActive: true,
         },
         select: FIELDS,
-        orderBy: [{ isFeatured: 'desc' }, { createdAt: 'desc' }],
+        orderBy: [{ isFeatured: 'desc' }, { lastBumpUp: 'desc' }, { isHighlighted: 'desc' }, { createdAt: 'desc' }],
         take: limit - results.length,
       });
       results = [...results, ...stateListings];

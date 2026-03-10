@@ -64,9 +64,7 @@ async function getListings(state, city) {
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ isFeatured: "desc" }, { lastBumpUp: "desc" }, { isHighlighted: "desc" }, { createdAt: "desc" }],
     });
 
     return listings.map((listing) => {
@@ -133,9 +131,7 @@ async function getFeaturedListings(state, city) {
           },
         },
       },
-      orderBy: {
-        createdAt: "desc",
-      },
+      orderBy: [{ isFeatured: "desc" }, { lastBumpUp: "desc" }, { isHighlighted: "desc" }, { createdAt: "desc" }],
       take: 8,
     });
 
