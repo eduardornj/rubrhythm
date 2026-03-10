@@ -97,6 +97,7 @@ export async function GET(request) {
           }
         }
       },
+      orderBy: { createdAt: 'desc' },
       // When featured=true, fetch all so rotation can pick fairly; otherwise limit
       take: featured === 'true' ? undefined : limit
     });
