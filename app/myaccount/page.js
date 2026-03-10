@@ -134,12 +134,12 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
           />
           <StatCard icon="⭐" label="Reviews" value={stats.totalReviews || 0} sub={stats.averageRating > 0 ? `${stats.averageRating}/5 average` : "Ask clients for reviews"} href="/myaccount/reviews" color="yellow" />
           <StatCard
-            icon="🔒"
-            label="Verified"
-            value={isVerified ? "Active" : "Not Yet"}
-            sub={isVerified ? "3x more clicks" : "Free — verify now"}
-            href="/myaccount/verification"
-            color={isVerified ? "green" : "yellow"}
+            icon="👁️"
+            label="Profile Views"
+            value={stats.totalViews || 0}
+            sub="Total views across all listings"
+            href="/myaccount/listings"
+            color="green"
           />
         </div>
       </div>
@@ -462,6 +462,7 @@ export default function MyAccountDashboard() {
     creditsBalance: 0,
     totalReviews: 0,
     averageRating: 0,
+    totalViews: 0,
   });
   const [loading, setLoading] = useState(true);
   const [alerts, setAlerts] = useState({ urgentNotifs: 0, totalNotifs: 0 });
@@ -496,6 +497,7 @@ export default function MyAccountDashboard() {
           ...p,
           totalListings: listings.length,
           activeListings: listings.filter((l) => l.isApproved).length,
+          totalViews: listings.reduce((sum, l) => sum + (l.viewCount || 0), 0),
         }));
       }
       if (favRes.status === "fulfilled" && favRes.value.ok) {

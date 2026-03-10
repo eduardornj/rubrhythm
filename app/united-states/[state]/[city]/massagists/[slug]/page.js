@@ -143,8 +143,12 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
         setListing(data);
         setIsFavorited(data.isFavorited);
 
-        // Increment view count (fire-and-forget)
-        fetch(`/api/listings/${data.id}/view`, { method: 'POST' }).catch(() => {});
+        // Increment view count and notify provider (fire-and-forget)
+        fetch("/api/listing/view", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ listingId: data.id }),
+        }).catch(() => {});
 
         // Fetch approved reviews for this listing
         setReviewsLoading(true);

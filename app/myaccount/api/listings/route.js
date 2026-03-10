@@ -37,6 +37,7 @@ export async function GET(request) {
         autoRenewHighlight: true,
         autoRenewAvailable: true,
         isWhatsAppAvailable: true,
+        viewCount: true,
         createdAt: true,
         updatedAt: true,
         user: { select: { verified: true } }
