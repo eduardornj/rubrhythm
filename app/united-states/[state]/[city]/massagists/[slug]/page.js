@@ -433,8 +433,6 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
 
               {/* Stats grid */}
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
-                <StatPill icon="🌎" label="Ethnicity" value={listing.ethnicity} />
-                <StatPill icon="💪" label="Body Type" value={listing.bodyType} />
                 <StatPill icon="🎂" label="Age" value={listing.age ? `${listing.age} yrs` : null} />
                 <StatPill icon="📍" label="Service" value={listing.serviceLocation === "Both" ? "Incall & Outcall" : listing.serviceLocation} />
                 <StatPill icon="🏘️" label="Area" value={listing.neighborhood} />

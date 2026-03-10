@@ -115,8 +115,7 @@ function AddListing() {
     }
   };
 
-  const bodyTypes = ['Slim', 'Athletic', 'Average', 'Curvy', 'BBW', 'Muscular', 'Petite', 'Tall'];
-  const ethnicities = ['Latina', 'Brazilian', 'Mexican', 'Puerto Rican', 'Venezuelan', 'Colombian', 'Asian', 'Ebony/Black', 'Caucasian/White', 'Mixed/Exotic'];
+  const bodyTypes = ['Athletic', 'Average', 'Muscular', 'Petite', 'Tall'];
   const serviceLocations = ['Incall', 'Outcall', 'Both'];
   const priceRanges = ['$0-100', '$100-200', '$200-300', '$300-400', '$400+'];
   const durationOptions = ['15min', '30min', '45min', '1 hour', '1.5 hours', '2 hours', '3 hours'];
@@ -446,16 +445,8 @@ function AddListing() {
             </div>
 
             <div>
-              <label htmlFor="al-ethnicity" className={LabelStyle}>Ethnicity <span className="text-red-500">*</span></label>
-              <select id="al-ethnicity" value={ethnicity} onChange={(e) => setEthnicity(e.target.value)} className={SelectStyle} required>
-                <option value="">Select Ethnicity</option>
-                {ethnicities.map(e => <option key={e} value={e}>{e}</option>)}
-              </select>
-            </div>
-
-            <div>
-              <label htmlFor="al-bodytype" className={LabelStyle}>Body Type <span className="text-red-500">*</span></label>
-              <select id="al-bodytype" value={bodyType} onChange={(e) => setBodyType(e.target.value)} className={SelectStyle} required>
+              <label htmlFor="al-bodytype" className={LabelStyle}>Body Type</label>
+              <select id="al-bodytype" value={bodyType} onChange={(e) => setBodyType(e.target.value)} className={SelectStyle}>
                 <option value="">Select Body Type</option>
                 {bodyTypes.map(b => <option key={b} value={b}>{b}</option>)}
               </select>

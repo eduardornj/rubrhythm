@@ -273,18 +273,6 @@ export default function ListingDetailPage() {
 
               {/* Details Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {listing.bodyType && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-1">Tipo Físico</h4>
-                    <p className="text-white">{listing.bodyType}</p>
-                  </div>
-                )}
-                {listing.ethnicity && (
-                  <div>
-                    <h4 className="text-sm font-medium text-gray-400 mb-1">Etnia</h4>
-                    <p className="text-white">{listing.ethnicity}</p>
-                  </div>
-                )}
                 {listing.serviceLocation && (
                   <div>
                     <h4 className="text-sm font-medium text-gray-400 mb-1">Local de Atendimento</h4>
