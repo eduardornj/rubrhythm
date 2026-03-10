@@ -41,6 +41,7 @@ export async function GET(request) {
         updatedAt: true,
         user: { select: { verified: true } }
       },
+      orderBy: { createdAt: 'desc' },
       take: 20,
     });
 
