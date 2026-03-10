@@ -16,10 +16,12 @@
 - ✅ Checkbox no cadastro — aceite explícito de ToS + 18+ antes de criar perfil (Fase 1)
 - ✅ Botão de denúncia integrado nos listings — 6 razões, severity automática, hotline de trafficking (Fase 1)
 
-### L2. Section 2257 Compliance
-- Processo real de custódia de documentos de idade dos indivíduos em conteúdo visual
-- Não é só ter a página — exige processo operacional
-- **⚠️ Usar Claude Opus como auxiliar jurídico para analisar o que precisa ser implementado operacionalmente**
+### L2. Section 2257 Compliance ✅ RESOLVIDO — Fase 10
+- ✅ Análise Opus concluída: RubRhythm proíbe conteúdo sexualmente explícito, portanto § 2257 não se aplica
+- ✅ Página reescrita honestamente (sem custodian falso, sem endereço fake)
+- ✅ Declaração clara: "§ 2257 record-keeping requirements are not applicable"
+- ✅ Seção "How We Protect Our Community" com 6 medidas reais
+- ✅ Anti-trafficking notice com hotlines (Polaris, DHS, FBI)
 
 ---
 
@@ -46,10 +48,13 @@
 - ✅ 8 critérios de verificação com checkboxes (título legítimo, sem solicitação sexual, fotos adequadas, preço, localização, conta ativa, sem links proibidos, sem menores)
 - ✅ Instrução: "Marque todos antes de aprovar. Se qualquer item falhar → Rejeitar."
 
-### 4. Revisão de linguagem nos listings aprovados
-- Listings com texto explícito indexável pelo Google
-- Rever critério de aprovação para linguagem no texto público
-- **Motivo:** Google pode categorizar o site como adulto, limitando alcance orgânico
+### 4. Revisão de linguagem nos listings aprovados ✅ IMPLEMENTADO — Fase 10
+- ✅ Content filter com ~70 RED terms (bloqueio automático) e ~30 YELLOW terms (flag para admin)
+- ✅ Real-time: aviso no formulário do provider com debounce 300ms
+- ✅ API-level: POST/PUT rejeitam listings com RED terms (status 400)
+- ✅ Admin panel: badges RED/YELLOW visíveis no detalhe do listing
+- ✅ Categorias: serviços sexuais, tráfico, substâncias, gírias do mercado
+- **Motivo:** proteção FOSTA-SESTA + Google Safe Search + Stripe compliance
 
 ### 5. CTA para provider nas páginas de cidade e busca ✅ IMPLEMENTADO — Fase 5
 - ✅ Banner "Are you a massage provider in {city}?" nas city pages
@@ -218,3 +223,35 @@
 - Bloco amarelo no `ListingDetail` somente para listings pendentes
 - 8 critérios com checkboxes: título, linguagem, fotos, preço, localização, conta ativa, links, menores
 - Instrução clara: marque todos antes de aprovar, qualquer falha = rejeitar
+
+### ✅ Fase 9 — Conteúdo editorial por cidade (Item 15)
+- Infraestrutura `data/cityContent.js` com conteúdo curado por cidade
+- Orlando: conteúdo real (Disney, Universal, OCCC, Dr. Phillips, I-Drive, College Park)
+- Fallback genérico para cidades sem conteúdo curado
+
+### ✅ Fase 10 — Content Filter + Audit Log + 2257 Rewrite
+- **Content Filter** (`lib/contentFilter.js`):
+  - ~70 RED terms (bloqueio automático): escort, happy ending, rub and tug, trafficking signals, etc.
+  - ~30 YELLOW terms (flag para admin review): sensual, tantric, nuru, discreet, etc.
+  - Real-time no formulário (debounce 300ms) + API-level blocking + admin badges
+- **Section 2257 rewrite** (`app/info/section-2257/page.js`):
+  - Reescrita honesta: RubRhythm proíbe conteúdo explícito → § 2257 não se aplica
+  - 6 medidas reais de proteção + anti-trafficking notice com hotlines
+- **Audit log** em ações admin:
+  - Listings: approve, reject, feature, delete → `securitylog`
+  - Créditos: campo "Motivo" obrigatório + log com valor, razão, admin, IP
+  - Broadcast: log ao deletar notificações em massa
+  - Chat: log ao deletar mensagem ou conversa
+- **Chat moderação** (`app/admin/chats`):
+  - Deletar mensagem individual (hover trash icon)
+  - Deletar conversa inteira (botão vermelho com confirm())
+  - API: `DELETE /api/admin/chats` com actions: delete_message, delete_conversation
+- **Broadcast confirmação**: `confirm()` antes de deletar + audit log no backend
+
+### Pendente — Para quando escalar
+- Bulk operations (aprovar vários listings de vez)
+- Image moderation tools (AI: AWS Rekognition / Google Vision)
+- Revenue charts no financeiro
+- Warning system antes de banir (amarelo → vermelho → ban)
+- Export em mais formatos (Excel/PDF)
+- Scheduled notifications
