@@ -196,6 +196,36 @@ function RegisterOnRubrhythm() {
                 </div>
               </div>
 
+              {/* Content Policy — shown only for providers */}
+              {role === "provider" && (
+                <div className="bg-white/4 border border-white/10 rounded-2xl p-4 text-xs text-white/60 space-y-3">
+                  <p className="text-white/80 font-semibold text-sm">Provider Content Policy</p>
+                  <div className="grid grid-cols-1 gap-2">
+                    <div>
+                      <p className="text-green-400/80 font-semibold mb-1">Allowed</p>
+                      <ul className="space-y-1">
+                        <li className="flex items-start gap-1.5"><span className="text-green-400 mt-0.5">✓</span> Professional massage and body rub services</li>
+                        <li className="flex items-start gap-1.5"><span className="text-green-400 mt-0.5">✓</span> Accurate photos and professional descriptions</li>
+                        <li className="flex items-start gap-1.5"><span className="text-green-400 mt-0.5">✓</span> Real service pricing and availability info</li>
+                      </ul>
+                    </div>
+                    <div>
+                      <p className="text-red-400/80 font-semibold mb-1">Not allowed</p>
+                      <ul className="space-y-1">
+                        <li className="flex items-start gap-1.5"><span className="text-red-400 mt-0.5">✗</span> Explicit sexual content or solicitation</li>
+                        <li className="flex items-start gap-1.5"><span className="text-red-400 mt-0.5">✗</span> Escort, prostitution, or illegal services</li>
+                        <li className="flex items-start gap-1.5"><span className="text-red-400 mt-0.5">✗</span> Minors in any content or listings</li>
+                        <li className="flex items-start gap-1.5"><span className="text-red-400 mt-0.5">✗</span> False identity or fake photos</li>
+                      </ul>
+                    </div>
+                  </div>
+                  <p className="text-white/40 leading-relaxed">
+                    Violations result in immediate removal. Full rules in our{" "}
+                    <Link href="/info/terms" className="text-primary hover:underline" target="_blank">Terms of Service</Link>.
+                  </p>
+                </div>
+              )}
+
               {/* STEP 2: Personal Info */}
               <div>
                 <p className="text-white font-semibold text-sm mb-3">

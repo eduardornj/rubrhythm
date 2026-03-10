@@ -157,6 +157,18 @@ async function getListings(keyword, state, city, filters = {}) {
   });
 }
 
+const TIER1_CITIES = ["New York", "Los Angeles", "Las Vegas", "Miami"];
+const TIER2_CITIES = ["Chicago", "Houston", "Atlanta", "Phoenix", "Dallas", "San Francisco", "Orlando", "Denver", "San Diego", "Seattle", "Philadelphia", "Tampa"];
+
+async function getFoundingSpots(cityName) {
+  if (!cityName) return { remaining: 0 };
+  const foundingLimit = TIER1_CITIES.includes(cityName) ? 50 : TIER2_CITIES.includes(cityName) ? 25 : 10;
+  const taken = await prisma.listing.count({
+    where: { city: cityName, isFoundingProvider: true },
+  });
+  return { remaining: Math.max(0, foundingLimit - taken) };
+}
+
 async function getFavorites(userId) {
   if (!userId) return [];
 
@@ -194,9 +206,6 @@ export default async function SearchResultsPage({ searchParams: searchParamsProm
   const session = await auth();
   const userId = session?.user?.id;
 
-  const listings = await getListings(keyword, state, city, filters);
-  const favoriteIds = await getFavorites(userId);
-
   // Format state and city names for display
   const formattedState = state
     ? state.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")
@@ -204,6 +213,12 @@ export default async function SearchResultsPage({ searchParams: searchParamsProm
   const formattedCity = city
     ? city.split("-").map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(" ")
     : "";
+
+  const [listings, favoriteIds, { remaining: foundingRemaining }] = await Promise.all([
+    getListings(keyword, state, city, filters),
+    getFavorites(userId),
+    getFoundingSpots(formattedCity),
+  ]);
 
   return (
     <MainLayout>
@@ -218,6 +233,33 @@ export default async function SearchResultsPage({ searchParams: searchParamsProm
           </svg>
           Back to Home
         </Link>
+
+        {/* Provider CTA Banner */}
+        <div className={`mb-8 rounded-2xl border p-5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r ${foundingRemaining > 0 ? 'border-amber-500/30 from-amber-500/10 to-amber-500/5' : 'border-primary/20 from-primary/10 to-primary/5'}`}>
+          <div className="flex items-center gap-4">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${foundingRemaining > 0 ? 'bg-amber-500/20' : 'bg-primary/20'}`}>
+              {foundingRemaining > 0 ? '⭐' : '💆'}
+            </div>
+            <div>
+              <p className="text-white font-semibold text-sm">
+                Are you a massage provider{formattedCity ? ` in ${formattedCity}` : ""}?
+              </p>
+              {foundingRemaining > 0 ? (
+                <p className="text-amber-400/80 text-xs mt-0.5 font-medium">
+                  Only {foundingRemaining} Founding Provider spot{foundingRemaining === 1 ? '' : 's'} left{formattedCity ? ` in ${formattedCity}` : ''} — free for 3 months
+                </p>
+              ) : (
+                <p className="text-white/50 text-xs mt-0.5">Create your free profile and start getting clients today</p>
+              )}
+            </div>
+          </div>
+          <Link
+            href="/register-on-rubrhythm"
+            className={`flex-shrink-0 px-5 py-2.5 text-sm font-bold rounded-xl transition-colors whitespace-nowrap ${foundingRemaining > 0 ? 'bg-amber-500 hover:bg-amber-400 text-black' : 'bg-primary hover:bg-primary/90 text-white'}`}
+          >
+            {foundingRemaining > 0 ? 'Claim Your Spot' : 'List for Free'}
+          </Link>
+        </div>
 
         {/* Search Results Client Component */}
         <SearchResultsClient

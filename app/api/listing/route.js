@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import crypto from "crypto";
 import { rateLimit } from "@/lib/rate-limit";
+import { scanContent } from "@/lib/contentFilter";
 
 const listingLimiter = rateLimit({ interval: 300_000, limit: 5 });
 
@@ -52,6 +53,15 @@ export async function POST(request) {
 
   if (/\bverified\b/i.test(title)) {
     return NextResponse.json({ error: 'The word "Verified" is not allowed in your title.' }, { status: 400 });
+  }
+
+  // Content filter — block prohibited terms
+  const contentScan = scanContent(`${title} ${description}`);
+  if (contentScan.hasBlocked) {
+    return NextResponse.json({
+      error: `Your listing contains prohibited content that violates our Terms of Service. Please remove the following and try again: ${contentScan.blocked.slice(0, 3).join(", ")}`,
+      blockedTerms: contentScan.blocked,
+    }, { status: 400 });
   }
 
   const LISTING_CREATION_COST = 10.0; // $10 para criar anúncio
@@ -198,6 +208,15 @@ export async function PUT(request) {
 
   if (/\bverified\b/i.test(title)) {
     return NextResponse.json({ error: 'The word "Verified" is not allowed in your title.' }, { status: 400 });
+  }
+
+  // Content filter — block prohibited terms
+  const contentScan = scanContent(`${title} ${description}`);
+  if (contentScan.hasBlocked) {
+    return NextResponse.json({
+      error: `Your listing contains prohibited content that violates our Terms of Service. Please remove the following and try again: ${contentScan.blocked.slice(0, 3).join(", ")}`,
+      blockedTerms: contentScan.blocked,
+    }, { status: 400 });
   }
 
   try {

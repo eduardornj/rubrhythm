@@ -4,6 +4,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import locations from '../../../../data/datalocations';
+import { scanContent } from '@/lib/contentFilter';
 import dynamic from 'next/dynamic';
 const ModernImageUpload = dynamic(() => import('@/components/ModernImageUpload'), { ssr: false });
 
@@ -47,6 +48,7 @@ function AddListing() {
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [contentWarnings, setContentWarnings] = useState({ blocked: [], flagged: [], hasBlocked: false, hasFlagged: false });
 
   useEffect(() => {
     if (status === 'unauthenticated') {
@@ -130,6 +132,18 @@ function AddListing() {
   const updateRate = (index, field, value) => {
     setRates(prev => prev.map((rate, i) => i === index ? { ...rate, [field]: value } : rate));
   };
+  // Content filter — real-time scan as provider types
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (title || description) {
+        setContentWarnings(scanContent(`${title} ${description}`));
+      } else {
+        setContentWarnings({ blocked: [], flagged: [], hasBlocked: false, hasFlagged: false });
+      }
+    }, 300); // debounce 300ms
+    return () => clearTimeout(timer);
+  }, [title, description]);
+
   const LISTING_FEE = 10;
   const titleHasVerified = /\bverified\b/i.test(title);
 
@@ -142,6 +156,13 @@ function AddListing() {
     try {
       if (titleHasVerified) {
         setError('The word "Verified" is not allowed in your title. Only staff-verified accounts receive the Verified badge.');
+        setLoading(false);
+        return;
+      }
+
+      // Content filter — block if prohibited terms found
+      if (contentWarnings.hasBlocked) {
+        setError(`Your listing contains prohibited terms: ${contentWarnings.blocked.join(", ")}. Remove them to publish.`);
         setLoading(false);
         return;
       }
@@ -379,6 +400,44 @@ function AddListing() {
                 </p>
                 <span className={`text-[11px] shrink-0 ml-3 ${description.length > 2800 ? 'text-amber-400' : 'text-white/30'}`}>{3000 - description.length} characters left</span>
               </div>
+
+              {/* Content Filter Warnings — real-time */}
+              {contentWarnings.hasBlocked && (
+                <div className="mt-3 bg-red-500/10 border border-red-500/30 rounded-xl px-4 py-3">
+                  <p className="text-red-400 text-xs font-bold mb-1.5 flex items-center gap-1.5">
+                    <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                    Prohibited content detected — your listing will be rejected
+                  </p>
+                  <p className="text-red-400/70 text-[11px] leading-relaxed mb-2">
+                    The following terms violate our Terms of Service. Remove them before submitting:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {contentWarnings.blocked.map(term => (
+                      <span key={term} className="px-2 py-0.5 bg-red-500/20 border border-red-500/30 rounded-md text-red-300 text-[11px] font-bold">
+                        {term}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {!contentWarnings.hasBlocked && contentWarnings.hasFlagged && (
+                <div className="mt-3 bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3">
+                  <p className="text-amber-400 text-xs font-bold mb-1.5 flex items-center gap-1.5">
+                    <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
+                    Review notice — these terms may trigger manual review
+                  </p>
+                  <p className="text-amber-400/70 text-[11px] leading-relaxed mb-2">
+                    Your listing can still be submitted, but it will be carefully reviewed by our moderation team:
+                  </p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {contentWarnings.flagged.map(term => (
+                      <span key={term} className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/25 rounded-md text-amber-300 text-[11px] font-medium">
+                        {term}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div>
@@ -603,8 +662,8 @@ function AddListing() {
             <Link href="/myaccount/listings" className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all text-center flex-1 sm:flex-none">
               Cancel
             </Link>
-            <button type="submit" disabled={loading} className="px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(255,42,127,0.4)] hover:scale-[1.02] transition-all disabled:opacity-50 text-center flex-1 sm:flex-none uppercase tracking-widest text-sm">
-              {loading ? 'Processing...' : (listingId ? 'Save Changes' : 'Publish Listing')}
+            <button type="submit" disabled={loading || contentWarnings.hasBlocked} className="px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(255,42,127,0.4)] hover:scale-[1.02] transition-all disabled:opacity-50 text-center flex-1 sm:flex-none uppercase tracking-widest text-sm">
+              {loading ? 'Processing...' : contentWarnings.hasBlocked ? 'Remove Prohibited Content' : (listingId ? 'Save Changes' : 'Publish Listing')}
             </button>
           </div>
         </div>

@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
+import { scanContent } from "@/lib/contentFilter";
 
 function imgSrc(images) {
     try {
@@ -90,6 +91,9 @@ function ListingDetail({ listing, onAction, onDelete, actionLoading }) {
     const isHighlightActive = listing.isHighlighted && listing.highlightEndDate && new Date(listing.highlightEndDate) > new Date();
     const isAvailableNow = listing.availableNow && listing.availableUntil && new Date(listing.availableUntil) > new Date();
 
+    // Content scan — check listing text for flagged/blocked terms
+    const contentScan = scanContent(`${listing.title || ""} ${listing.description || ""}`);
+
     return (
         <div className="bg-white/[0.02] border-t border-white/5 px-4 py-4 space-y-4 animate-fade-in">
             {/* Info Grid */}
@@ -149,6 +153,82 @@ function ListingDetail({ listing, onAction, onDelete, actionLoading }) {
                     )}
                 </div>
             </div>
+
+            {/* ID Verification Warning — provider without blue badge */}
+            {!listing.user?.verified && (
+                <div className="bg-orange-500/5 border border-orange-500/15 rounded-xl p-3 flex items-start gap-3">
+                    <span className="text-orange-400 text-base flex-shrink-0 mt-0.5">⚠️</span>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-orange-400/80 font-bold text-[11px] uppercase tracking-wider mb-1">Provider sem verificação de identidade</p>
+                        <p className="text-white/40 text-[11px] leading-relaxed">
+                            {listing.user?.name || "Este provider"} não possui Blue Badge (ID não verificado).
+                            Listings de providers não verificados representam maior risco.
+                            Considere solicitar verificação antes de aprovar.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Content Filter Alerts — flagged or blocked terms */}
+            {(contentScan.hasBlocked || contentScan.hasFlagged) && (
+                <div className={`rounded-xl p-3 flex items-start gap-3 ${contentScan.hasBlocked ? "bg-red-500/8 border border-red-500/20" : "bg-amber-500/5 border border-amber-500/15"}`}>
+                    <span className={`text-base flex-shrink-0 mt-0.5 ${contentScan.hasBlocked ? "text-red-400" : "text-amber-400"}`}>
+                        {contentScan.hasBlocked ? "🚫" : "⚡"}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                        <p className={`font-bold text-[11px] uppercase tracking-wider mb-1.5 ${contentScan.hasBlocked ? "text-red-400/80" : "text-amber-400/80"}`}>
+                            {contentScan.hasBlocked ? "Conteudo Proibido Detectado" : "Conteudo Sinalizado para Revisao"}
+                        </p>
+                        {contentScan.hasBlocked && contentScan.blocked.length > 0 && (
+                            <div className="mb-2">
+                                <p className="text-white/30 text-[10px] mb-1">Termos bloqueados (RED):</p>
+                                <div className="flex flex-wrap gap-1">
+                                    {contentScan.blocked.map(term => (
+                                        <span key={term} className="px-2 py-0.5 bg-red-500/20 border border-red-500/30 rounded-md text-red-300 text-[10px] font-bold">{term}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                        {contentScan.hasFlagged && contentScan.flagged.length > 0 && (
+                            <div>
+                                <p className="text-white/30 text-[10px] mb-1">Termos sinalizados (YELLOW):</p>
+                                <div className="flex flex-wrap gap-1">
+                                    {contentScan.flagged.map(term => (
+                                        <span key={term} className="px-2 py-0.5 bg-amber-500/15 border border-amber-500/25 rounded-md text-amber-300 text-[10px] font-medium">{term}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* Moderation Checklist — only for pending listings */}
+            {s === "pending" && (
+                <div className="bg-yellow-500/5 border border-yellow-500/15 rounded-xl p-4">
+                    <p className="text-yellow-400/80 font-bold text-[11px] uppercase tracking-wider mb-3">Checklist de Moderação</p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2">
+                        {[
+                            { label: "Título descreve serviço de massagem legítimo", ok: true },
+                            { label: "Sem linguagem de solicitação sexual explícita", ok: true },
+                            { label: "Fotos presentes e não pornográficas", ok: true },
+                            { label: "Preço ou faixa de preço preenchida", ok: true },
+                            { label: "Cidade e estado correspondem a uma localização real", ok: true },
+                            { label: "Provider tem conta ativa (não suspensa)", ok: true },
+                            { label: "Sem código de link externo ou contato proibido", ok: true },
+                            { label: "Sem indícios de menor de idade no conteúdo", ok: true },
+                        ].map(({ label }) => (
+                            <label key={label} className="flex items-start gap-2 cursor-pointer group">
+                                <input type="checkbox" className="mt-0.5 w-3.5 h-3.5 accent-yellow-400 flex-shrink-0 cursor-pointer" />
+                                <span className="text-[11px] text-white/50 group-hover:text-white/70 transition-colors leading-relaxed">{label}</span>
+                            </label>
+                        ))}
+                    </div>
+                    <p className="text-white/20 text-[10px] mt-3 leading-relaxed">
+                        Marque todos os itens antes de aprovar. Se qualquer item falhar → Rejeitar.
+                    </p>
+                </div>
+            )}
 
             {/* Action Buttons */}
             <div className="space-y-3">

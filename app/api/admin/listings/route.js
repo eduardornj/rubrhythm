@@ -1,6 +1,27 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
+import crypto from "crypto";
+
+// Audit log helper — logs admin actions to securitylog table
+async function logAdminAction(adminId, action, details, request) {
+    try {
+        const ip = request?.headers?.get("x-forwarded-for") || request?.headers?.get("x-real-ip") || "unknown";
+        await prisma.securitylog.create({
+            data: {
+                id: `sl_${Date.now()}_${crypto.randomUUID().slice(0, 8)}`,
+                type: "ADMIN_ACTION",
+                severity: ["approve", "reactivate", "bump-up"].includes(action) ? "info" : ["reject", "deactivate", "delete"].includes(action) ? "warning" : "info",
+                message: `Admin ${action} on listing`,
+                details: details,
+                userId: adminId,
+                ipAddress: ip,
+            }
+        });
+    } catch (e) {
+        console.error("[AuditLog] Failed to log admin action:", e);
+    }
+}
 
 export async function GET(request) {
     try {
@@ -218,6 +239,18 @@ export async function PATCH(request) {
             }
         }
 
+        // Audit log — record every admin action on listings
+        await logAdminAction(session.user.id, action, {
+            listingId: updatedListing.id,
+            listingTitle: updatedListing.title,
+            city: updatedListing.city,
+            state: updatedListing.state,
+            action,
+            days: days || null,
+            hours: hours || null,
+            message,
+        }, request);
+
         return NextResponse.json({
             success: true,
             data: { listingId: updatedListing.id, action, message },
@@ -253,7 +286,22 @@ export async function DELETE(request) {
             }, { status: 400 });
         }
 
+        // Fetch listing info before deleting for audit log
+        const listingToDelete = await prisma.listing.findUnique({
+            where: { id },
+            select: { title: true, city: true, state: true, userId: true },
+        });
+
         await prisma.listing.delete({ where: { id } });
+
+        // Audit log
+        await logAdminAction(session.user.id, "delete", {
+            listingId: id,
+            listingTitle: listingToDelete?.title || "unknown",
+            city: listingToDelete?.city,
+            state: listingToDelete?.state,
+            providerId: listingToDelete?.userId,
+        }, request);
 
         return NextResponse.json({
             success: true,

@@ -8,6 +8,7 @@ import SearchBar from "../../../../components/SearchBar";
 import { safeJsonParse } from "@/lib/json-utils";
 
 import locations from "../../../../data/datalocations";
+import cityContent from "../../../../data/cityContent";
 
 export async function generateStaticParams() {
   const paths = [];
@@ -114,6 +115,18 @@ async function getListings(state, city) {
   });
 }
 
+const TIER1_CITIES = ["New York", "Los Angeles", "Las Vegas", "Miami"];
+const TIER2_CITIES = ["Chicago", "Houston", "Atlanta", "Phoenix", "Dallas", "San Francisco", "Orlando", "Denver", "San Diego", "Seattle", "Philadelphia", "Tampa"];
+
+async function getFoundingSpots(formattedCity) {
+  const foundingLimit = TIER1_CITIES.includes(formattedCity) ? 50 : TIER2_CITIES.includes(formattedCity) ? 25 : 10;
+  const taken = await prisma.listing.count({
+    where: { city: formattedCity, isFoundingProvider: true },
+  });
+  const remaining = Math.max(0, foundingLimit - taken);
+  return { remaining, foundingLimit };
+}
+
 async function getFavorites(userId) {
   if (!userId) return [];
 
@@ -214,6 +227,7 @@ export async function generateMetadata({ params: paramsPromise }) {
     title: `Body Rubs & Massage in ${formattedCity}, ${formattedState} | RubRhythm`,
     description: `Find ${count > 0 ? count + ' verified' : 'top-rated'} body rub & massage providers in ${formattedCity}, ${formattedState}. Browse profiles, read reviews, and connect directly.`,
     alternates: { canonical: `/united-states/${state}/${city}` },
+    ...(count === 0 && { robots: { index: false, follow: true } }),
     openGraph: {
       title: `Body Rubs & Massage in ${formattedCity}, ${formattedState}`,
       description: `${count > 0 ? count + ' providers' : 'Top providers'} in ${formattedCity}, ${formattedState} on RubRhythm.`,
@@ -229,13 +243,16 @@ export default async function CityPage({ params: paramsPromise }) {
   const session = await auth();
   const userId = session?.user?.id;
 
-  const cityData = await getCityData(state, city);
-  const listings = await getListings(state, city);
-  const favoriteIds = await getFavorites(userId);
-  const featuredListings = await getFeaturedListings(state, city);
-
   const formattedState = state.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
   const formattedCity = city.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+
+  const cityData = await getCityData(state, city);
+  const [listings, favoriteIds, featuredListings, { remaining: foundingRemaining }] = await Promise.all([
+    getListings(state, city),
+    getFavorites(userId),
+    getFeaturedListings(state, city),
+    getFoundingSpots(formattedCity),
+  ]);
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -289,12 +306,37 @@ export default async function CityPage({ params: paramsPromise }) {
           </div>
         </div>
 
+        {/* Provider CTA Banner */}
+        <div className={`mb-8 rounded-2xl border p-5 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gradient-to-r ${foundingRemaining > 0 ? 'border-amber-500/30 from-amber-500/10 to-amber-500/5' : 'border-primary/20 from-primary/10 to-primary/5'}`}>
+          <div className="flex items-center gap-4">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${foundingRemaining > 0 ? 'bg-amber-500/20' : 'bg-primary/20'}`}>
+              {foundingRemaining > 0 ? '⭐' : '💆'}
+            </div>
+            <div>
+              <p className="text-white font-semibold text-sm">Are you a massage provider in {formattedCity}?</p>
+              {foundingRemaining > 0 ? (
+                <p className="text-amber-400/80 text-xs mt-0.5 font-medium">
+                  Only {foundingRemaining} Founding Provider spot{foundingRemaining === 1 ? '' : 's'} left in {formattedCity} — free for 3 months
+                </p>
+              ) : (
+                <p className="text-white/50 text-xs mt-0.5">Create your free profile and start getting clients today</p>
+              )}
+            </div>
+          </div>
+          <Link
+            href="/register-on-rubrhythm"
+            className={`flex-shrink-0 px-5 py-2.5 text-sm font-bold rounded-xl transition-colors whitespace-nowrap ${foundingRemaining > 0 ? 'bg-amber-500 hover:bg-amber-400 text-black' : 'bg-primary hover:bg-primary/90 text-white'}`}
+          >
+            {foundingRemaining > 0 ? 'Claim Your Spot' : 'List for Free'}
+          </Link>
+        </div>
+
         {/* Main Listings Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {listings.length === 0 ? (
             <div className="col-span-4 text-center py-16">
-              <p className="text-white/40 text-lg">No providers found in {formattedCity}.</p>
-              <p className="text-white/20 text-sm mt-2">Try a nearby city or check back later.</p>
+              <p className="text-white/40 text-lg">No providers yet in {formattedCity}.</p>
+              <p className="text-white/20 text-sm mt-2">Be the first — list your services for free.</p>
             </div>
           ) : (
             listings.map((listing, idx) => (
@@ -331,11 +373,17 @@ export default async function CityPage({ params: paramsPromise }) {
         {/* SEO Content Block */}
         <div className="mt-16 glass-card p-6 prose prose-invert max-w-none">
           <h2 className="text-lg font-bold text-white mb-3">Body Rubs & Massage in {formattedCity}, {formattedState}</h2>
-          <p className="text-white/50 text-sm leading-relaxed">
-            RubRhythm connects you with verified body rub and massage providers in {formattedCity}, {formattedState}.
-            Browse provider profiles, view photos, read reviews, and connect directly — all in one place.
-            {listings.length > 0 && ` Currently ${listings.length} provider${listings.length > 1 ? 's' : ''} active in ${formattedCity}.`}
-          </p>
+          {cityContent[formattedCity]?.content ? (
+            cityContent[formattedCity].content.split('\n\n').map((paragraph, i) => (
+              <p key={i} className="text-white/50 text-sm leading-relaxed mb-3">{paragraph}</p>
+            ))
+          ) : (
+            <p className="text-white/50 text-sm leading-relaxed">
+              RubRhythm connects you with verified body rub and massage providers in {formattedCity}, {formattedState}.
+              Browse provider profiles, view photos, read reviews, and connect directly — all in one place.
+              {listings.length > 0 && ` Currently ${listings.length} provider${listings.length > 1 ? 's' : ''} active in ${formattedCity}.`}
+            </p>
+          )}
         </div>
       </div>
     </MainLayout>
