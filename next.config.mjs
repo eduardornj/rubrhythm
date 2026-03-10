@@ -1,4 +1,5 @@
 import path from 'path';
+import CopyPlugin from 'copy-webpack-plugin';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
@@ -10,13 +11,23 @@ const nextConfig = {
       },
     ],
   },
-  webpack: (config) => {
+  webpack: (config, { isServer }) => {
     config.resolve.alias = {
       ...config.resolve.alias,
       '@components': path.resolve('./components'),
       '@app-components': path.resolve('./app/components'),
       '@lib': path.resolve('./lib'),
     };
+    // Copy fonts to server chunks so fontconfig can find them on Vercel
+    if (isServer) {
+      config.plugins.push(
+        new CopyPlugin({
+          patterns: [
+            { from: 'lib/fonts', to: 'chunks/fonts' },
+          ],
+        })
+      );
+    }
     return config;
   },
   eslint: {
