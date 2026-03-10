@@ -38,6 +38,25 @@ export async function PATCH(request) {
           where: { id: listingId },
           data: { isApproved: true },
         });
+        const TIER1_CITIES = ["New York", "Los Angeles", "Las Vegas", "Miami"];
+        const TIER2_CITIES = ["Chicago", "Houston", "Atlanta", "Phoenix", "Dallas", "San Francisco", "Orlando", "Denver", "San Diego", "Seattle", "Philadelphia", "Tampa"];
+        const cityName = updatedListing.city;
+        const foundingLimit = TIER1_CITIES.includes(cityName) ? 50 : TIER2_CITIES.includes(cityName) ? 25 : 10;
+        const approvedCountInCity = await prisma.listing.count({
+          where: {
+            state: updatedListing.state,
+            city: updatedListing.city,
+            isApproved: true,
+            isActive: true,
+          },
+        });
+        if (approvedCountInCity <= foundingLimit) {
+          await prisma.listing.update({
+            where: { id: listingId },
+            data: { isFoundingProvider: true },
+          });
+          updatedListing = { ...updatedListing, isFoundingProvider: true };
+        }
         message = "Anúncio aprovado com sucesso";
         break;
 

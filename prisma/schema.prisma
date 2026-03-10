@@ -285,6 +285,7 @@ model listing {
   autoRenewFeatured   Boolean     @default(false)
   autoRenewHighlight  Boolean     @default(false)
   autoRenewAvailable  Boolean     @default(false)
+  isFoundingProvider  Boolean     @default(false)
   conversation     conversation[]
   escrow           escrow[]
   favorite         favorite[]
@@ -304,6 +305,7 @@ model listing {
   @@index([highlightEndDate])
   @@index([availableUntil])
   @@index([autoBumpEnabled, autoBumpHour, isApproved, isActive])
+  @@index([isFoundingProvider])
 }
 
 model message {

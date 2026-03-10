@@ -153,8 +153,30 @@ export async function PATCH(request) {
         const updatedListing = await prisma.listing.update({
             where: { id: listingId },
             data: updateData,
-            select: { id: true, userId: true, title: true }
+            select: { id: true, userId: true, title: true, state: true, city: true }
         });
+
+        // Auto-mark as Founding Provider based on city tier limits
+        if (action === "approve" || action === "reactivate") {
+            const TIER1_CITIES = ["New York", "Los Angeles", "Las Vegas", "Miami"];
+            const TIER2_CITIES = ["Chicago", "Houston", "Atlanta", "Phoenix", "Dallas", "San Francisco", "Orlando", "Denver", "San Diego", "Seattle", "Philadelphia", "Tampa"];
+            const cityName = updatedListing.city;
+            const foundingLimit = TIER1_CITIES.includes(cityName) ? 50 : TIER2_CITIES.includes(cityName) ? 25 : 10;
+            const approvedCountInCity = await prisma.listing.count({
+                where: {
+                    state: updatedListing.state,
+                    city: updatedListing.city,
+                    isApproved: true,
+                    isActive: true,
+                },
+            });
+            if (approvedCountInCity <= foundingLimit) {
+                await prisma.listing.update({
+                    where: { id: listingId },
+                    data: { isFoundingProvider: true },
+                });
+            }
+        }
 
         // Auto-notify the provider when their listing is approved or rejected
         if ((action === "approve" || action === "reject" || action === "reactivate" || action === "deactivate") && updatedListing.userId) {
