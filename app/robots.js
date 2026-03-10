@@ -17,6 +17,6 @@ export default function robots() {
         ],
       },
     ],
-    sitemap: 'https://rubrhythm.bubblesenterprise.com/sitemap.xml',
+    sitemap: 'https://rubrhythm.com/sitemap.xml',
   };
 }

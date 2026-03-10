@@ -11,7 +11,7 @@ export const metadata = {
   title: "RubRhythm - Body Rubs & Massage Directory | Find Providers Near You",
   description: "Find body rub and massage providers across America. Browse verified listings in New York, Los Angeles, Miami, Chicago, and 250+ cities. Safe, verified, professional.",
   alternates: {
-    canonical: "https://rubrhythm.bubblesenterprise.com",
+    canonical: "https://rubrhythm.com",
   },
 };
 
@@ -19,8 +19,8 @@ const jsonLdOrganization = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "RubRhythm",
-  url: "https://rubrhythm.bubblesenterprise.com",
-  logo: "https://rubrhythm.bubblesenterprise.com/icons/icon-512x512.svg",
+  url: "https://rubrhythm.com",
+  logo: "https://rubrhythm.com/icons/icon-512x512.svg",
   description: "Body rub and massage provider directory across America.",
 };
 
@@ -28,10 +28,10 @@ const jsonLdWebSite = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "RubRhythm",
-  url: "https://rubrhythm.bubblesenterprise.com",
+  url: "https://rubrhythm.com",
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://rubrhythm.bubblesenterprise.com/search-results?city={search_term_string}",
+    target: "https://rubrhythm.com/search-results?city={search_term_string}",
     "query-input": "required name=search_term_string",
   },
 };

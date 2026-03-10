@@ -169,7 +169,7 @@ export default async function Image() {
             display: 'flex',
           }}
         >
-          rubrhythm.bubblesenterprise.com
+          rubrhythm.com
         </div>
       </div>
     ),
