@@ -108,6 +108,7 @@ export async function POST(request) {
           userId,
           isApproved: false, // Anúncio fica pendente até ser aprovado
           isFeatured: false,
+          lastBumpUp: new Date(),
           updatedAt: new Date()
         },
       });
