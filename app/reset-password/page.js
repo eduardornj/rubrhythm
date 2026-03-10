@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import MainLayout from "@components/MainLayout";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -12,7 +13,7 @@ function ResetPasswordForm() {
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [status, setStatus] = useState("idle"); // idle | loading | done | error
+  const [status, setStatus] = useState("idle"); // idle | loading | done | error | invalid
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -43,7 +44,7 @@ function ResetPasswordForm() {
         setStatus("error");
       } else {
         setStatus("done");
-        setTimeout(() => router.push("/auth/signin"), 3000);
+        setTimeout(() => router.push("/login"), 3000);
       }
     } catch {
       setError("Network error. Please try again.");
@@ -53,27 +54,35 @@ function ResetPasswordForm() {
 
   if (status === "invalid") {
     return (
-      <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-6 text-center">
-        <p className="text-red-400 font-semibold mb-2">Invalid reset link</p>
+      <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6 text-center">
+        <p className="text-red-400 font-bold mb-2">Invalid reset link</p>
         <p className="text-white/50 text-sm mb-4">This link is invalid or has already been used.</p>
-        <Link href="/forgot-password" className="text-primary hover:underline text-sm">Request a new reset link</Link>
+        <Link href="/forgot-password" className="text-primary hover:text-accent text-sm transition-colors font-semibold">
+          Request a new reset link
+        </Link>
       </div>
     );
   }
 
   if (status === "done") {
     return (
-      <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-6 text-center">
-        <p className="text-green-400 font-semibold mb-2">Password updated!</p>
+      <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 text-center">
+        <p className="text-green-400 font-bold mb-2">Password updated!</p>
         <p className="text-white/50 text-sm">Redirecting you to sign in...</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <label className="block text-white/60 text-sm font-medium mb-1.5">New Password</label>
+    <form onSubmit={handleSubmit} className="space-y-5">
+      {error && (
+        <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
+          <span>⚠️</span> {error}
+        </div>
+      )}
+
+      <div className="space-y-1.5">
+        <label className="text-white/80 text-sm font-medium">New Password</label>
         <div className="relative">
           <input
             type={showPassword ? "text" : "password"}
@@ -83,17 +92,20 @@ function ResetPasswordForm() {
             minLength={8}
             autoComplete="new-password"
             placeholder="At least 8 characters"
-            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 pr-16 text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+            className="w-full p-3.5 pr-16 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-all"
           />
-          <button type="button" onClick={() => setShowPassword(v => !v)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 text-xs font-medium transition-colors">
+          <button
+            type="button"
+            onClick={() => setShowPassword((v) => !v)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors text-xs font-medium"
+          >
             {showPassword ? "Hide" : "Show"}
           </button>
         </div>
       </div>
 
-      <div>
-        <label className="block text-white/60 text-sm font-medium mb-1.5">Confirm Password</label>
+      <div className="space-y-1.5">
+        <label className="text-white/80 text-sm font-medium">Confirm Password</label>
         <input
           type={showPassword ? "text" : "password"}
           value={confirm}
@@ -101,21 +113,23 @@ function ResetPasswordForm() {
           required
           autoComplete="new-password"
           placeholder="Repeat your password"
-          className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
+          className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-all"
         />
       </div>
-
-      {error && (
-        <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>
-      )}
 
       <button
         type="submit"
         disabled={status === "loading"}
-        className="w-full py-3 rounded-xl font-bold text-white transition-all disabled:opacity-50"
-        style={{ background: "linear-gradient(135deg, #e11d48, #f59e0b)" }}
+        className="w-full p-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {status === "loading" ? "Updating..." : "Set New Password"}
+        {status === "loading" ? (
+          <span className="flex items-center justify-center gap-2">
+            <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            Updating...
+          </span>
+        ) : (
+          "Set New Password →"
+        )}
       </button>
     </form>
   );
@@ -123,18 +137,24 @@ function ResetPasswordForm() {
 
 export default function ResetPasswordPage() {
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#08080d" }}>
-      <div className="w-full max-w-md">
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-8">
-          <div className="mb-6">
-            <h1 className="text-white text-2xl font-bold mb-1">Set New Password</h1>
-            <p className="text-white/40 text-sm">Choose a strong password for your account.</p>
+    <MainLayout>
+      <div className="min-h-screen flex items-center justify-center px-4 py-8 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/8 pointer-events-none" />
+        <div className="relative w-full max-w-md">
+          <div className="backdrop-blur-xl bg-white/4 border border-white/10 rounded-3xl p-8 shadow-2xl">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-2xl mb-4 shadow-lg shadow-primary/20">
+                <span className="text-white text-2xl">🔒</span>
+              </div>
+              <h1 className="text-2xl font-black text-white mb-1">Set New Password</h1>
+              <p className="text-text-muted text-sm">Choose a strong password for your account.</p>
+            </div>
+            <Suspense fallback={<div className="text-white/30 text-sm text-center">Loading...</div>}>
+              <ResetPasswordForm />
+            </Suspense>
           </div>
-          <Suspense fallback={<div className="text-white/30 text-sm">Loading...</div>}>
-            <ResetPasswordForm />
-          </Suspense>
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import Link from "next/link";
+import MainLayout from "@components/MainLayout";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -31,56 +32,78 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#08080d" }}>
-      <div className="w-full max-w-md">
-        <div className="bg-white/3 border border-white/8 rounded-2xl p-8">
-          <div className="mb-6">
-            <h1 className="text-white text-2xl font-bold mb-1">Forgot Password</h1>
-            <p className="text-white/40 text-sm">Enter your email and we'll send you a reset link.</p>
-          </div>
-
-          {status === "done" ? (
-            <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-4 text-center">
-              <p className="text-green-400 font-semibold mb-1">Check your email</p>
-              <p className="text-white/50 text-sm">If an account exists for <strong className="text-white/70">{email}</strong>, you'll receive a reset link shortly.</p>
-              <Link href="/auth/signin" className="block mt-4 text-sm text-primary hover:underline">Back to Sign In</Link>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-white/60 text-sm font-medium mb-1.5">Email Address</label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  autoComplete="email"
-                  placeholder="your@email.com"
-                  className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/50 transition-all"
-                />
+    <MainLayout>
+      <div className="min-h-screen flex items-center justify-center px-4 py-8 relative">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/8 via-transparent to-accent/8 pointer-events-none" />
+        <div className="relative w-full max-w-md">
+          <div className="backdrop-blur-xl bg-white/4 border border-white/10 rounded-3xl p-8 shadow-2xl">
+            <div className="text-center mb-8">
+              <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-2xl mb-4 shadow-lg shadow-primary/20">
+                <span className="text-white text-2xl">🔑</span>
               </div>
+              <h1 className="text-2xl font-black text-white mb-1">Forgot Password</h1>
+              <p className="text-text-muted text-sm">Enter your email and we'll send you a reset link.</p>
+            </div>
 
-              {error && (
-                <p className="text-red-400 text-sm bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2">{error}</p>
-              )}
+            {status === "done" ? (
+              <div className="bg-green-500/10 border border-green-500/20 rounded-2xl p-6 text-center">
+                <p className="text-green-400 font-bold mb-2">Check your email</p>
+                <p className="text-white/50 text-sm mb-4">
+                  If an account exists for <strong className="text-white/70">{email}</strong>, you'll receive a reset link shortly.
+                </p>
+                <Link href="/login" className="text-primary hover:text-accent text-sm transition-colors font-semibold">
+                  Back to Sign In
+                </Link>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {error && (
+                  <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-3 text-red-300 text-sm flex items-center gap-2">
+                    <span>⚠️</span> {error}
+                  </div>
+                )}
 
-              <button
-                type="submit"
-                disabled={status === "loading"}
-                className="w-full py-3 rounded-xl font-bold text-white transition-all disabled:opacity-50"
-                style={{ background: "linear-gradient(135deg, #e11d48, #f59e0b)" }}
-              >
-                {status === "loading" ? "Sending..." : "Send Reset Link"}
-              </button>
+                <div className="space-y-1.5">
+                  <label className="text-white/80 text-sm font-medium">Email Address</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    autoComplete="email"
+                    placeholder="your@email.com"
+                    className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-all"
+                  />
+                </div>
 
-              <p className="text-center text-white/30 text-sm">
-                Remember your password?{" "}
-                <Link href="/auth/signin" className="text-primary hover:underline">Sign In</Link>
-              </p>
-            </form>
-          )}
+                <button
+                  type="submit"
+                  disabled={status === "loading"}
+                  className="w-full p-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl hover:shadow-lg hover:shadow-primary/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {status === "loading" ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      Sending...
+                    </span>
+                  ) : (
+                    "Send Reset Link →"
+                  )}
+                </button>
+
+                <div className="text-center">
+                  <p className="text-text-muted text-sm">
+                    Remember your password?{" "}
+                    <Link href="/login" className="text-primary hover:text-accent transition-colors font-semibold">
+                      Sign In
+                    </Link>
+                  </p>
+                </div>
+              </form>
+            )}
+          </div>
         </div>
       </div>
-    </div>
+    </MainLayout>
   );
 }
