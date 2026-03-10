@@ -261,6 +261,19 @@ export default async function MassagistsPage({ params: paramsPromise }) {
   );
 }
 
+export async function generateMetadata({ params: paramsPromise }) {
+  const params = await paramsPromise;
+  const { state, city } = params;
+  const formattedCity = city.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+  const formattedState = state.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+
+  return {
+    title: `Massage Providers in ${formattedCity}, ${formattedState}`,
+    description: `Browse body rub & massage providers in ${formattedCity}, ${formattedState}. Verified listings with reviews.`,
+    alternates: { canonical: `/united-states/${state}/${city}` },
+  };
+}
+
 // Generate static params for all state/city combinations
 export async function generateStaticParams() {
   const params = [];

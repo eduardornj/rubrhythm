@@ -22,8 +22,15 @@ export default auth(async (req: any) => {
     return NextResponse.next()
   }
 
-  // Note: Ban checking is now handled by the BanCheck component on client-side
-  // to avoid edge runtime limitations with Prisma Client
+  // Ban check — isBanned is synced to JWT from DB on every token refresh
+  if (req.auth.user?.isBanned) {
+    if (pathname.startsWith('/api/')) {
+      return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
+    }
+    if (pathname !== '/banned') {
+      return NextResponse.redirect(new URL('/banned', req.url))
+    }
+  }
 
   return NextResponse.next()
 })
@@ -41,5 +48,12 @@ export const config = {
     '/favorites/:path*',
     '/add-listing/:path*',
     '/get-verified/:path*',
+    '/api/chat/:path*',
+    '/api/messages/:path*',
+    '/api/favorites/:path*',
+    '/api/listing/:path*',
+    '/api/user/:path*',
+    '/api/notifications/:path*',
+    '/api/credits/:path*',
   ],
 }

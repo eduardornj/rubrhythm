@@ -68,7 +68,14 @@ export async function GET(request, { params }) {
         isHighlighted: listing.isHighlighted,
         createdAt: listing.createdAt,
         updatedAt: listing.updatedAt,
-        user: listing.user
+        user: {
+          id: listing.user?.id,
+          name: listing.user?.name,
+          lastSeen: listing.user?.lastSeen,
+          ...(session.user.id === listing.userId || session.user.role === 'admin'
+            ? { email: listing.user?.email }
+            : {}),
+        }
       }
     });
 

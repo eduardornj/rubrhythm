@@ -7,6 +7,35 @@ import GeoLocationRedirect from "../components/GeoLocationRedirect";
 // Client components loaded dynamically
 const SearchBar = dynamic(() => import("../components/SearchBar"));
 
+export const metadata = {
+  title: "RubRhythm - Body Rubs & Massage Directory | Find Providers Near You",
+  description: "Find body rub and massage providers across America. Browse verified listings in New York, Los Angeles, Miami, Chicago, and 250+ cities. Safe, verified, professional.",
+  alternates: {
+    canonical: "https://rubrhythm.bubblesenterprise.com",
+  },
+};
+
+const jsonLdOrganization = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "RubRhythm",
+  url: "https://rubrhythm.bubblesenterprise.com",
+  logo: "https://rubrhythm.bubblesenterprise.com/icons/icon-512x512.svg",
+  description: "Body rub and massage provider directory across America.",
+};
+
+const jsonLdWebSite = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "RubRhythm",
+  url: "https://rubrhythm.bubblesenterprise.com",
+  potentialAction: {
+    "@type": "SearchAction",
+    target: "https://rubrhythm.bubblesenterprise.com/search-results?city={search_term_string}",
+    "query-input": "required name=search_term_string",
+  },
+};
+
 // Top cities for body rub & massage — ranked by market demand
 const popularCities = [
   { city: "New York", state: "New York", icon: "🍎", tag: "#1 Market" },
@@ -30,6 +59,8 @@ const popularCities = [
 export default function Home() {
   return (
     <MainLayout>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdOrganization) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLdWebSite) }} />
       <GeoLocationRedirect />
 
       {/* Hero Section with Glassmorphism Search */}

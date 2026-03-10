@@ -17,8 +17,18 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "RubRhythm - Body Rubs & Massage Directory",
+  title: {
+    default: "RubRhythm - Body Rubs & Massage Directory",
+    template: "%s | RubRhythm"
+  },
   description: "Find body rubs and massage providers across America on RubRhythm. Search for providers in cities like Dallas, Chicago, Atlanta, Houston, and more.",
+  robots: {
+    index: true,
+    follow: true,
+    'max-image-preview': 'large',
+    'max-snippet': -1,
+    'max-video-preview': -1,
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",

@@ -100,8 +100,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         if (u.image) token.picture = u.image;
       }
 
-      // Always keep session in sync with DB (since NextAuth JWT is stateless)
-      if (token.sub) {
+      // Sync with DB every 5 minutes (not every request) to reduce DB load
+      const now = Date.now();
+      const lastSync = (token.lastDbSync as number) || 0;
+      const SYNC_INTERVAL = 5 * 60 * 1000; // 5 minutes
+
+      if (token.sub && (now - lastSync > SYNC_INTERVAL)) {
         try {
           const dbUser = await prisma.user.findUnique({
             where: { id: token.sub },
@@ -115,6 +119,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               token.picture = dbUser.image;
             }
           }
+          token.lastDbSync = now;
         } catch (e) {
           console.error("Error refreshing JWT from DB:", e);
         }
