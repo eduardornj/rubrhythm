@@ -1,6 +1,26 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
+import { getFeatureCost, VALID_DURATIONS } from "@/lib/feature-pricing";
+
+// Server-side pricing — NEVER trust cost from client
+const ACTION_COSTS = {
+  "listing-fee": 10,
+  "bump-up": 5,
+};
+
+function getServerCost(action, durationDays, tier) {
+  if (ACTION_COSTS[action] !== undefined) return ACTION_COSTS[action];
+  if (action === "feature") {
+    const duration = VALID_DURATIONS.includes(durationDays) ? durationDays : 7;
+    return getFeatureCost(tier || "BASIC", duration);
+  }
+  if (action === "highlight") {
+    const duration = VALID_DURATIONS.includes(durationDays) ? durationDays : 7;
+    return duration === 30 ? 30 : 10;
+  }
+  return null;
+}
 
 export async function POST(request) {
   // SECURITY: Authenticate user — never trust userId from request body
@@ -9,11 +29,17 @@ export async function POST(request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { action, listingId, cost, durationDays } = await request.json();
-  const userId = session.user.id; // Always use session, never request body
+  const { action, listingId, durationDays, tier } = await request.json();
+  const userId = session.user.id;
 
-  if (!action || !cost) {
+  if (!action) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Compute cost server-side — ignore any client-provided cost
+  const cost = getServerCost(action, durationDays, tier);
+  if (cost === null) {
+    return NextResponse.json({ error: "Invalid action" }, { status: 400 });
   }
 
   try {
@@ -41,20 +67,17 @@ export async function POST(request) {
 
     // Deduct credits atomically
     await prisma.$transaction(async (tx) => {
-      // Deduct from user credits (single source of truth)
       const updatedUser = await tx.user.update({
         where: { id: userId },
         data: { credits: { decrement: cost } },
       });
 
-      // Sync creditbalance
       await tx.creditbalance.upsert({
         where: { userId },
         update: { balance: updatedUser.credits },
         create: { id: `cb_${userId}`, userId, balance: updatedUser.credits }
       });
 
-      // Record transaction
       await tx.credittransaction.create({
         data: {
           id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -75,24 +98,24 @@ export async function POST(request) {
         data: { lastBumpUp: new Date() },
       });
     } else if (action === "highlight") {
+      const duration = VALID_DURATIONS.includes(durationDays) ? durationDays : 7;
       const endDate = new Date();
-      endDate.setDate(endDate.getDate() + (durationDays || 7));
+      endDate.setDate(endDate.getDate() + duration);
       await prisma.listing.update({
         where: { id: listingId },
         data: { isHighlighted: true, highlightEndDate: endDate },
       });
     } else if (action === "feature") {
+      const duration = VALID_DURATIONS.includes(durationDays) ? durationDays : 7;
       const endDate = new Date();
-      endDate.setDate(endDate.getDate() + (durationDays || 30));
+      endDate.setDate(endDate.getDate() + duration);
       await prisma.listing.update({
         where: { id: listingId },
         data: { isFeatured: true, featuredEndDate: endDate },
       });
-    } else {
-      return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    return NextResponse.json({ message: "Action completed successfully" });
+    return NextResponse.json({ message: "Action completed successfully", cost });
   } catch (error) {
     console.error("Error processing action:", error);
     return NextResponse.json({ error: "Failed to process action" }, { status: 500 });

@@ -209,7 +209,7 @@ export async function POST(request, { params }) {
   } catch (error) {
     console.error('Error sending message:', error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message, stack: error.stack },
+      { error: 'Internal server error' },
       { status: 500 }
     );
   }

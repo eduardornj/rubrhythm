@@ -5,7 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useState, useEffect, useRef } from "react";
-import FavoriteButton from "@components/FavoriteButton";
+import FavoriteButton from "@/app/components/FavoriteButton";
 import dynamic from "next/dynamic";
 const PhotoModal = dynamic(() => import("../../../../../components/PhotoModal"), { ssr: false });
 import { getFirstListingImage } from "@/lib/image-utils";

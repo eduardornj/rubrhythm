@@ -8,7 +8,7 @@ export async function GET(request) {
     const city = searchParams.get('city');
     const state = searchParams.get('state');
     const page = parseInt(searchParams.get('page')) || 1;
-    const limit = parseInt(searchParams.get('limit')) || 20;
+    const limit = Math.min(parseInt(searchParams.get('limit')) || 20, 100);
     const skip = (page - 1) * limit;
 
     // Construir filtros
@@ -114,9 +114,10 @@ export async function POST(request) {
       age,
       services,
       page = 1,
-      limit = 20
+      limit: rawLimit = 20
     } = body;
 
+    const limit = Math.min(rawLimit, 100);
     const skip = (page - 1) * limit;
 
     // Construir filtros avançados

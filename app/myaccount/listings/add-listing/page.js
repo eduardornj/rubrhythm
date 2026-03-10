@@ -4,7 +4,8 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import Link from 'next/link';
 import locations from '../../../../data/datalocations';
-import ModernImageUpload from '@/components/ModernImageUpload';
+import dynamic from 'next/dynamic';
+const ModernImageUpload = dynamic(() => import('@/components/ModernImageUpload'), { ssr: false });
 
 export default function AddListingPage() {
   return (

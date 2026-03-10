@@ -49,13 +49,13 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         })
 
         if (!user || !user.password) {
-          throw new Error("No user found with this email")
+          throw new Error("Invalid credentials")
         }
 
         const isPasswordValid = await bcrypt.compare(credentials.password as string, user.password)
 
         if (!isPasswordValid) {
-          throw new Error("Invalid password")
+          throw new Error("Invalid credentials")
         }
 
         return {

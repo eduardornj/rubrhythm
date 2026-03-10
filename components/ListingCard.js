@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
 import { MessageCircle } from "lucide-react";
@@ -62,11 +63,13 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
       {/* FOTO */}
       <Link href={href} className="relative block w-full h-[32rem] overflow-hidden bg-surface-hover flex-shrink-0">
         {imageUrl ? (
-          <img
+          <Image
             src={imageUrl}
             alt={listing.title}
-            loading={priority ? "eager" : "lazy"}
-            className="absolute inset-0 w-full h-full object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-500"
+            fill
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+            priority={priority}
+            className="object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-500"
             onLoad={(e) => detectFacePosition(e.target)}
             onError={(e) => { e.target.style.display = "none"; }}
           />

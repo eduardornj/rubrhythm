@@ -1,7 +1,7 @@
 import prisma from "@/lib/prisma";
 
 export default async function sitemap() {
-  const baseUrl = "https://rubrhythm.com";
+  const baseUrl = "https://rubrhythm.bubblesenterprise.com";
 
   // Static pages
   const staticPages = [

@@ -25,9 +25,9 @@ export async function POST(request) {
       );
     }
 
-    if (newPassword.length < 6) {
+    if (newPassword.length < 8) {
       return NextResponse.json(
-        { error: 'A senha deve ter pelo menos 6 caracteres' },
+        { error: 'A senha deve ter pelo menos 8 caracteres' },
         { status: 400 }
       );
     }
@@ -63,7 +63,5 @@ export async function POST(request) {
       { error: 'Erro interno do servidor' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }

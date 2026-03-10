@@ -6,7 +6,7 @@ import MainLayout from "@components/MainLayout";
 import Link from "next/link";
 import Image from "next/image";
 import { useSession } from "next-auth/react";
-import FavoriteButton from "@components/FavoriteButton";
+import FavoriteButton from "@/app/components/FavoriteButton";
 import dynamic from "next/dynamic";
 const PhotoModal = dynamic(() => import("../../components/PhotoModal"), { ssr: false });
 import ListingCard from "@components/ListingCard";

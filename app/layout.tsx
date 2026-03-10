@@ -45,8 +45,8 @@ export const metadata: Metadata = {
 export const viewport = {
   width: 'device-width',
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
+  maximumScale: 5,
+  userScalable: true,
   themeColor: '#ff6b6b'
 };
 
@@ -58,15 +58,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en">
       <head>
-        {/* SEO Fallbacks for static scanner compliance */}
-        <title>RubRhythm - Body Rubs & Massage Directory</title>
-        <meta name="description" content="Find body rubs and massage providers across America on RubRhythm." />
-        <meta property="og:title" content="RubRhythm - Authentic Massage Directory" />
-        <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap" rel="stylesheet" />
-        <meta name="theme-color" content="#ff6b6b" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <meta name="apple-mobile-web-app-title" content="RubRhythm" />
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
         <meta name="msapplication-TileColor" content="#ff6b6b" />
         <meta name="msapplication-TileImage" content="/icons/icon-192x192.svg" />
