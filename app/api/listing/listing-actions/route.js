@@ -1,15 +1,23 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
+import { auth } from "@/auth";
 
 export async function POST(request) {
-  const { action, listingId, userId, cost, durationDays } = await request.json();
+  // SECURITY: Authenticate user — never trust userId from request body
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
-  if (!action || !userId || !cost) {
+  const { action, listingId, cost, durationDays } = await request.json();
+  const userId = session.user.id; // Always use session, never request body
+
+  if (!action || !cost) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
   try {
-    // Verifica se o anúncio existe e pertence ao usuário (se for uma ação que precisa de listingId)
+    // Verify listing exists and belongs to the authenticated user
     let listing = null;
     if (action !== "listing-fee") {
       listing = await prisma.listing.findUnique({
@@ -21,55 +29,61 @@ export async function POST(request) {
       }
     }
 
-    // Busca o saldo do usuário
-    const creditBalance = await prisma.creditBalance.findUnique({
-      where: { userId },
+    // Check user credit balance
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { credits: true }
     });
 
-    if (!creditBalance || creditBalance.balance < cost) {
+    if (!user || user.credits < cost) {
       return NextResponse.json({ error: "Insufficient credits. Please add more credits to your account." }, { status: 400 });
     }
 
-    // Deduz os créditos
-    const newBalance = creditBalance.balance - cost;
-
-    await prisma.$transaction([
-      prisma.user.update({
+    // Deduct credits atomically
+    await prisma.$transaction(async (tx) => {
+      // Deduct from user credits (single source of truth)
+      const updatedUser = await tx.user.update({
         where: { id: userId },
         data: { credits: { decrement: cost } },
-      }),
-      prisma.creditBalance.update({
+      });
+
+      // Sync creditbalance
+      await tx.creditbalance.upsert({
         where: { userId },
-        data: { balance: newBalance },
-      }),
-      prisma.transaction.create({
+        update: { balance: updatedUser.credits },
+        create: { id: `cb_${userId}`, userId, balance: updatedUser.credits }
+      });
+
+      // Record transaction
+      await tx.credittransaction.create({
         data: {
+          id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
           userId,
           amount: -cost,
-          status: "completed",
-        },
-      }),
-    ]);
+          type: "SPEND",
+          description: `${action} — listingId:${listingId || 'n/a'}`,
+        }
+      });
+    });
 
-    // Aplica a funcionalidade
+    // Apply the listing action
     if (action === "listing-fee") {
-      // Apenas deduziu a taxa, não precisa fazer mais nada
-      return NextResponse.json({ message: "Listing fee deducted successfully", newBalance });
+      return NextResponse.json({ message: "Listing fee deducted successfully" });
     } else if (action === "bump-up") {
       await prisma.listing.update({
         where: { id: listingId },
-        data: { added: new Date() },
+        data: { lastBumpUp: new Date() },
       });
     } else if (action === "highlight") {
       const endDate = new Date();
-      endDate.setDate(endDate.getDate() + durationDays);
+      endDate.setDate(endDate.getDate() + (durationDays || 7));
       await prisma.listing.update({
         where: { id: listingId },
         data: { isHighlighted: true, highlightEndDate: endDate },
       });
     } else if (action === "feature") {
       const endDate = new Date();
-      endDate.setDate(endDate.getDate() + durationDays);
+      endDate.setDate(endDate.getDate() + (durationDays || 30));
       await prisma.listing.update({
         where: { id: listingId },
         data: { isFeatured: true, featuredEndDate: endDate },
@@ -78,7 +92,7 @@ export async function POST(request) {
       return NextResponse.json({ error: "Invalid action" }, { status: 400 });
     }
 
-    return NextResponse.json({ message: "Action completed successfully", newBalance });
+    return NextResponse.json({ message: "Action completed successfully" });
   } catch (error) {
     console.error("Error processing action:", error);
     return NextResponse.json({ error: "Failed to process action" }, { status: 500 });

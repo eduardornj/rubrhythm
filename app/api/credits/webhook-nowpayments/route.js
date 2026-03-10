@@ -4,14 +4,19 @@ import crypto from "crypto";
 import { sendCreditsConfirmedEmail } from "@/lib/email";
 
 // NowPayments uses HMAC-SHA512 with IPN secret
+// Uses timing-safe comparison to prevent timing attacks
 function verifySignature(rawBody, signature) {
     const secret = process.env.NOWPAYMENTS_IPN_SECRET;
-    if (!secret) return false;
+    if (!secret || !signature) return false;
     const expected = crypto
         .createHmac("sha512", secret)
         .update(rawBody)
         .digest("hex");
-    return expected === signature;
+    try {
+        return crypto.timingSafeEqual(Buffer.from(expected, 'hex'), Buffer.from(signature, 'hex'));
+    } catch {
+        return false;
+    }
 }
 
 export async function POST(request) {

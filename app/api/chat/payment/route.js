@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 
+// SECURED — Chat payment now deducts from user's credit balance instead of simulating free payments
+
 export async function POST(request) {
   try {
     const session = await auth();
@@ -21,7 +23,7 @@ export async function POST(request) {
       );
     }
 
-    // Validate payment amount (should be $5 per message)
+    // Validate payment amount (should be 5 credits per message)
     if (amount !== 5 || messagesCount !== 1) {
       return NextResponse.json(
         { success: false, error: "Invalid payment amount or message count" },
@@ -49,42 +51,81 @@ export async function POST(request) {
       );
     }
 
-    // In a real implementation, you would integrate with Stripe/PayPal here
-    // For now, we'll simulate a successful payment
-
-    // Create payment record
-    const payment = await prisma.chatpayment.create({
-      data: {
-        chatId,
-        amount,
-        messagesCount,
-        paymentMethod: 'credit_card', // This would come from actual payment processor
-        paymentId: `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        status: 'completed'
-      }
+    // Check if user has enough credits
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { credits: true }
     });
 
-    // Update chat with new credits
-    const updatedChat = await prisma.chat.update({
-      where: { id: chatId },
-      data: {
-        creditsRemaining: { increment: messagesCount },
-        totalPaid: { increment: amount }
-      }
+    if (!user || user.credits < amount) {
+      return NextResponse.json(
+        { success: false, error: "Insufficient credits. Please purchase more credits." },
+        { status: 400 }
+      );
+    }
+
+    // Deduct credits from user balance and add chat credits atomically
+    const result = await prisma.$transaction(async (tx) => {
+      // Deduct from user credits
+      const updatedUser = await tx.user.update({
+        where: { id: session.user.id },
+        data: { credits: { decrement: amount } }
+      });
+
+      // Sync creditbalance
+      await tx.creditbalance.upsert({
+        where: { userId: session.user.id },
+        update: { balance: updatedUser.credits },
+        create: { id: `cb_${session.user.id}`, userId: session.user.id, balance: updatedUser.credits }
+      });
+
+      // Record credit transaction
+      await tx.credittransaction.create({
+        data: {
+          id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          userId: session.user.id,
+          amount: -amount,
+          type: "CHAT_PAYMENT",
+          description: `Chat message payment — chatId:${chatId}`,
+        }
+      });
+
+      // Create payment record
+      const payment = await tx.chatpayment.create({
+        data: {
+          chatId,
+          amount,
+          messagesCount,
+          paymentMethod: 'credits',
+          paymentId: `tx_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          status: 'completed'
+        }
+      });
+
+      // Update chat with new message credits
+      const updatedChat = await tx.chat.update({
+        where: { id: chatId },
+        data: {
+          creditsRemaining: { increment: messagesCount },
+          totalPaid: { increment: amount }
+        }
+      });
+
+      return { payment, updatedChat };
     });
 
     return NextResponse.json({
       success: true,
       payment: {
-        id: payment.id,
-        amount: payment.amount,
-        messagesCount: payment.messagesCount,
-        paymentId: payment.paymentId,
-        status: payment.status
+        id: result.payment.id,
+        amount: result.payment.amount,
+        messagesCount: result.payment.messagesCount,
+        paymentId: result.payment.paymentId,
+        status: result.payment.status
       },
       chat: {
-        creditsRemaining: updatedChat.creditsRemaining,
-        totalPaid: updatedChat.totalPaid
+        creditsRemaining: result.updatedChat.creditsRemaining,
+        totalPaid: result.updatedChat.totalPaid
       }
     });
 
@@ -118,14 +159,9 @@ export async function GET(request) {
       );
     }
 
-    // Get chat to verify participation
     const chat = await prisma.chat.findUnique({
       where: { id: chatId },
-      include: {
-        listing: {
-          select: { userId: true }
-        }
-      }
+      include: { listing: { select: { userId: true } } }
     });
 
     if (!chat) {
@@ -135,7 +171,6 @@ export async function GET(request) {
       );
     }
 
-    // Authorization: only participants of this chat can view payment history
     const isClient = chat.clientId === session.user.id;
     const isProvider = chat.listing?.userId === session.user.id;
     const isAdmin = session.user.role === 'admin';

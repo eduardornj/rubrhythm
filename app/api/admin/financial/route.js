@@ -259,7 +259,7 @@ export async function POST(request) {
         console.error('[API] Admin Financial POST Error:', error);
         return NextResponse.json({
             success: false,
-            error: { code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao processar ação financeira.', details: error.message }
+            error: { code: 'INTERNAL_SERVER_ERROR', message: 'Erro ao processar ação financeira.' }
         }, { status: 500 });
     }
 }
