@@ -222,16 +222,49 @@ export async function PATCH(request) {
     let updateData = {};
 
     switch (action) {
-      case 'fund':
+      case 'fund': {
         if (!isClient || escrow.status !== 'pending') {
           return NextResponse.json(
             { message: 'Cannot fund this escrow' },
             { status: 403 }
           );
         }
+        // SECURITY: Reserve credits from client at fund time
+        const funder = await prisma.user.findUnique({
+          where: { id: escrow.clientId },
+          select: { credits: true }
+        });
+        if (!funder || funder.credits < escrow.amount) {
+          return NextResponse.json(
+            { message: 'Insufficient credits to fund this escrow.' },
+            { status: 400 }
+          );
+        }
+        await prisma.$transaction(async (tx) => {
+          const updated = await tx.user.update({
+            where: { id: escrow.clientId },
+            data: { credits: { decrement: escrow.amount } }
+          });
+          await tx.creditbalance.upsert({
+            where: { userId: escrow.clientId },
+            update: { balance: updated.credits },
+            create: { id: `cb_${escrow.clientId}`, userId: escrow.clientId, balance: updated.credits }
+          });
+          await tx.credittransaction.create({
+            data: {
+              id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+              userId: escrow.clientId,
+              amount: -escrow.amount,
+              type: 'escrow_funded',
+              description: `Escrow funded: ${escrow.description}`,
+              relatedId: escrowId
+            }
+          });
+        });
         newStatus = 'funded';
         updateData.fundedAt = new Date();
         break;
+      }
 
       case 'start':
         if (!isProvider || escrow.status !== 'funded') {
@@ -369,55 +402,60 @@ export async function PATCH(request) {
       }
     });
 
-    // Handle credit transactions for completed escrows
+    // Release escrowed credits to provider on completion
+    // Credits were already deducted from client at fund time
     if (newStatus === 'completed' && escrow.status !== 'completed') {
-      try {
-        // Transfer credits from client to provider
-        await prisma.$transaction(async (tx) => {
-          // Deduct from client (if using credit system)
-          await tx.user.update({
-            where: { id: escrow.clientId },
-            data: {
-              credits: {
-                decrement: escrow.amount
-              }
-            }
-          });
-
-          // Add to provider
-          await tx.user.update({
-            where: { id: escrow.providerId },
-            data: {
-              credits: {
-                increment: escrow.amount
-              }
-            }
-          });
-
-          // Log credit transactions
-          await tx.credittransaction.createMany({
-            data: [
-              {
-                userId: escrow.clientId,
-                amount: -escrow.amount,
-                type: 'escrow_payment',
-                description: `Payment for: ${escrow.description}`,
-                relatedId: escrowId
-              },
-              {
-                userId: escrow.providerId,
-                amount: escrow.amount,
-                type: 'escrow_received',
-                description: `Payment received: ${escrow.description}`,
-                relatedId: escrowId
-              }
-            ]
-          });
+      await prisma.$transaction(async (tx) => {
+        // Release to provider (client already paid at fund step)
+        const updatedProvider = await tx.user.update({
+          where: { id: escrow.providerId },
+          data: { credits: { increment: escrow.amount } }
         });
-      } catch (creditError) {
-        console.error('Error processing credit transaction:', creditError);
-        // Don't fail the escrow update if credit transaction fails
-      }
+
+        await tx.creditbalance.upsert({
+          where: { userId: escrow.providerId },
+          update: { balance: updatedProvider.credits },
+          create: { id: `cb_${escrow.providerId}`, userId: escrow.providerId, balance: updatedProvider.credits }
+        });
+
+        await tx.credittransaction.create({
+          data: {
+            id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            userId: escrow.providerId,
+            amount: escrow.amount,
+            type: 'escrow_released',
+            description: `Escrow released: ${escrow.description}`,
+            relatedId: escrowId
+          }
+        });
+      });
+    }
+
+    // Refund credits back to client on cancel (if was funded) or refund
+    if ((newStatus === 'cancelled' && escrow.status === 'funded') || newStatus === 'refunded') {
+      await prisma.$transaction(async (tx) => {
+        const updatedClient = await tx.user.update({
+          where: { id: escrow.clientId },
+          data: { credits: { increment: escrow.amount } }
+        });
+
+        await tx.creditbalance.upsert({
+          where: { userId: escrow.clientId },
+          update: { balance: updatedClient.credits },
+          create: { id: `cb_${escrow.clientId}`, userId: escrow.clientId, balance: updatedClient.credits }
+        });
+
+        await tx.credittransaction.create({
+          data: {
+            id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+            userId: escrow.clientId,
+            amount: escrow.amount,
+            type: 'escrow_refund',
+            description: `Escrow refunded: ${escrow.description}`,
+            relatedId: escrowId
+          }
+        });
+      });
     }
 
     return NextResponse.json({ escrow: updatedEscrow });

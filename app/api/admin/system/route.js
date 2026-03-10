@@ -146,7 +146,7 @@ export async function GET(request) {
                 error: {
                     code: "INTERNAL_SERVER_ERROR",
                     message: "Falha catastrófica ao buscar dados do sistema do Admin.",
-                    details: error.message
+                    // SECURITY: Never expose error.message to client
                 }
             },
             { status: 500 }

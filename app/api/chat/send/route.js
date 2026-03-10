@@ -54,6 +54,14 @@ export async function POST(request) {
       );
     }
 
+    // SECURITY: Verify sender is a participant of this chat
+    if (chat.clientId !== senderId && chat.providerId !== senderId) {
+      return NextResponse.json(
+        { success: false, error: "Forbidden: you are not a participant of this chat" },
+        { status: 403 }
+      );
+    }
+
     // Check if user has sufficient credits (5 dollars per message)
     const requiredAmount = 5.0;
 

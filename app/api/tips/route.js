@@ -87,60 +87,95 @@ export async function POST(request) {
       );
     }
 
-    // Create tip record
-    const tip = await prisma.tip.create({
-      data: {
-        senderId: session.user.id,
-        receiverId: providerId,
-        amount: parseFloat(amount),
-        message: message || null,
-        listingTitle: listingTitle || null,
-        status: 'completed' // Tips are immediately completed, no escrow
-      },
-      include: {
-        sender: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+    const tipAmount = parseFloat(amount);
+
+    // SECURITY: Check sender has enough credits before allowing tip
+    const sender = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { credits: true }
+    });
+
+    if (!sender || sender.credits < tipAmount) {
+      return NextResponse.json(
+        { message: 'Insufficient credits to send this tip.' },
+        { status: 400 }
+      );
+    }
+
+    // Atomic transaction: deduct sender, credit receiver, create tip + logs
+    const result = await prisma.$transaction(async (tx) => {
+      // Deduct from sender
+      const updatedSender = await tx.user.update({
+        where: { id: session.user.id },
+        data: { credits: { decrement: tipAmount } }
+      });
+
+      // Credit receiver
+      const updatedReceiver = await tx.user.update({
+        where: { id: providerId },
+        data: { credits: { increment: tipAmount } }
+      });
+
+      // Sync creditbalance for sender
+      await tx.creditbalance.upsert({
+        where: { userId: session.user.id },
+        update: { balance: updatedSender.credits },
+        create: { id: `cb_${session.user.id}`, userId: session.user.id, balance: updatedSender.credits }
+      });
+
+      // Sync creditbalance for receiver
+      await tx.creditbalance.upsert({
+        where: { userId: providerId },
+        update: { balance: updatedReceiver.credits },
+        create: { id: `cb_${providerId}`, userId: providerId, balance: updatedReceiver.credits }
+      });
+
+      // Create tip record
+      const tip = await tx.tip.create({
+        data: {
+          senderId: session.user.id,
+          receiverId: providerId,
+          amount: tipAmount,
+          message: message || null,
+          listingTitle: listingTitle || null,
+          status: 'completed'
         },
-        receiver: {
-          select: {
-            id: true,
-            name: true,
-            email: true
-          }
+        include: {
+          sender: { select: { id: true, name: true, email: true } },
+          receiver: { select: { id: true, name: true, email: true } }
         }
-      }
+      });
+
+      // Log sender debit
+      await tx.credittransaction.create({
+        data: {
+          id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          userId: session.user.id,
+          amount: -tipAmount,
+          type: 'tip_sent',
+          description: `Tip sent to ${provider.name || provider.email}${listingTitle ? ` for ${listingTitle}` : ''}`,
+          relatedId: tip.id
+        }
+      });
+
+      // Log receiver credit
+      await tx.credittransaction.create({
+        data: {
+          id: `ct_${Date.now() + 1}_${Math.random().toString(36).substr(2, 9)}`,
+          userId: providerId,
+          amount: tipAmount,
+          type: 'tip_received',
+          description: `Tip received from ${session.user.name || session.user.email}${listingTitle ? ` for ${listingTitle}` : ''}`,
+          relatedId: tip.id
+        }
+      });
+
+      return tip;
     });
 
-    // Log the tip transaction (for record keeping)
-    await prisma.credittransaction.create({
-      data: {
-        id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-        userId: session.user.id,
-        amount: -parseFloat(amount),
-        type: 'tip_sent',
-        description: `Tip sent to ${provider.name || provider.email}${listingTitle ? ` for ${listingTitle}` : ''}`,
-        relatedId: tip.id
-      }
-    });
-
-    await prisma.credittransaction.create({
-      data: {
-        id: `ct_${Date.now() + 1}_${Math.random().toString(36).substr(2, 9)}`,
-        userId: providerId,
-        amount: parseFloat(amount),
-        type: 'tip_received',
-        description: `Tip received from ${session.user.name || session.user.email}${listingTitle ? ` for ${listingTitle}` : ''}`,
-        relatedId: tip.id
-      }
-    });
-
-    return NextResponse.json({ 
-      tip,
-      message: 'Tip sent successfully!' 
+    return NextResponse.json({
+      tip: result,
+      message: 'Tip sent successfully!'
     });
   } catch (error) {
     console.error('Error sending tip:', error);

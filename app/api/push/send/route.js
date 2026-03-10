@@ -26,6 +26,11 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
+    // SECURITY: Only admins can send push to other users
+    if (session.user.role !== 'admin' && userId !== session.user.id) {
+      return NextResponse.json({ error: 'Forbidden: can only send notifications to yourself' }, { status: 403 });
+    }
+
     // Get user's push subscription
     const subscription = await prisma.pushSubscription.findUnique({
       where: { userId }

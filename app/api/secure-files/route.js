@@ -23,9 +23,12 @@ export async function GET(request) {
       );
     }
 
-    // If the path is actually a blob URL, redirect to it
-    if (isBlobUrl(filePath) || filePath.startsWith('http')) {
+    // SECURITY: Only redirect to verified Vercel Blob URLs, block arbitrary URLs (open redirect)
+    if (isBlobUrl(filePath)) {
       return NextResponse.redirect(filePath);
+    }
+    if (filePath.startsWith('http')) {
+      return NextResponse.json({ error: 'Invalid file reference' }, { status: 400 });
     }
 
     // For verification/profile files, check auth

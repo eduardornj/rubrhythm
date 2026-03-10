@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
+import prisma from '@/lib/prisma';
 import sharp from 'sharp';
 import { uploadToBlob, deleteFromBlob, generateBlobPath } from '@/lib/blob-storage';
 import { generateSecureId } from '@/lib/file-naming';
@@ -77,7 +78,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to upload images' },
+      { error: 'Failed to upload images' },
       { status: 500 }
     );
   }
@@ -97,6 +98,23 @@ export async function DELETE(request) {
       return NextResponse.json({ error: 'Blob URL is required' }, { status: 400 });
     }
 
+    // SECURITY: Verify the image belongs to a listing owned by this user (or admin)
+    if (session.user?.role !== 'admin') {
+      const ownerListing = await prisma.listing.findFirst({
+        where: {
+          userId: session.user.id,
+          OR: [
+            { images: { has: url } },
+            { mainImage: url }
+          ]
+        },
+        select: { id: true }
+      });
+      if (!ownerListing) {
+        return NextResponse.json({ error: 'Forbidden: image does not belong to your listing' }, { status: 403 });
+      }
+    }
+
     await deleteFromBlob(url);
 
     return NextResponse.json({
@@ -107,7 +125,7 @@ export async function DELETE(request) {
   } catch (error) {
     console.error('Delete image error:', error);
     return NextResponse.json(
-      { error: error.message || 'Failed to delete image' },
+      { error: 'Failed to delete image' },
       { status: 500 }
     );
   }

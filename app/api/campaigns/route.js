@@ -67,28 +67,64 @@ export async function POST(request) {
     const totalCost = type === 'bump' ? dailyRate : dailyRate * duration;
 
     if (budget < totalCost) {
-      return NextResponse.json({ 
-        error: `Insufficient budget. Minimum required: $${totalCost.toFixed(2)}` 
+      return NextResponse.json({
+        error: `Insufficient budget. Minimum required: $${totalCost.toFixed(2)}`
       }, { status: 400 });
     }
 
-    // Create campaign
-    const campaign = await prisma.campaign.create({
-      data: {
-        name,
-        type,
-        duration,
-        budget,
-        targetAudience: targetAudience || 'all',
-        description: description || '',
-        userId: session.user.id,
-        isActive: true,
-        startDate: new Date(),
-        endDate: new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
-      }
+    // SECURITY: Check and deduct credits before creating campaign
+    const user = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { credits: true }
     });
 
-    return NextResponse.json({ campaign }, { status: 201 });
+    if (!user || user.credits < totalCost) {
+      return NextResponse.json({ error: 'Insufficient credits for this campaign.' }, { status: 400 });
+    }
+
+    // Atomic: deduct credits + create campaign
+    const result = await prisma.$transaction(async (tx) => {
+      const updatedUser = await tx.user.update({
+        where: { id: session.user.id },
+        data: { credits: { decrement: totalCost } }
+      });
+
+      await tx.creditbalance.upsert({
+        where: { userId: session.user.id },
+        update: { balance: updatedUser.credits },
+        create: { id: `cb_${session.user.id}`, userId: session.user.id, balance: updatedUser.credits }
+      });
+
+      const campaign = await tx.campaign.create({
+        data: {
+          name,
+          type,
+          duration,
+          budget,
+          targetAudience: targetAudience || 'all',
+          description: description || '',
+          userId: session.user.id,
+          isActive: true,
+          startDate: new Date(),
+          endDate: new Date(Date.now() + duration * 24 * 60 * 60 * 1000)
+        }
+      });
+
+      await tx.credittransaction.create({
+        data: {
+          id: `ct_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          userId: session.user.id,
+          amount: -totalCost,
+          type: 'campaign_created',
+          description: `Campaign "${name}" (${type}, ${duration} days)`,
+          relatedId: campaign.id
+        }
+      });
+
+      return campaign;
+    });
+
+    return NextResponse.json({ campaign: result }, { status: 201 });
   } catch (error) {
     console.error('Error creating campaign:', error);
     return NextResponse.json({ error: 'Failed to create campaign' }, { status: 500 });

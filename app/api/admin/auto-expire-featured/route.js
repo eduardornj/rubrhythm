@@ -15,7 +15,7 @@ export async function POST(request) {
     const authHeader = request.headers.get("authorization");
     const isCronJob = authHeader === `Bearer ${process.env.CRON_SECRET}`;
 
-    if (!session?.user?.role === "admin" && !isCronJob) {
+    if (session?.user?.role !== "admin" && !isCronJob) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

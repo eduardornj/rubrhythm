@@ -8,14 +8,11 @@ export async function POST(request) {
   try {
     const session = await auth();
     
-    // Verificar se é admin ou se é uma chamada de sistema (cron)
-    const { searchParams } = new URL(request.url);
-    const cronKey = searchParams.get('cronKey');
-    
-    // Chave secreta para cron jobs (deve estar no .env)
-    const CRON_SECRET = process.env.CRON_SECRET;
-    
-    if (session?.user?.role !== 'admin' && cronKey !== CRON_SECRET) {
+    // Verify admin or cron job (via Authorization header, never query params)
+    const authHeader = request.headers.get("authorization");
+    const isCronJob = authHeader === `Bearer ${process.env.CRON_SECRET}`;
+
+    if (session?.user?.role !== 'admin' && !isCronJob) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 

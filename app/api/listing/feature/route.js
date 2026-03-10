@@ -129,7 +129,7 @@ export async function POST(request) {
   } catch (error) {
     console.error("Error featuring listings:", error);
     return NextResponse.json({
-      error: error.message || "Failed to feature listings",
+      error: "Failed to feature listings",
     }, { status: 500 });
   }
 }

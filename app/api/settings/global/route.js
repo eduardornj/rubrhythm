@@ -123,14 +123,16 @@ export async function POST(request) {
         create: { settings }
       });
 
-      // Log the settings change
-      await prisma.securityLog.create({
+      // Log the settings change (matches securitylog schema: id, type, severity, message, details, userId, ipAddress)
+      await prisma.securitylog.create({
         data: {
+          id: `sl_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          type: 'SETTINGS_UPDATE',
+          severity: 'info',
+          message: 'Global settings updated by admin',
+          details: { userAgent: request.headers.get('user-agent') || 'unknown' },
           userId: session.user.id,
-          action: 'SETTINGS_UPDATE',
-          details: 'Global settings updated',
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-          userAgent: request.headers.get('user-agent') || 'unknown'
+          ipAddress: request.headers.get('x-forwarded-for') || 'unknown'
         }
       });
 
