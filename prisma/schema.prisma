@@ -137,6 +137,8 @@ model credittransaction {
   user        user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "CreditTransaction_userId_fkey")
 
   @@index([userId], map: "CreditTransaction_userId_fkey")
+  @@index([type])
+  @@index([createdAt])
 }
 
 model escrow {
@@ -297,6 +299,11 @@ model listing {
   @@index([isApproved, isActive, isFeatured])
   @@index([isApproved, isActive, availableNow])
   @@index([isApproved, isActive, isHighlighted])
+  @@index([lastBumpUp])
+  @@index([featuredEndDate])
+  @@index([highlightEndDate])
+  @@index([availableUntil])
+  @@index([autoBumpEnabled, autoBumpHour, isApproved, isActive])
 }
 
 model message {
@@ -326,6 +333,8 @@ model notification {
   user      user      @relation(fields: [userId], references: [id], onDelete: Cascade, map: "Notification_userId_fkey")
 
   @@index([userId], map: "Notification_userId_fkey")
+  @@index([type])
+  @@index([userId, isRead])
 }
 
 
@@ -364,6 +373,7 @@ model review {
   @@index([listingId], map: "Review_listingId_fkey")
   @@index([reviewedBy], map: "Review_reviewedBy_fkey")
   @@index([reviewerId], map: "Review_reviewerId_fkey")
+  @@index([status])
 }
 
 
@@ -491,6 +501,9 @@ model user {
   chat                                         chat[]
   usernotification                             usernotification[]
   verificationrequest                          verificationrequest[]
+
+  @@index([role])
+  @@index([createdAt])
 }
 
 

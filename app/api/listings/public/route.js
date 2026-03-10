@@ -18,15 +18,11 @@ export async function GET(request) {
     };
 
     if (city) {
-      where.city = {
-        contains: city
-      };
+      where.city = city;
     }
 
     if (state) {
-      where.state = {
-        contains: state
-      };
+      where.state = state;
     }
 
     // Buscar anúncios com ordenação especial para bump up
@@ -130,15 +126,11 @@ export async function POST(request) {
     };
 
     if (city) {
-      where.city = {
-        contains: city
-      };
+      where.city = city;
     }
 
     if (state) {
-      where.state = {
-        contains: state
-      };
+      where.state = state;
     }
 
     if (bodyType) {

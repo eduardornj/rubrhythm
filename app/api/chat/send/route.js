@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rate-limit";
+
+const chatLimiter = rateLimit({ interval: 60_000, limit: 15 });
 
 export async function POST(request) {
   try {
@@ -12,6 +15,15 @@ export async function POST(request) {
       );
     }
 
+    // Rate limit per user (15 messages/min)
+    const { success: rateLimitOk } = chatLimiter.check(session.user.id);
+    if (!rateLimitOk) {
+      return NextResponse.json(
+        { success: false, error: "Too many messages. Please wait a moment." },
+        { status: 429 }
+      );
+    }
+
     const { chatId, content, senderType } = await request.json();
 
     // Use authenticated user's ID instead of client-provided senderId
@@ -20,6 +32,14 @@ export async function POST(request) {
     if (!chatId || !content || !senderType) {
       return NextResponse.json(
         { success: false, error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    // Validate content length (max 2000 chars)
+    if (typeof content !== 'string' || content.trim().length === 0 || content.length > 2000) {
+      return NextResponse.json(
+        { success: false, error: "Message must be between 1 and 2000 characters" },
         { status: 400 }
       );
     }

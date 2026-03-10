@@ -93,18 +93,18 @@ export async function GET(request) {
     const listingGrowth = previousListings ? 
       (currentListings - previousListings) / previousListings * 100 : 0;
 
-    // Active users (users who logged in during the period)
+    // Active users (users seen during the period)
     const activeUsers = await prisma.user.count({
       where: {
-        lastLoginAt: { gte: startDate, lte: now }
+        lastSeen: { gte: startDate, lte: now }
       }
     });
 
-    // Conversion rate (users who made purchases / total users)
+    // Conversion rate (users who made credit purchases / total users)
     const usersWithPurchases = await prisma.user.count({
       where: {
         createdAt: { gte: startDate, lte: now },
-        transactions: {
+        credittransaction: {
           some: {
             type: 'purchase'
           }
@@ -126,7 +126,7 @@ export async function GET(request) {
     const featuredListings = await prisma.listing.count({
       where: {
         createdAt: { gte: startDate, lte: now },
-        featured: true
+        isFeatured: true
       }
     }) * 50; // Assuming $50 per featured listing
 
@@ -166,12 +166,12 @@ export async function GET(request) {
     });
     const retentionRate = 78.5; // Mock data
 
-    // User demographics
-    const locationStats = await prisma.user.groupBy({
+    // Location demographics (from listings, not users — users don't have state field)
+    const locationStats = await prisma.listing.groupBy({
       by: ['state'],
       where: {
         createdAt: { gte: startDate, lte: now },
-        state: { not: null }
+        isApproved: true,
       },
       _count: true,
       orderBy: {
@@ -194,39 +194,39 @@ export async function GET(request) {
     const approvedListings = await prisma.listing.count({
       where: {
         createdAt: { gte: startDate, lte: now },
-        status: 'approved'
+        isApproved: true
       }
     });
 
     const featuredListingsCount = await prisma.listing.count({
       where: {
         createdAt: { gte: startDate, lte: now },
-        featured: true
+        isFeatured: true
       }
     });
 
     const avgViews = 245; // Mock data - would need view tracking
 
-    // Top categories
+    // Top service locations (closest equivalent to categories)
     const topCategories = await prisma.listing.groupBy({
-      by: ['category'],
+      by: ['serviceLocation'],
       where: {
         createdAt: { gte: startDate, lte: now },
-        category: { not: null }
+        isApproved: true,
       },
       _count: true,
       orderBy: {
         _count: {
-          category: 'desc'
+          serviceLocation: 'desc'
         }
       },
       take: 5
     });
 
     const topCategoriesWithViews = topCategories.map(cat => ({
-      name: cat.category,
+      name: cat.serviceLocation,
       count: cat._count,
-      views: cat._count * 150 // Mock calculation
+      views: cat._count * 150
     }));
 
     // Performance metrics (mock data)

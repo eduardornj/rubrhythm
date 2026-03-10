@@ -73,7 +73,7 @@ export async function GET(request) {
 
             const user = await prisma.user.findUnique({
                 where: { id: userId },
-                include: { creditBalance: true, creditTransaction: { orderBy: { createdAt: 'desc' }, take: 20 } }
+                include: { creditbalance: true, credittransaction: { orderBy: { createdAt: 'desc' }, take: 20 } }
             });
 
             if (!user) {
@@ -87,7 +87,7 @@ export async function GET(request) {
                 success: true,
                 data: {
                     email: user.email,
-                    balance: user.creditBalance?.balance || 0,
+                    balance: user.creditbalance?.balance || 0,
                     recentTransactions: user.credittransaction
                 },
                 metadata: { timestamp: new Date().toISOString() }

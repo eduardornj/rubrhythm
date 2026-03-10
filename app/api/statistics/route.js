@@ -9,34 +9,37 @@ export async function GET(request) {
   }
 
   try {
-    // Basic counts
-    const totalUsers = await prisma.user.count();
-    const totalListings = await prisma.listing.count();
-    const verifiedUsers = await prisma.user.count({ where: { verified: true } });
-    const approvedListings = await prisma.listing.count({ where: { isApproved: true } });
-    const featuredListings = await prisma.listing.count({ where: { isFeatured: true } });
-    const pendingVerifications = await prisma.verificationRequest.count({ where: { status: "pending" } });
-    const pendingListings = await prisma.listing.count({ where: { isApproved: false } });
-
-    // Review statistics
-    const totalReviews = await prisma.review.count({ where: { status: "approved" } });
-    const averageRatingResult = await prisma.review.aggregate({
-      where: { status: "approved" },
-      _avg: { rating: true }
-    });
-    const averageRating = averageRatingResult._avg.rating || 0;
-
-    // Growth metrics (comparing with previous period - simplified for now)
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
-    const previousUsers = await prisma.user.count({
-      where: { createdAt: { lt: thirtyDaysAgo } }
-    });
-    
-    const previousListings = await prisma.listing.count({
-      where: { createdAt: { lt: thirtyDaysAgo } }
-    });
+
+    // Run all independent counts in parallel (was 11 sequential queries)
+    const [
+      totalUsers,
+      totalListings,
+      verifiedUsers,
+      approvedListings,
+      featuredListings,
+      pendingVerifications,
+      pendingListings,
+      totalReviews,
+      averageRatingResult,
+      previousUsers,
+      previousListings,
+    ] = await Promise.all([
+      prisma.user.count(),
+      prisma.listing.count(),
+      prisma.user.count({ where: { verified: true } }),
+      prisma.listing.count({ where: { isApproved: true } }),
+      prisma.listing.count({ where: { isFeatured: true } }),
+      prisma.verificationrequest.count({ where: { status: "pending" } }),
+      prisma.listing.count({ where: { isApproved: false } }),
+      prisma.review.count({ where: { status: "approved" } }),
+      prisma.review.aggregate({ where: { status: "approved" }, _avg: { rating: true } }),
+      prisma.user.count({ where: { createdAt: { lt: thirtyDaysAgo } } }),
+      prisma.listing.count({ where: { createdAt: { lt: thirtyDaysAgo } } }),
+    ]);
+
+    const averageRating = averageRatingResult._avg.rating || 0;
 
     return NextResponse.json({
       totalUsers,

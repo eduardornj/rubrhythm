@@ -1,12 +1,21 @@
 import { NextResponse } from "next/server";
 import prisma from "@lib/prisma.js";
 import { auth } from "@/auth";
+import { rateLimit } from "@/lib/rate-limit";
+
+const favLimiter = rateLimit({ interval: 60_000, limit: 30 });
 
 export async function POST(request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Rate limit: 30 favorites/min per user
+    const { success: rateLimitOk } = favLimiter.check(session.user.id);
+    if (!rateLimitOk) {
+      return NextResponse.json({ error: "Too many requests. Please wait." }, { status: 429 });
     }
 
     const { listingId } = await request.json();

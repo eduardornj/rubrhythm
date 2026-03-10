@@ -1,13 +1,21 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
-
 import prisma from '@/lib/prisma';
+import { rateLimit } from '@/lib/rate-limit';
+
+const messageLimiter = rateLimit({ interval: 60_000, limit: 20 });
 
 export async function POST(request) {
   try {
     const session = await auth();
     if (!session?.user?.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Rate limit: 20 messages/min per user
+    const { success: rateLimitOk } = messageLimiter.check(session.user.id);
+    if (!rateLimitOk) {
+      return NextResponse.json({ error: 'Too many messages. Please wait a moment.' }, { status: 429 });
     }
 
     const { conversationId, content } = await request.json();

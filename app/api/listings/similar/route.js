@@ -42,8 +42,8 @@ export async function GET(request) {
     const cityListings = await prisma.listing.findMany({
       where: {
         id: { not: currentListingId },
-        city: { contains: formattedCity },
-        state: { contains: formattedState },
+        city: formattedCity,
+        state: formattedState,
         isActive: true,
       },
       select: FIELDS,
@@ -59,7 +59,7 @@ export async function GET(request) {
       const stateListings = await prisma.listing.findMany({
         where: {
           id: { notIn: [...seenIds] },
-          state: { contains: formattedState },
+          state: formattedState,
           isActive: true,
         },
         select: FIELDS,

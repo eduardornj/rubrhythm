@@ -2,12 +2,21 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
 import crypto from "crypto";
+import { rateLimit } from "@/lib/rate-limit";
+
+const listingLimiter = rateLimit({ interval: 300_000, limit: 5 });
 
 export async function POST(request) {
   const session = await auth();
 
   if (!session || !session.user.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  // Rate limit: 5 listings per 5 min per user
+  const { success: rateLimitOk } = listingLimiter.check(session.user.id);
+  if (!rateLimitOk) {
+    return NextResponse.json({ error: "Too many requests. Please wait before creating another listing." }, { status: 429 });
   }
 
   const data = await request.json();

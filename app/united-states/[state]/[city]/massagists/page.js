@@ -44,13 +44,13 @@ async function getCityData(state, city) {
 // Função para buscar listings
 async function getListings(state, city) {
   try {
-    const normalizedState = state.replace("-", " ");
-    const normalizedCity = city.replace("-", " ");
+    const normalizedState = state.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const normalizedCity = city.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
     const listings = await prisma.listing.findMany({
       where: {
-        state: { contains: normalizedState },
-        city: { contains: normalizedCity },
+        state: normalizedState,
+        city: normalizedCity,
         isApproved: true,
         isActive: true,
       },
@@ -107,13 +107,13 @@ async function getFavorites(userId) {
 // Função para buscar listings em destaque
 async function getFeaturedListings(state, city) {
   try {
-    const normalizedState = state.replace("-", " ");
-    const normalizedCity = city.replace("-", " ");
+    const normalizedState = state.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+    const normalizedCity = city.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
 
     const featuredListings = await prisma.listing.findMany({
       where: {
-        state: { contains: normalizedState },
-        city: { contains: normalizedCity },
+        state: normalizedState,
+        city: normalizedCity,
         isApproved: true,
         isActive: true,
         isFeatured: true,

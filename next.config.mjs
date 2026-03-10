@@ -3,6 +3,10 @@ import CopyPlugin from 'copy-webpack-plugin';
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    reactCompiler: true,
+    optimizePackageImports: ['@heroicons/react', 'lucide-react', 'react-icons'],
+  },
   images: {
     remotePatterns: [
       {

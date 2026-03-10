@@ -50,18 +50,20 @@ export async function POST(request) {
       listingsByUser[listing.userId].push(listing);
     }
 
+    // Bulk fetch all users at once (instead of N+1 findUnique per user)
+    const userIds = Object.keys(listingsByUser);
+    const users = await prisma.user.findMany({
+      where: { id: { in: userIds } },
+      select: { id: true, credits: true },
+    });
+    const userCreditsMap = Object.fromEntries(users.map(u => [u.id, u.credits || 0]));
+
     let bumpedCount = 0;
     let disabledCount = 0;
     const details = [];
 
     for (const [userId, userListings] of Object.entries(listingsByUser)) {
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { credits: true },
-      });
-
-      const currentBalance = user?.credits || 0;
-      let remainingCredits = currentBalance;
+      let remainingCredits = userCreditsMap[userId] || 0;
 
       for (const listing of userListings) {
         if (remainingCredits >= BUMP_COST) {

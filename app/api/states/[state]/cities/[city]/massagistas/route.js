@@ -8,12 +8,8 @@ export async function GET(request, { params }) {
     // Busca listings reais do banco de dados por estado e cidade
     const listings = await prisma.listing.findMany({
       where: {
-        state: {
-          contains: state.replace('-', ' ')
-        },
-        city: {
-          contains: city.replace('-', ' ')
-        },
+        state: state.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+        city: city.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
         isApproved: true
       },
       include: {

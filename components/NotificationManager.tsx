@@ -133,13 +133,42 @@ const NotificationManager: React.FC<{ align?: 'left' | 'right' }> = ({ align = '
   };
 
   useEffect(() => {
-    if (session?.user?.id) {
-      fetchNotifications();
+    if (!session?.user?.id) return;
 
-      // Poll for new notifications every 30 seconds
-      const interval = setInterval(fetchNotifications, 30000);
-      return () => clearInterval(interval);
-    }
+    fetchNotifications();
+
+    // Poll every 30s when tab is visible, pause when hidden
+    let interval: ReturnType<typeof setInterval> | null = null;
+
+    const startPolling = () => {
+      if (!interval) {
+        interval = setInterval(fetchNotifications, 30000);
+      }
+    };
+
+    const stopPolling = () => {
+      if (interval) {
+        clearInterval(interval);
+        interval = null;
+      }
+    };
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        stopPolling();
+      } else {
+        fetchNotifications();
+        startPolling();
+      }
+    };
+
+    startPolling();
+    document.addEventListener('visibilitychange', handleVisibility);
+
+    return () => {
+      stopPolling();
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [session?.user?.id, fetchNotifications]);
 
   if (!session?.user?.id) {

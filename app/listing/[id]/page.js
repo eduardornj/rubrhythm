@@ -44,37 +44,28 @@ export default function ListingDetailPage() {
 
         setListing(data);
 
-        // Fetch featured listings from the same city and state
-        try {
-          console.log('🔍 Buscando featured listings para:', data.city, data.state);
-          const featuredResponse = await fetch(`/api/listings?city=${encodeURIComponent(data.city)}&state=${encodeURIComponent(data.state)}&featured=true&limit=8`);
-          console.log('📡 Status da resposta featured:', featuredResponse.status);
+        // Fetch featured listings and favorite status in parallel (eliminates waterfall)
+        const parallelRequests = [
+          fetch(`/api/listings?city=${encodeURIComponent(data.city)}&state=${encodeURIComponent(data.state)}&featured=true&limit=8`)
+            .then(res => res.ok ? res.json() : null)
+            .catch(() => null),
+        ];
 
-          if (featuredResponse.ok) {
-            const featuredData = await featuredResponse.json();
-            console.log('📊 Dados featured recebidos:', featuredData);
-            console.log('📋 Total de featured listings:', featuredData.listings?.length || 0);
-
-            // Filter out the current listing
-            const filteredFeatured = featuredData.listings?.filter(l => l.id !== params.id) || [];
-            console.log('🎯 Featured listings após filtro:', filteredFeatured.length);
-            console.log('🎯 Featured listings dados:', filteredFeatured);
-
-            setFeaturedListings(filteredFeatured);
-          } else {
-            console.error('❌ Erro na resposta featured:', featuredResponse.status);
-          }
-        } catch (err) {
-          console.error("❌ Erro ao carregar featured listings:", err);
+        if (session?.user?.id) {
+          parallelRequests.push(
+            fetch(`/myaccount/api/favorites/check?listingId=${params.id}`)
+              .then(res => res.ok ? res.json() : null)
+              .catch(() => null)
+          );
         }
 
-        // Check if favorited
-        if (session?.user?.id) {
-          const favResponse = await fetch(`/myaccount/api/favorites/check?listingId=${params.id}`);
-          if (favResponse.ok) {
-            const favData = await favResponse.json();
-            setIsFavorited(favData.isFavorited);
-          }
+        const [featuredData, favData] = await Promise.all(parallelRequests);
+
+        if (featuredData?.listings) {
+          setFeaturedListings(featuredData.listings.filter(l => l.id !== params.id));
+        }
+        if (favData) {
+          setIsFavorited(favData.isFavorited);
         }
       } catch (err) {
         console.error("Erro ao carregar anúncio:", err);
@@ -395,7 +386,6 @@ export default function ListingDetailPage() {
       </div>
 
       {/* Featured Listings Section */}
-      {console.log('🎨 Renderizando seção featured. Quantidade:', featuredListings.length)}
       {featuredListings.length > 0 && (
         <div className="container mx-auto px-4 py-12">
           <div className="text-center mb-8">

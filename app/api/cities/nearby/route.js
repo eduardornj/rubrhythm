@@ -16,13 +16,9 @@ export async function GET(request) {
     const nearbyCities = await prisma.listing.groupBy({
       by: ['city'],
       where: {
-        state: {
-          contains: currentState.replace('-', ' ')
-        },
+        state: currentState.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
         city: {
-          not: {
-            contains: currentCity.replace('-', ' ')
-          }
+          not: currentCity.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
         },
         isApproved: true,
         isActive: true

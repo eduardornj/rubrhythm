@@ -17,12 +17,8 @@ export async function GET(request) {
       where: {
         isApproved: true,
         isActive: { not: false },
-        state: {
-          contains: state.replace('-', ' ')
-        },
-        city: {
-          contains: city.replace('-', ' ')
-        }
+        state: state.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" "),
+        city: city.split("-").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ")
       },
       select: {
         id: true,

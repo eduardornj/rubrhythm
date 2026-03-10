@@ -1,41 +1,26 @@
 const { PrismaClient } = require('@prisma/client');
+const p = new PrismaClient();
 
-const prisma = new PrismaClient();
+async function main() {
+  const listings = await p.listing.findMany({
+    select: { id: true, title: true, images: true },
+    take: 5,
+    orderBy: { createdAt: 'desc' }
+  });
 
-async function checkImages() {
-  try {
-    const listing = await prisma.listing.findUnique({
-      where: {
-        id: 'cmfj5kaqh000cu1cw9t8ubpvb'
-      },
-      select: {
-        id: true,
-        title: true,
-        images: true
-      }
-    });
-    
-    console.log('Listing found:', listing);
-    
-    if (listing && listing.images) {
-      console.log('Images type:', typeof listing.images);
-      console.log('Images content:', listing.images);
-      
-      // Try to parse if it's a string
-      if (typeof listing.images === 'string') {
-        try {
-          const parsed = JSON.parse(listing.images);
-          console.log('Parsed images:', parsed);
-        } catch (e) {
-          console.log('Failed to parse images as JSON:', e.message);
-        }
-      }
-    }
-  } catch (error) {
-    console.error('Error:', error);
-  } finally {
-    await prisma.$disconnect();
+  for (const l of listings) {
+    const imgs = Array.isArray(l.images) ? l.images : [];
+    const formatted = imgs.map(img => {
+      if (typeof img !== 'string') return null;
+      if (img.startsWith('http') || img.startsWith('/')) return img;
+      return '/api/secure-files?path=users/listings/' + img;
+    }).filter(Boolean);
+
+    console.log('\n' + l.title + ' -> ' + formatted.length + ' images');
+    formatted.forEach((url, i) => console.log('  [' + i + '] ' + url.substring(0, 120)));
   }
+
+  await p.$disconnect();
 }
 
-checkImages();
+main().catch(e => { console.error(e); process.exit(1); });

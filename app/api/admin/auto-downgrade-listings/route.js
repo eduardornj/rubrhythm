@@ -7,7 +7,7 @@ import prisma from "@/lib/prisma";
 export async function POST(request) {
   try {
     const session = await auth();
-    
+
     // Verify admin or cron job (via Authorization header, never query params)
     const authHeader = request.headers.get("authorization");
     const isCronJob = authHeader === `Bearer ${process.env.CRON_SECRET}`;
@@ -16,65 +16,45 @@ export async function POST(request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Buscar todos os anúncios ativos e aprovados
-    const listings = await prisma.listing.findMany({
-      where: {
-        isApproved: true,
-        isActive: true
-      },
-      orderBy: {
-        updatedAt: 'desc' // Mais recentes primeiro
-      }
-    });
-
-    let processedCount = 0;
     const now = new Date();
     const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
-    // Processar cada anúncio
-    for (const listing of listings) {
-      // Se o anúncio não foi atualizado nas últimas 24h, "degradar" ele
-      if (listing.updatedAt < oneDayAgo && !listing.lastBumpUp) {
-        // Diminuir a "prioridade" do anúncio fazendo ele parecer mais antigo
-        const degradedDate = new Date(listing.updatedAt.getTime() - 60 * 60 * 1000); // 1 hora mais antigo
-        
-        await prisma.listing.update({
-          where: { id: listing.id },
-          data: {
-            updatedAt: degradedDate
-          }
-        });
-        
-        processedCount++;
+    // Batch update: listings sem bump que não foram atualizados nas últimas 24h
+    const noBumpDegraded = await prisma.listing.updateMany({
+      where: {
+        isApproved: true,
+        isActive: true,
+        updatedAt: { lt: oneDayAgo },
+        lastBumpUp: null
+      },
+      data: {
+        // MySQL doesn't support date math in updateMany, so we set to a fixed degraded time
+        updatedAt: new Date(oneDayAgo.getTime() - 60 * 60 * 1000)
       }
-      // Se teve bump up recente (últimas 24h), manter posição
-      else if (listing.lastBumpUp && listing.lastBumpUp > oneDayAgo) {
-        // Anúncio com bump up recente mantém posição alta
-        continue;
-      }
-      // Se o bump up foi há mais de 24h, começar a degradar
-      else if (listing.lastBumpUp && listing.lastBumpUp < oneDayAgo) {
-        const degradedDate = new Date(listing.updatedAt.getTime() - 30 * 60 * 1000); // 30 min mais antigo
-        
-        await prisma.listing.update({
-          where: { id: listing.id },
-          data: {
-            updatedAt: degradedDate
-          }
-        });
-        
-        processedCount++;
-      }
-    }
+    });
 
-    // Log da operação
+    // Batch update: listings com bump expirado (>24h)
+    const expiredBumpDegraded = await prisma.listing.updateMany({
+      where: {
+        isApproved: true,
+        isActive: true,
+        lastBumpUp: { lt: oneDayAgo }
+      },
+      data: {
+        updatedAt: new Date(oneDayAgo.getTime() - 30 * 60 * 1000)
+      }
+    });
+
+    const processedCount = noBumpDegraded.count + expiredBumpDegraded.count;
+
     console.log(`Auto-downgrade completed: ${processedCount} listings processed at ${now.toISOString()}`);
 
     return NextResponse.json({
       success: true,
       message: `Auto-downgrade completed successfully`,
       processedListings: processedCount,
-      totalListings: listings.length,
+      noBumpDegraded: noBumpDegraded.count,
+      expiredBumpDegraded: expiredBumpDegraded.count,
       timestamp: now.toISOString()
     });
 
@@ -91,7 +71,7 @@ export async function POST(request) {
 export async function GET(request) {
   try {
     const session = await auth();
-    
+
     if (session?.user?.role !== 'admin') {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
