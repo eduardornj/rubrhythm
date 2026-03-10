@@ -239,6 +239,7 @@ function RegisterOnRubrhythm() {
                     onChange={(e) => setName(e.target.value)}
                     className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all"
                     placeholder="Full name"
+                    autoComplete="name"
                     required
                   />
                   <input
@@ -247,6 +248,7 @@ function RegisterOnRubrhythm() {
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all"
                     placeholder="your@email.com"
+                    autoComplete="email"
                     required
                   />
                   <div className="relative">
@@ -256,6 +258,7 @@ function RegisterOnRubrhythm() {
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full p-3.5 pr-12 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all"
                       placeholder="Create a password"
+                      autoComplete="new-password"
                       required
                       minLength={8}
                     />
