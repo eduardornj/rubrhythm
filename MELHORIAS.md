@@ -89,12 +89,12 @@
 - ✅ Dois botões: "Join Free — 30 sec" (primary) + "Sign In" (secondary)
 - Commit: `450c296`
 
-### 11. Domínio próprio para o RubRhythm (URGENTE)
-- Hoje em subdomínio: rubrhythm.bubblesenterprise.com
-- Google associa conteúdo adulto ao domínio do negócio principal (soffit & fascia)
-- Risco real hoje: clientes/parceiros/fornecedores do Bubbles podem encontrar conteúdo adulto
-- Solução: registrar rubrhythm.com (ou similar) e migrar
-- **Motivo:** proteção do negócio principal + SEO isolado + credibilidade
+### 11. Domínio próprio para o RubRhythm ✅ RESOLVIDO — 10/mar/2026
+- ✅ rubrhythm.com registrado e no ar
+- ✅ DNS Cloudflare configurado (A + CNAME Vercel + registros Resend)
+- ✅ NEXTAUTH_URL atualizado para https://rubrhythm.com
+- ✅ Email transacional: noreply@rubrhythm.com via Resend
+- ✅ Domínio antigo rubrhythm.bubblesenterprise.com removido do Vercel
 
 ---
 
@@ -228,6 +228,16 @@
 - Infraestrutura `data/cityContent.js` com conteúdo curado por cidade
 - Orlando: conteúdo real (Disney, Universal, OCCC, Dr. Phillips, I-Drive, College Park)
 - Fallback genérico para cidades sem conteúdo curado
+
+### ✅ Fase 11 — Content Scan Tool + Domínio próprio (10/mar/2026)
+- **Admin Content Scan** (`app/admin/content-scan/page.js` + `app/api/admin/content-scan/route.js`):
+  - Escaneia todos os listings existentes no DB com o content filter
+  - Filtros: severidade (RED/YELLOW/todos) + status (aprovados/pendentes/todos)
+  - Cards de summary: total escaneado / RED count / YELLOW count
+  - Lista listings flagged com termos encontrados e link direto para o admin
+  - Item no menu admin sidebar: 🔍 Content Scan
+- **Domínio rubrhythm.com:** ver item 11 acima
+- **Email:** noreply@rubrhythm.com via Resend (domínio verificado, DKIM ativo)
 
 ### ✅ Fase 10 — Content Filter + Audit Log + 2257 Rewrite
 - **Content Filter** (`lib/contentFilter.js`):

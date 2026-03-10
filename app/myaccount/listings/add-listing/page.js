@@ -8,6 +8,49 @@ import { scanContent } from '@/lib/contentFilter';
 import dynamic from 'next/dynamic';
 const ModernImageUpload = dynamic(() => import('@/components/ModernImageUpload'), { ssr: false });
 
+function WritingTips() {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="mt-2">
+      <button
+        type="button"
+        onClick={() => setOpen(v => !v)}
+        className="flex items-center gap-1.5 text-[11px] text-primary/70 hover:text-primary transition-colors font-semibold"
+      >
+        <svg className={`w-3 h-3 transition-transform ${open ? 'rotate-90' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+        {open ? 'Hide writing tips' : 'How to write a great description'}
+      </button>
+      {open && (
+        <div className="mt-2 bg-white/3 border border-white/8 rounded-xl p-4 text-[12px] space-y-3">
+          <div>
+            <p className="text-green-400 font-bold mb-1.5">✅ What to include</p>
+            <ul className="text-white/50 space-y-1 list-none">
+              <li>→ Type of massage (Swedish, Deep Tissue, Hot Stone, Sports…)</li>
+              <li>→ Session duration and pricing (e.g. "60 min $80, 90 min $110")</li>
+              <li>→ Your training, certifications, or years of experience</li>
+              <li>→ Location type: in-home studio, mobile (you travel), or both</li>
+              <li>→ Any specialty focus (neck & back tension, athletes, prenatal…)</li>
+            </ul>
+          </div>
+          <div>
+            <p className="text-amber-400 font-bold mb-1.5">⚠️ What to avoid</p>
+            <ul className="text-white/50 space-y-1 list-none">
+              <li>→ Any sexual or explicit language — listing will be rejected automatically</li>
+              <li>→ Phone numbers or external links in the description (use the fields provided)</li>
+              <li>→ Vague phrases like "anything goes" or "ask me what I offer"</li>
+              <li>→ Pricing that doesn't match your actual rate fields above</li>
+            </ul>
+          </div>
+          <div className="border-t border-white/8 pt-3">
+            <p className="text-white/30 font-bold mb-1">Example of a good description:</p>
+            <p className="text-white/40 italic">"Licensed massage therapist with 8 years of experience. Specializing in Swedish and Deep Tissue. I offer mobile sessions across Orlando — I come to you. Sessions: 60 min $90 / 90 min $130. Focused on muscle recovery and stress relief."</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 export default function AddListingPage() {
   return (
     <Suspense fallback={<div className="min-h-screen bg-background" />}>
@@ -395,10 +438,11 @@ function AddListing() {
               <div className="flex items-center justify-between mt-1.5">
                 <p className="text-white/30 text-[11px] flex items-center gap-1.5">
                   <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" /></svg>
-                  Do not include explicit or sexual content, phone numbers, or links in your description. Keep it professional and focused on the services you offer.
+                  Keep it professional and focused on the massage services you offer.
                 </p>
                 <span className={`text-[11px] shrink-0 ml-3 ${description.length > 2800 ? 'text-amber-400' : 'text-white/30'}`}>{3000 - description.length} characters left</span>
               </div>
+              <WritingTips />
 
               {/* Content Filter Warnings — real-time */}
               {contentWarnings.hasBlocked && (
