@@ -312,7 +312,7 @@ function HighlightListings() {
                     {(() => {
                       const imageUrl = getFirstListingImage(listing.images);
                       return imageUrl ? (
-                        <Image src={imageUrl} alt={listing.title} fill className="object-cover" />
+                        <Image src={imageUrl} alt={listing.title} fill unoptimized className="object-cover" />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-white/20">IMG</div>
                       );

@@ -416,7 +416,7 @@ function FeatureListings() {
                       {(() => {
                         const url = getFirstListingImage(listing.images);
                         return url
-                          ? <Image src={url} alt={listing.title} fill className="object-cover" />
+                          ? <Image src={url} alt={listing.title} fill unoptimized className="object-cover" />
                           : <div className="w-full h-full flex items-center justify-center text-white/20 text-xs">IMG</div>;
                       })()}
                     </div>

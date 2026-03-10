@@ -41,19 +41,25 @@ export async function GET(request) {
       })
     ]);
 
-    const extractPath = (url) => {
-      if (!url) return null;
-      if (url.includes('path=')) {
-        const urlObj = new URL(url, 'http://localhost');
-        return urlObj.searchParams.get('path');
+    const resolveImageUrl = (rawUrl) => {
+      if (!rawUrl) return null;
+      // Already a full blob/external URL — use directly
+      if (rawUrl.startsWith('http')) return rawUrl;
+      // Already an API path — use directly
+      if (rawUrl.startsWith('/api/')) return rawUrl;
+      // Legacy: extract path from old secure-files URL format
+      if (rawUrl.includes('path=')) {
+        const urlObj = new URL(rawUrl, 'http://localhost');
+        const innerPath = urlObj.searchParams.get('path');
+        if (innerPath?.startsWith('http')) return innerPath;
+        return `/api/secure-files?path=${encodeURIComponent(innerPath)}&type=verification`;
       }
-      return url;
+      // Raw filename — wrap with secure-files
+      return `/api/secure-files?path=${encodeURIComponent(rawUrl)}&type=verification`;
     };
 
     // Format for frontend
     const formattedVerifications = verifications.map(v => {
-      const docRaw = extractPath(v.documentPath);
-      const selfieRaw = extractPath(v.selfiePath);
       return {
         id: v.id,
         userId: v.userId,
@@ -67,12 +73,12 @@ export async function GET(request) {
           {
             type: "id",
             name: "Documento de Identidade",
-            path: docRaw ? `/api/secure-files?path=${encodeURIComponent(docRaw)}&type=verification` : null
+            path: resolveImageUrl(v.documentPath)
           },
           {
             type: "selfie",
             name: "Selfie com Documento",
-            path: selfieRaw ? `/api/secure-files?path=${encodeURIComponent(selfieRaw)}&type=verification` : null
+            path: resolveImageUrl(v.selfiePath)
           }
         ].filter(d => d.path !== null)
       }
@@ -161,7 +167,7 @@ export async function PUT(request) {
         data: {
           verified: action === 'approve',
           ...(action === 'approve' && verification.selfiePath ? {
-            image: `/api/secure-files?path=${encodeURIComponent(verification.selfiePath)}&type=verification`
+            image: verification.selfiePath.startsWith('http') ? verification.selfiePath : `/api/secure-files?path=${encodeURIComponent(verification.selfiePath)}&type=verification`
           } : {})
         }
       }),
