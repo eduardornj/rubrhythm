@@ -28,8 +28,8 @@ RubRhythm is a peer-to-peer directory connecting independent massage and body ru
 New York, Los Angeles, Las Vegas, Miami, Chicago, Houston, Atlanta, Phoenix, Dallas, San Francisco, Orlando, Denver, San Diego, Seattle, Philadelphia, Tampa
 
 ## Links
-- Homepage: https://rubrhythm.bubblesenterprise.com
-- Browse States: https://rubrhythm.bubblesenterprise.com/united-states
-- FAQ: https://rubrhythm.bubblesenterprise.com/info/faq
-- Terms: https://rubrhythm.bubblesenterprise.com/info/terms
-- Privacy: https://rubrhythm.bubblesenterprise.com/info/privacy-policy
+- Homepage: https://rubrhythm.com
+- Browse States: https://rubrhythm.com/united-states
+- FAQ: https://rubrhythm.com/info/faq
+- Terms: https://rubrhythm.com/info/terms
+- Privacy: https://rubrhythm.com/info/privacy-policy
