@@ -287,11 +287,7 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
                   { label: "Under $200", param: "priceRange", value: "0-100,100-200" },
                   { label: "$200-400", param: "priceRange", value: "200-300,300-400" },
                   { label: "Verified Only", param: "verified", value: "true" },
-                  { label: "Featured", param: "featured", value: "true" },
-                  { label: "Asian", param: "ethnicity", value: "Asian" },
-                  { label: "Latina", param: "ethnicity", value: "Latina" },
-                  { label: "Slim", param: "bodyType", value: "Slim" },
-                  { label: "Curvy", param: "bodyType", value: "Curvy" }
+                  { label: "Featured", param: "featured", value: "true" }
                 ].map((filter) => (
                   <button
                     key={filter.label}
