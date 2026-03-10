@@ -20,9 +20,22 @@ function Badge({ status }) {
     );
 }
 
-function DocViewer({ url, label }) {
+function DocViewer({ url, label, isLegacy }) {
     const [err, setErr] = useState(false);
     if (!url) return <div className="flex items-center justify-center h-full bg-white/5 rounded-xl text-white/40 text-sm font-semibold">Sem {label}</div>;
+
+    // Legacy files (pre-blob migration) don't exist on Vercel — show placeholder immediately
+    if (isLegacy) {
+        return (
+            <div className="flex items-center justify-center h-full bg-amber-500/5 rounded-xl text-amber-400 text-sm border border-amber-500/20 p-4 text-center">
+                <div>
+                    <p className="text-3xl mb-2">📁</p>
+                    <p className="font-bold">Arquivo Antigo (Pré-Migração)</p>
+                    <p className="text-[11px] mt-2 opacity-70 leading-relaxed max-w-xs">Este arquivo foi enviado antes da migração para cloud storage e não está mais disponível no servidor.</p>
+                </div>
+            </div>
+        );
+    }
 
     return err ? (
         <div className="flex items-center justify-center h-full bg-red-500/10 rounded-xl text-red-400 text-sm border border-red-500/20 p-4 text-center">
@@ -352,14 +365,17 @@ export default function VerificacaoPage() {
                                             <div className="flex items-center justify-between mb-3 px-1">
                                                 <p className="text-white font-bold text-sm flex items-center gap-2">
                                                     {doc.type === 'id' ? '🪪' : '🤳'} {doc.name}
+                                                    {doc.isLegacy && <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-full font-black">LEGACY</span>}
                                                 </p>
-                                                <a href={doc.path} target="_blank" rel="noopener noreferrer" className="text-[10px] text-white/40 hover:text-white uppercase font-bold tracking-wider">
-                                                    Abrir Original ↗
-                                                </a>
+                                                {!doc.isLegacy && doc.url && (
+                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-white/40 hover:text-white uppercase font-bold tracking-wider">
+                                                        Abrir Original ↗
+                                                    </a>
+                                                )}
                                             </div>
                                             <div className="flex-1 w-full bg-[#050508] border border-white/10 rounded-3xl overflow-hidden group relative transition-all hover:border-white/20 hover:shadow-2xl">
                                                 <div className="aspect-[4/3] w-full">
-                                                    <DocViewer url={doc.path} label={doc.name} />
+                                                    <DocViewer url={doc.url} label={doc.name} isLegacy={doc.isLegacy} />
                                                 </div>
                                             </div>
                                         </div>

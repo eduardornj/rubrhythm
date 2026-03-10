@@ -42,20 +42,19 @@ export async function GET(request) {
     ]);
 
     const resolveImageUrl = (rawUrl) => {
-      if (!rawUrl) return null;
+      if (!rawUrl) return { url: null, isLegacy: false };
       // Already a full blob/external URL — use directly
-      if (rawUrl.startsWith('http')) return rawUrl;
-      // Already an API path — use directly
-      if (rawUrl.startsWith('/api/')) return rawUrl;
-      // Legacy: extract path from old secure-files URL format
+      if (rawUrl.startsWith('http')) return { url: rawUrl, isLegacy: false };
+      // Everything else is legacy (local filesystem paths, /api/secure-files references)
+      // These files don't exist on Vercel anymore
+      if (rawUrl.startsWith('/api/')) return { url: rawUrl, isLegacy: true };
       if (rawUrl.includes('path=')) {
         const urlObj = new URL(rawUrl, 'http://localhost');
         const innerPath = urlObj.searchParams.get('path');
-        if (innerPath?.startsWith('http')) return innerPath;
-        return `/api/secure-files?path=${encodeURIComponent(innerPath)}&type=verification`;
+        if (innerPath?.startsWith('http')) return { url: innerPath, isLegacy: false };
+        return { url: `/api/secure-files?path=${encodeURIComponent(innerPath)}&type=verification`, isLegacy: true };
       }
-      // Raw filename — wrap with secure-files
-      return `/api/secure-files?path=${encodeURIComponent(rawUrl)}&type=verification`;
+      return { url: `/api/secure-files?path=${encodeURIComponent(rawUrl)}&type=verification`, isLegacy: true };
     };
 
     // Format for frontend
@@ -73,14 +72,14 @@ export async function GET(request) {
           {
             type: "id",
             name: "Documento de Identidade",
-            path: resolveImageUrl(v.documentPath)
+            ...resolveImageUrl(v.documentPath)
           },
           {
             type: "selfie",
             name: "Selfie com Documento",
-            path: resolveImageUrl(v.selfiePath)
+            ...resolveImageUrl(v.selfiePath)
           }
-        ].filter(d => d.path !== null)
+        ].filter(d => d.url !== null)
       }
     });
 
@@ -167,7 +166,9 @@ export async function PUT(request) {
         data: {
           verified: action === 'approve',
           ...(action === 'approve' && verification.selfiePath ? {
-            image: verification.selfiePath.startsWith('http') ? verification.selfiePath : `/api/secure-files?path=${encodeURIComponent(verification.selfiePath)}&type=verification`
+            image: verification.selfiePath.startsWith('http') ? verification.selfiePath
+              : verification.selfiePath.startsWith('/api/') ? verification.selfiePath
+              : `/api/secure-files?path=${encodeURIComponent(verification.selfiePath)}&type=verification`
           } : {})
         }
       }),

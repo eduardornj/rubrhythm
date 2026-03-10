@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "../../../auth";
 import prisma from "@lib/prisma.js";
-import fs from "fs/promises";
-import path from "path";
 import sharp from "sharp";
+import { uploadToBlob } from "@/lib/blob-storage";
 
 export async function GET(request) {
   const session = await auth();
@@ -65,30 +64,27 @@ export async function POST(request) {
       return NextResponse.json({ error: "Only JPEG or PNG files are allowed." }, { status: 400 });
     }
 
-    // Gera nomes únicos para os arquivos
-    const idFileName = `id-${userId}-${Date.now()}.jpg`;
-    const selfieFileName = `selfie-${userId}-${Date.now()}.jpg`;
-    const uploadDir = path.join(process.cwd(), "private", "storage", "verification-docs");
+    const timestamp = Date.now();
+    const randomSuffix = Math.random().toString(36).substring(2, 10);
 
-    // Cria o diretório se não existir
-    await fs.mkdir(uploadDir, { recursive: true });
-
-    // Comprime e salva o ID
+    // Compress ID document
     const idBuffer = Buffer.from(await idFile.arrayBuffer());
     const compressedId = await sharp(idBuffer).jpeg({ quality: 70 }).toBuffer();
-    await fs.writeFile(path.join(uploadDir, idFileName), compressedId);
+    const idBlobPath = `verification/${userId}/${timestamp}/id_${randomSuffix}.jpg`;
+    const idBlob = await uploadToBlob(compressedId, idBlobPath, { contentType: 'image/jpeg' });
 
-    // Comprime e salva a selfie
+    // Compress selfie
     const selfieBuffer = Buffer.from(await selfieFile.arrayBuffer());
     const compressedSelfie = await sharp(selfieBuffer).jpeg({ quality: 70 }).toBuffer();
-    await fs.writeFile(path.join(uploadDir, selfieFileName), compressedSelfie);
+    const selfieBlobPath = `verification/${userId}/${timestamp}/selfie_${randomSuffix}.jpg`;
+    const selfieBlob = await uploadToBlob(compressedSelfie, selfieBlobPath, { contentType: 'image/jpeg' });
 
-    // Cria o registro no banco
+    // Cria o registro no banco — store blob URLs directly
     await prisma.verificationRequest.create({
       data: {
         userId: userId,
-        documentPath: `private/storage/verification-docs/${idFileName}`,
-        selfiePath: `private/storage/verification-docs/${selfieFileName}`,
+        documentPath: idBlob.url,
+        selfiePath: selfieBlob.url,
         status: "pending",
       },
     });

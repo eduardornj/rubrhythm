@@ -42,23 +42,9 @@ export async function GET(request) {
     const extension = filePath.split('.').pop()?.toLowerCase();
     const isImage = ['jpg', 'jpeg', 'png', 'webp', 'gif'].includes(extension);
 
-    if (isImage) {
-      // 1x1 transparent PNG
-      const transparentPng = Buffer.from(
-        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg==',
-        'base64'
-      );
-      return new NextResponse(transparentPng, {
-        status: 200,
-        headers: {
-          'Content-Type': 'image/png',
-          'Cache-Control': 'no-cache',
-        },
-      });
-    }
-
+    // Local files no longer exist on Vercel — return 404 so UI can show placeholder
     return NextResponse.json(
-      { error: 'File not found. Old files were migrated to cloud storage.' },
+      { error: 'File not found. Old files from before cloud migration are no longer available.' },
       { status: 404 }
     );
   } catch (error) {
