@@ -371,7 +371,7 @@ function AnunciosPage() {
             {/* Listings Table */}
             <div className="bg-white/[0.015] border border-white/6 rounded-2xl overflow-hidden">
                 {/* Table Header */}
-                <div className="hidden lg:grid grid-cols-[56px_1fr_140px_90px_60px_80px_100px_120px] gap-2 px-4 py-3 border-b border-white/6 bg-white/[0.02]">
+                <div className="hidden lg:grid grid-cols-[56px_1fr_140px_90px_60px_80px_100px_auto_120px] gap-2 px-4 py-3 border-b border-white/6 bg-white/[0.02]">
                     <span></span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Anuncio</span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Provider</span>
@@ -379,6 +379,7 @@ function AnunciosPage() {
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider text-center">Fotos</span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Criado</span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Status</span>
+                    <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider">Promotions</span>
                     <span className="text-[10px] text-white/30 font-bold uppercase tracking-wider text-right">Acoes</span>
                 </div>
 
@@ -409,7 +410,7 @@ function AnunciosPage() {
                         <div key={l.id} className={`border-b border-white/4 transition-all ${isExpanded ? "bg-white/[0.03]" : "hover:bg-white/[0.02]"}`}>
                             {/* Main Row — Desktop */}
                             <div
-                                className="hidden lg:grid grid-cols-[56px_1fr_140px_90px_60px_80px_100px_120px] gap-2 px-4 py-3 cursor-pointer items-center"
+                                className="hidden lg:grid grid-cols-[56px_1fr_140px_90px_60px_80px_100px_auto_120px] gap-2 px-4 py-3 cursor-pointer items-center"
                                 onClick={() => setExpandedId(isExpanded ? null : l.id)}
                             >
                                 {/* Thumbnail */}
@@ -466,6 +467,31 @@ function AnunciosPage() {
                                     </span>
                                 </div>
 
+                                {/* Promotions Ativas */}
+                                <div className="flex flex-wrap gap-1">
+                                    {isFeaturedActive && (
+                                        <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md ${l.featureTier?.toUpperCase() === "PREMIUM" ? "bg-violet-500/15 border border-violet-500/20 text-violet-400" : "bg-amber-500/15 border border-amber-500/20 text-amber-400"}`}>
+                                            {l.featureTier?.toUpperCase() === "PREMIUM" ? "Premium" : "Featured"}
+                                            <span className="text-[8px] opacity-60">{formatDaysLeft(l.featuredEndDate)}</span>
+                                        </span>
+                                    )}
+                                    {isHighlightActive && (
+                                        <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-yellow-500/15 border border-yellow-500/20 text-yellow-400">
+                                            Highlight
+                                            <span className="text-[8px] opacity-60">{formatDaysLeft(l.highlightEndDate)}</span>
+                                        </span>
+                                    )}
+                                    {isAvailableNow && (
+                                        <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-green-500/15 border border-green-500/20 text-green-400">
+                                            <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse"></span>
+                                            Now
+                                        </span>
+                                    )}
+                                    {!isFeaturedActive && !isHighlightActive && !isAvailableNow && (
+                                        <span className="text-white/15 text-[9px]">—</span>
+                                    )}
+                                </div>
+
                                 {/* Quick Actions */}
                                 <div className="text-right flex items-center justify-end gap-1.5">
                                     {s === "pending" && (
@@ -491,11 +517,6 @@ function AnunciosPage() {
                                                 </svg>
                                             </button>
                                         </>
-                                    )}
-                                    {promoCount > 0 && (
-                                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-violet-400 bg-violet-500/10 border border-violet-500/20 px-2 py-0.5 rounded-full">
-                                            {promoCount}
-                                        </span>
                                     )}
                                     <Link
                                         href={`/united-states/${l.state?.toLowerCase().replace(/\s+/g, "-")}/${l.city?.toLowerCase().replace(/\s+/g, "-")}/massagists/${l.slug || l.id}`}
@@ -550,6 +571,27 @@ function AnunciosPage() {
                                         <span>{imgCount} fotos</span>
                                         <span>{formatCompactDate(l.createdAt)}</span>
                                     </div>
+                                    {/* Promotions — mobile */}
+                                    {(isFeaturedActive || isHighlightActive || isAvailableNow) && (
+                                        <div className="flex flex-wrap gap-1 mt-1.5">
+                                            {isFeaturedActive && (
+                                                <span className={`inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md ${l.featureTier?.toUpperCase() === "PREMIUM" ? "bg-violet-500/15 border border-violet-500/20 text-violet-400" : "bg-amber-500/15 border border-amber-500/20 text-amber-400"}`}>
+                                                    {l.featureTier?.toUpperCase() === "PREMIUM" ? "Premium" : "Featured"} {formatDaysLeft(l.featuredEndDate)}
+                                                </span>
+                                            )}
+                                            {isHighlightActive && (
+                                                <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-yellow-500/15 border border-yellow-500/20 text-yellow-400">
+                                                    Highlight {formatDaysLeft(l.highlightEndDate)}
+                                                </span>
+                                            )}
+                                            {isAvailableNow && (
+                                                <span className="inline-flex items-center gap-1 text-[9px] font-bold px-1.5 py-0.5 rounded-md bg-green-500/15 border border-green-500/20 text-green-400">
+                                                    <span className="w-1 h-1 rounded-full bg-green-400 animate-pulse"></span>
+                                                    Now
+                                                </span>
+                                            )}
+                                        </div>
+                                    )}
                                     {/* Quick actions for pending — mobile */}
                                     {s === "pending" && (
                                         <div className="flex items-center gap-2 mt-2">
