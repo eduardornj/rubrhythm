@@ -1,0 +1,35 @@
+# RubRhythm
+
+> Body rub and massage provider directory across the United States.
+
+RubRhythm is a peer-to-peer directory connecting independent massage and body rub providers with clients. We do not employ or manage any providers.
+
+## Core Features
+- Provider listings with photos, rates, services, and location
+- City-based search across 250+ US cities
+- Identity verification system (free, government ID)
+- Credit-based economy ($1 = 1 credit)
+- Featured, Highlighted, and Bump Up listing boosts
+- Real-time "Available Now" status
+- Anonymous and direct messaging
+- Referral program
+
+## Pricing
+- Account creation: Free
+- Post a listing: 10 credits ($10)
+- Bump Up (24h): 5 credits
+- Highlight (7 days): 10 credits
+- Highlight (30 days): 30 credits
+- Feature (7 days): 15-20 credits
+- Feature (30 days): 45-60 credits
+- Verification: Free
+
+## Popular Cities
+New York, Los Angeles, Las Vegas, Miami, Chicago, Houston, Atlanta, Phoenix, Dallas, San Francisco, Orlando, Denver, San Diego, Seattle, Philadelphia, Tampa
+
+## Links
+- Homepage: https://rubrhythm.bubblesenterprise.com
+- Browse States: https://rubrhythm.bubblesenterprise.com/united-states
+- FAQ: https://rubrhythm.bubblesenterprise.com/info/faq
+- Terms: https://rubrhythm.bubblesenterprise.com/info/terms
+- Privacy: https://rubrhythm.bubblesenterprise.com/info/privacy-policy
