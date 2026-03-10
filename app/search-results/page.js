@@ -110,9 +110,7 @@ async function getListings(keyword, state, city, filters = {}) {
       },
     },
     orderBy: [
-      { isFeatured: "desc" },
       { lastBumpUp: "desc" },
-      { isHighlighted: "desc" },
       { createdAt: "desc" },
     ],
     take: 100,

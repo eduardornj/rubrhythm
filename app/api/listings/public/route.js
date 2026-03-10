@@ -48,23 +48,11 @@ export async function GET(request) {
         }
       },
       orderBy: [
-        // Primeiro: anúncios em destaque (featured)
-        {
-          isFeatured: 'desc'
-        },
-        // Segundo: anúncios com bump up recente (últimas 24h)
+        // Primeiro: bump up mais recente
         {
           lastBumpUp: 'desc'
         },
-        // Terceiro: anúncios destacados (highlighted)
-        {
-          isHighlighted: 'desc'
-        },
-        // Quarto: data de atualização (mais recentes primeiro)
-        {
-          updatedAt: 'desc'
-        },
-        // Quinto: data de criação
+        // Segundo: data de criação (mais recentes primeiro)
         {
           createdAt: 'desc'
         }
@@ -199,10 +187,7 @@ export async function POST(request) {
         }
       },
       orderBy: [
-        { isFeatured: 'desc' },
         { lastBumpUp: 'desc' },
-        { isHighlighted: 'desc' },
-        { updatedAt: 'desc' },
         { createdAt: 'desc' }
       ],
       skip,

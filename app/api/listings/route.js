@@ -97,7 +97,7 @@ export async function GET(request) {
           }
         }
       },
-      orderBy: [{ isFeatured: 'desc' }, { lastBumpUp: 'desc' }, { isHighlighted: 'desc' }, { createdAt: 'desc' }],
+      orderBy: [{ lastBumpUp: 'desc' }, { createdAt: 'desc' }],
       // When featured=true, fetch all so rotation can pick fairly; otherwise limit
       take: featured === 'true' ? undefined : limit
     });

@@ -91,7 +91,7 @@ async function getListings(state, city) {
         select: { verified: true }
       }
     },
-    orderBy: [{ isFeatured: 'desc' }, { lastBumpUp: 'desc' }, { isHighlighted: 'desc' }, { createdAt: 'desc' }],
+    orderBy: [{ lastBumpUp: 'desc' }, { createdAt: 'desc' }],
     take: 24,
   });
 
