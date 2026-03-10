@@ -9,19 +9,19 @@ const PACKAGES = [
   {
     id: "starter",
     label: "Starter",
-    credits: 10,
-    priceUSD: 10,
+    credits: 20,
+    priceUSD: 20,
     popular: false,
-    features: ["Básico boosts", "Test features"],
+    features: ["Basic boosts", "Try features"],
   },
   {
     id: "basic",
     label: "Basic",
-    credits: 27,
-    bonus: 2,
-    priceUSD: 25,
+    credits: 33,
+    bonus: 3,
+    priceUSD: 30,
     popular: false,
-    features: ["Highlight listings", "Mais visibilidade"],
+    features: ["Highlight listings", "More visibility"],
   },
   {
     id: "pro",
@@ -30,7 +30,7 @@ const PACKAGES = [
     bonus: 5,
     priceUSD: 50,
     popular: true,
-    features: ["Feature listings ⭐", "Máxima exposição", "Top ranking"],
+    features: ["Feature listings ⭐", "Maximum exposure", "Top ranking"],
   },
   {
     id: "premium",
@@ -48,7 +48,7 @@ const PACKAGES = [
     bonus: 60,
     priceUSD: 200,
     popular: false,
-    features: ["Dominar cidade", "Máximos bônus", "Primeira posição"],
+    features: ["Dominate your city", "Maximum bonuses", "Top position"],
   },
 ];
 
@@ -83,7 +83,7 @@ export default function BuyCredits() {
       });
       const data = await res.json();
       if (!res.ok || !data.payAddress) {
-        throw new Error(data.error || "Erro ao criar pagamento.");
+        throw new Error(data.error || "Failed to create payment.");
       }
       // Save payment data in sessionStorage for the checkout page
       sessionStorage.setItem(`payment_${data.orderId}`, JSON.stringify(data));
@@ -102,16 +102,16 @@ export default function BuyCredits() {
         <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-400 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 mb-4">
           <span className="text-3xl">₿</span>
         </div>
-        <h1 className="text-3xl font-black text-white mb-2">Comprar Créditos</h1>
+        <h1 className="text-3xl font-black text-white mb-2">Buy Credits</h1>
         <p className="text-text-muted max-w-lg mb-4 text-sm">
-          Pagamento seguro via Bitcoin. Créditos entregues automaticamente após confirmação na rede. Créditos nunca expiram.
+          Secure payment via Bitcoin. Credits delivered automatically after network confirmation. Credits never expire.
         </p>
         {currentBalance !== null && (
           <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-5 py-2.5 rounded-2xl">
-            <span className="text-text-muted text-sm font-medium">Saldo Atual:</span>
+            <span className="text-text-muted text-sm font-medium">Current Balance:</span>
             <span className="text-xl font-bold text-white flex items-center gap-1.5">
               <span className="text-primary text-2xl">⚡</span>
-              {currentBalance} créditos
+              {currentBalance} credits
             </span>
           </div>
         )}
@@ -125,13 +125,13 @@ export default function BuyCredits() {
         </div>
       )}
 
-      {/* OpenNode not configured warning            */}
+      {/* Bitcoin payment info */}
       <div className="glass-card bg-orange-500/5 border border-orange-500/15 p-4 flex items-start gap-3">
         <span className="text-orange-400 text-lg mt-0.5">₿</span>
         <div>
-          <p className="text-orange-300 text-sm font-semibold">Pagamento via Bitcoin (NowPayments)</p>
+          <p className="text-orange-300 text-sm font-semibold">Bitcoin Payment (NowPayments)</p>
           <p className="text-orange-400/60 text-xs mt-0.5">
-            Aceitamos BTC on-chain e Lightning Network. Taxa de ~0.5% cobrada pelo NowPayments.
+            We accept BTC on-chain and Lightning Network. ~0.5% fee charged by NowPayments.
           </p>
         </div>
       </div>
@@ -148,7 +148,7 @@ export default function BuyCredits() {
           >
             {pkg.popular && (
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg shadow-primary/30 uppercase tracking-widest whitespace-nowrap">
-                Mais Popular
+                Most Popular
               </div>
             )}
 
@@ -162,10 +162,10 @@ export default function BuyCredits() {
                 {pkg.credits}
               </div>
               {pkg.bonus && (
-                <div className="text-xs text-green-400 font-bold mt-1">+{pkg.bonus} bônus</div>
+                <div className="text-xs text-green-400 font-bold mt-1">+{pkg.bonus} bonus</div>
               )}
               <div className="text-2xl font-bold text-orange-400 mt-2">${pkg.priceUSD}</div>
-              <div className="text-xs text-white/30 mt-0.5">${(pkg.priceUSD / pkg.credits).toFixed(2)}/crédito</div>
+              <div className="text-xs text-white/30 mt-0.5">${(pkg.priceUSD / pkg.credits).toFixed(2)}/credit</div>
             </div>
 
             <div className="space-y-2 mb-5">
@@ -191,10 +191,10 @@ export default function BuyCredits() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Gerando pagamento...
+                  Creating payment...
                 </>
               ) : (
-                <>₿ Pagar com Bitcoin</>
+                <>₿ Pay with Bitcoin</>
               )}
             </button>
           </div>
@@ -207,22 +207,22 @@ export default function BuyCredits() {
           <h3 className="text-white font-bold mb-2 flex items-center gap-2">
             <span>₿</span> Bitcoin & Lightning
           </h3>
-          <p className="text-text-muted text-xs">Aceitamos BTC on-chain e Lightning Network via OpenNode. Pagamentos confirmados em segundos (Lightning) ou minutos (on-chain).</p>
+          <p className="text-text-muted text-xs">We accept BTC on-chain and Lightning Network via NowPayments. Payments confirmed in seconds (Lightning) or minutes (on-chain).</p>
         </div>
         <div className="glass-card p-5 border-green-500/15 bg-green-500/5">
           <h3 className="text-white font-bold mb-2 flex items-center gap-2">
-            <span>⚡</span> Créditos Automáticos
+            <span>⚡</span> Automatic Credits
           </h3>
-          <p className="text-text-muted text-xs">Assim que o pagamento é confirmado na rede, seus créditos são adicionados automaticamente. Você recebe notificação in-app.</p>
+          <p className="text-text-muted text-xs">As soon as your payment is confirmed on the network, credits are added automatically. You receive an in-app notification.</p>
         </div>
         <div className="glass-card p-5">
           <h3 className="text-white font-bold mb-2 flex items-center gap-2">
-            <span>💡</span> Como usar créditos
+            <span>💡</span> How to use credits
           </h3>
           <ul className="text-text-muted text-xs space-y-1">
-            <li>⚡ Bump up seu anúncio — 5 créditos</li>
-            <li>✨ Highlight dourado — 10 créditos</li>
-            <li>🌟 Feature Premium — 25 créditos</li>
+            <li>⚡ Bump up your listing — 5 credits</li>
+            <li>✨ Gold highlight — 10 credits</li>
+            <li>🌟 Feature Premium — 25 credits</li>
           </ul>
         </div>
       </div>

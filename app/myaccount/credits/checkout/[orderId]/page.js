@@ -13,7 +13,7 @@ function QRCode({ value, size = 200 }) {
   return (
     <img
       src={src}
-      alt="QR Code Bitcoin"
+      alt="Bitcoin QR Code"
       width={size}
       height={size}
       className="rounded-xl border border-white/10"
@@ -34,9 +34,9 @@ function CopyButton({ text, label }) {
       className="shrink-0 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 text-xs font-medium transition-all flex items-center gap-1.5"
     >
       {copied ? (
-        <><span className="text-green-400">✓</span> Copiado!</>
+        <><span className="text-green-400">✓</span> Copied!</>
       ) : (
-        <><span>📋</span> {label || "Copiar"}</>
+        <><span>📋</span> {label || "Copy"}</>
       )}
     </button>
   );
@@ -74,12 +74,11 @@ export default function CheckoutPage() {
   const { orderId } = useParams();
   const router = useRouter();
 
-  const [payment, setPayment] = useState(null); // loaded from sessionStorage
-  const [status, setStatus] = useState("waiting"); // waiting | confirmed | expired | error
+  const [payment, setPayment] = useState(null);
+  const [status, setStatus] = useState("waiting");
   const [polls, setPolls] = useState(0);
   const intervalRef = useRef(null);
 
-  // Load payment data from sessionStorage (set by buy page)
   useEffect(() => {
     const raw = sessionStorage.getItem(`payment_${orderId}`);
     if (raw) {
@@ -87,7 +86,6 @@ export default function CheckoutPage() {
     }
   }, [orderId]);
 
-  // Poll check-payment
   useEffect(() => {
     if (!orderId || status !== "waiting") return;
 
@@ -127,15 +125,15 @@ export default function CheckoutPage() {
         <div className="w-24 h-24 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
           <span className="text-5xl">✅</span>
         </div>
-        <h1 className="text-3xl font-black text-white">Pagamento Confirmado!</h1>
+        <h1 className="text-3xl font-black text-white">Payment Confirmed!</h1>
         <p className="text-text-muted max-w-sm text-sm">
-          Seu pagamento Bitcoin foi confirmado na rede. {payment?.credits} créditos foram adicionados à sua conta.
+          Your Bitcoin payment has been confirmed on the network. {payment?.credits} credits have been added to your account.
         </p>
         <Link
           href="/myaccount/credits"
           className="btn-primary px-8 py-3 rounded-xl font-bold text-white"
         >
-          Ver Meus Créditos →
+          View My Credits →
         </Link>
       </div>
     );
@@ -148,15 +146,15 @@ export default function CheckoutPage() {
         <div className="w-24 h-24 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
           <span className="text-5xl">⏰</span>
         </div>
-        <h1 className="text-3xl font-black text-white">Tempo Expirado</h1>
+        <h1 className="text-3xl font-black text-white">Time Expired</h1>
         <p className="text-text-muted max-w-sm text-sm">
-          O endereço BTC expirou. Gere um novo pagamento para continuar.
+          The BTC address has expired. Please generate a new payment to continue.
         </p>
         <Link
           href="/myaccount/credits/buy"
           className="btn-primary px-8 py-3 rounded-xl font-bold text-white"
         >
-          Tentar Novamente
+          Try Again
         </Link>
       </div>
     );
@@ -176,11 +174,11 @@ export default function CheckoutPage() {
           <span className="text-2xl">₿</span>
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-black text-white">Pagar com Bitcoin</h1>
+          <h1 className="text-xl font-black text-white">Pay with Bitcoin</h1>
           {payment && (
             <p className="text-text-muted text-sm mt-0.5">
               {payment.label} — <span className="text-orange-400 font-bold">${payment.priceUSD}</span> →{" "}
-              <span className="text-primary font-bold">⚡ {payment.credits} créditos</span>
+              <span className="text-primary font-bold">⚡ {payment.credits} credits</span>
             </p>
           )}
         </div>
@@ -192,9 +190,9 @@ export default function CheckoutPage() {
       {/* No payment data fallback */}
       {!payment && (
         <div className="glass-card p-6 bg-yellow-500/5 border-yellow-500/20 text-center space-y-3">
-          <p className="text-yellow-300 text-sm">Dados do pagamento não encontrados. Retorne e tente novamente.</p>
+          <p className="text-yellow-300 text-sm">Payment data not found. Please go back and try again.</p>
           <Link href="/myaccount/credits/buy" className="btn-secondary px-6 py-2 rounded-xl text-sm inline-block">
-            ← Voltar
+            ← Go Back
           </Link>
         </div>
       )}
@@ -206,17 +204,17 @@ export default function CheckoutPage() {
             <div className="flex flex-col sm:flex-row items-center gap-6">
               {/* QR Code */}
               <div className="shrink-0">
-                <a href={btcUri} title="Abrir na carteira Bitcoin">
+                <a href={btcUri} title="Open in Bitcoin wallet">
                   <QRCode value={btcUri || btcAddress} size={180} />
                 </a>
-                <p className="text-white/30 text-xs text-center mt-2">Clique para abrir na carteira</p>
+                <p className="text-white/30 text-xs text-center mt-2">Click to open in wallet</p>
               </div>
 
               {/* Details */}
               <div className="flex-1 space-y-4 w-full">
                 {/* BTC Amount */}
                 <div>
-                  <p className="text-white/40 text-xs mb-1.5 uppercase tracking-wider">Valor a Pagar</p>
+                  <p className="text-white/40 text-xs mb-1.5 uppercase tracking-wider">Amount to Pay</p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-mono text-orange-400 font-bold text-lg truncate">
                       {btcAmount} BTC
@@ -228,12 +226,12 @@ export default function CheckoutPage() {
 
                 {/* BTC Address */}
                 <div>
-                  <p className="text-white/40 text-xs mb-1.5 uppercase tracking-wider">Endereço Bitcoin</p>
+                  <p className="text-white/40 text-xs mb-1.5 uppercase tracking-wider">Bitcoin Address</p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-mono text-white/70 text-xs break-all">
                       {btcAddress}
                     </div>
-                    <CopyButton text={btcAddress} label="Endereço" />
+                    <CopyButton text={btcAddress} label="Address" />
                   </div>
                 </div>
               </div>
@@ -249,9 +247,9 @@ export default function CheckoutPage() {
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-white font-semibold text-sm">Aguardando pagamento na rede Bitcoin</p>
+              <p className="text-white font-semibold text-sm">Waiting for payment on the Bitcoin network</p>
               <p className="text-white/30 text-xs mt-0.5">
-                Esta página verifica automaticamente a cada 10 segundos. Não feche esta aba.
+                This page checks automatically every 10 seconds. Do not close this tab.
               </p>
             </div>
             <span className="text-white/20 text-xs font-mono">{polls}/{MAX_POLLS}</span>
@@ -259,12 +257,12 @@ export default function CheckoutPage() {
 
           {/* Instructions */}
           <div className="glass-card p-5 space-y-3">
-            <h3 className="text-white font-bold text-sm">Como pagar</h3>
+            <h3 className="text-white font-bold text-sm">How to pay</h3>
             <ol className="space-y-2 text-text-muted text-xs list-decimal list-inside">
-              <li>Abra sua carteira Bitcoin (Coinbase, Cash App, Exodus, etc.)</li>
-              <li>Escaneie o QR Code <strong className="text-white/60">ou</strong> copie o endereço acima</li>
-              <li>Envie exatamente <strong className="text-orange-400">{btcAmount} BTC</strong></li>
-              <li>Aguarde — seus créditos aparecem automaticamente após confirmação</li>
+              <li>Open your Bitcoin wallet (Coinbase, Cash App, Exodus, etc.)</li>
+              <li>Scan the QR Code <strong className="text-white/60">or</strong> copy the address above</li>
+              <li>Send exactly <strong className="text-orange-400">{btcAmount} BTC</strong></li>
+              <li>Wait — your credits appear automatically after confirmation</li>
             </ol>
           </div>
 
@@ -272,7 +270,7 @@ export default function CheckoutPage() {
           <div className="glass-card p-4 bg-red-500/5 border-red-500/10 flex items-start gap-3">
             <span className="text-red-400 text-lg shrink-0 mt-0.5">⚠️</span>
             <p className="text-red-300/70 text-xs">
-              Envie <strong className="text-red-300">apenas Bitcoin (BTC)</strong> para este endereço. Outros tokens ou redes resultam em perda permanente de fundos.
+              Send <strong className="text-red-300">only Bitcoin (BTC)</strong> to this address. Other tokens or networks will result in permanent loss of funds.
             </p>
           </div>
 
@@ -280,7 +278,7 @@ export default function CheckoutPage() {
           <div className="flex items-center justify-between text-white/20 text-xs px-1">
             <span>Order: <span className="font-mono">{orderId}</span></span>
             <Link href="/myaccount/credits/buy" className="hover:text-white/40 transition-all">
-              ← Cancelar
+              ← Cancel
             </Link>
           </div>
         </>

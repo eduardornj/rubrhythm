@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect, useCallback } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 
 const ROLE_LABELS = { provider: "Massagista", user: "Cliente", admin: "Admin" };
@@ -23,14 +24,18 @@ function Field({ label, children }) {
 }
 
 export default function UsuariosPage() {
+    const searchParams = useSearchParams();
+    const urlSearch = searchParams.get("search") || "";
+
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [search, setSearch] = useState("");
+    const [search, setSearch] = useState(urlSearch);
     const [roleFilter, setRoleFilter] = useState("all");
     const [statusFilter, setStatusFilter] = useState("all");
     const [selected, setSelected] = useState(null);
     const [actionLoading, setActionLoading] = useState(null);
     const [toast, setToast] = useState(null);
+    const [autoSelected, setAutoSelected] = useState(false);
 
     // Modals
     const [banModal, setBanModal] = useState(null); // user
@@ -48,9 +53,17 @@ export default function UsuariosPage() {
         setLoading(true);
         const res = await fetch("/api/admin/users");
         const json = await res.json();
-        setUsers(json.data || []);
+        const data = json.data || [];
+        setUsers(data);
+
+        // Auto-select user from URL search param
+        if (urlSearch && !autoSelected && data.length > 0) {
+            const match = data.find(u => u.email?.toLowerCase() === urlSearch.toLowerCase() || u.name?.toLowerCase().includes(urlSearch.toLowerCase()));
+            if (match) { setSelected(match); setAutoSelected(true); }
+        }
+
         setLoading(false);
-    }, []);
+    }, [urlSearch, autoSelected]);
 
     useEffect(() => { load(); }, [load]);
 

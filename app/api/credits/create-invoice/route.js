@@ -3,8 +3,8 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 
 const PACKAGES = {
-  starter: { credits: 10, priceUSD: 10, label: "Starter" },
-  basic: { credits: 27, priceUSD: 25, label: "Basic (+2 bônus)" },
+  starter: { credits: 20, priceUSD: 20, label: "Starter" },
+  basic: { credits: 33, priceUSD: 30, label: "Basic (+3 bônus)" },
   pro: { credits: 55, priceUSD: 50, label: "Pro (+5 bônus)" },
   premium: { credits: 120, priceUSD: 100, label: "Premium (+20 bônus)" },
   ultra: { credits: 260, priceUSD: 200, label: "Ultra (+60 bônus)" },
