@@ -5,12 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { ChevronDownIcon, ChevronUpIcon, FunnelIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 const BODY_TYPES = [
-  "Slim", "Athletic", "Average", "Curvy", "BBW", "Muscular", "Petite", "Tall"
-];
-
-const ETHNICITIES = [
-  "Latina", "Brazilian", "Mexican", "Puerto Rican", "Venezuelan", "Colombian",
-  "Asian", "Ebony/Black", "Caucasian/White", "Mixed/Exotic"
+  "Athletic", "Average", "BBW", "Muscular", "Petite", "Tall"
 ];
 
 const SERVICE_LOCATIONS = [
@@ -219,6 +214,22 @@ export default function AdvancedSearchFilters({ onFiltersChange, initialFilters 
             {/* Scrollable Content */}
             <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar">
 
+              {/* Verified Only Toggle */}
+              <div className="mb-4">
+                <label className="flex items-center justify-between cursor-pointer group">
+                  <div>
+                    <h4 className="text-sm font-semibold text-text-muted uppercase tracking-wide">Verified Only</h4>
+                    <p className="text-xs text-text-muted/60 mt-0.5">Show only ID-verified Blue Badge providers</p>
+                  </div>
+                  <button
+                    onClick={() => handleFilterChange('verified', !filters.verified)}
+                    className={`relative w-12 h-6 rounded-full transition-colors ${filters.verified ? 'bg-primary' : 'bg-white/10'}`}
+                  >
+                    <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform ${filters.verified ? 'translate-x-6' : ''}`} />
+                  </button>
+                </label>
+              </div>
+
               {/* Available Now Toggle */}
               <div className="mb-6">
                 <label className="flex items-center justify-between cursor-pointer group">
@@ -283,25 +294,6 @@ export default function AdvancedSearchFilters({ onFiltersChange, initialFilters 
                         className="peer sr-only"
                         checked={filters.bodyType.includes(type)}
                         onChange={(e) => handleFilterChange('bodyType', type, e.target.checked)}
-                      />
-                      <div className="px-4 py-1.5 border border-white/10 rounded-full text-sm text-text-muted transition-all peer-checked:bg-white peer-checked:text-black hover:border-white/30">
-                        {type}
-                      </div>
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
-
-              {/* Ethnicity */}
-              <FilterSection title="Ethnicity">
-                <div className="flex flex-wrap gap-2">
-                  {ETHNICITIES.map((type) => (
-                    <label key={type} className="cursor-pointer">
-                      <input
-                        type="checkbox"
-                        className="peer sr-only"
-                        checked={filters.ethnicity.includes(type)}
-                        onChange={(e) => handleFilterChange('ethnicity', type, e.target.checked)}
                       />
                       <div className="px-4 py-1.5 border border-white/10 rounded-full text-sm text-text-muted transition-all peer-checked:bg-white peer-checked:text-black hover:border-white/30">
                         {type}

@@ -778,9 +778,17 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                     ) : chatSuccess ? "Sent ✓" : "Send Secure Message →"}
                   </button>
                 ) : (
-                  <Link href="/login" className="block w-full mt-2 py-2.5 text-center bg-white/8 border border-white/10 text-white/60 text-sm rounded-xl hover:bg-white/12 transition-all">
-                    Log in to send message
-                  </Link>
+                  <div className="mt-2 rounded-xl border border-primary/20 bg-primary/5 p-3 text-center">
+                    <p className="text-white/70 text-xs mb-2">Create a free account to send messages and view contact details</p>
+                    <div className="flex gap-2">
+                      <Link href="/register-on-rubrhythm" className="flex-1 py-2 bg-primary text-white text-xs font-bold rounded-lg hover:bg-primary/80 transition-colors">
+                        Join Free — 30 sec
+                      </Link>
+                      <Link href="/login" className="flex-1 py-2 bg-white/8 border border-white/10 text-white/60 text-xs rounded-lg hover:bg-white/12 transition-colors">
+                        Sign In
+                      </Link>
+                    </div>
+                  </div>
                 )}
               </div>
 

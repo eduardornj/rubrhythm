@@ -44,7 +44,7 @@ const popularCities = [
   { city: "Miami", state: "Florida", icon: "🌴", tag: "Trending" },
   { city: "Chicago", state: "Illinois", icon: "🏙️", tag: "Popular" },
   { city: "Houston", state: "Texas", icon: "🤠", tag: "Growing" },
-  { city: "Atlanta", state: "Georgia", icon: "🍑", tag: "Hot" },
+  { city: "Atlanta", state: "Georgia", icon: "🌆", tag: "Hot" },
   { city: "Phoenix", state: "Arizona", icon: "🌵", tag: "Growing" },
   { city: "Dallas", state: "Texas", icon: "💎", tag: "Popular" },
   { city: "San Francisco", state: "California", icon: "🌉", tag: "Premium" },
@@ -77,11 +77,11 @@ export default function Home() {
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold mb-6 tracking-tight">
-            Unwind with the <span className="text-gradient">Best Providers</span>
+            Find <span className="text-gradient">Verified</span> Massage Providers
           </h1>
 
           <p className="text-lg md:text-xl text-text-muted mb-10 max-w-2xl mx-auto leading-relaxed">
-            Find body rub and massage providers across America. Browse verified listings, compare services, and connect directly.
+            Browse ID-verified providers across 250+ US cities. Every Blue Badge listing has been confirmed by our team — safe, professional, and real.
           </p>
 
           {/* Glass Search Bar Container */}
