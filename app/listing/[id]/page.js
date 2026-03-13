@@ -387,7 +387,9 @@ export default function ListingDetailPage() {
             {featuredListings.map((featuredListing) => (
               <div key={featuredListing.id} className="group">
                 <Link
-                  href={`/united-states/${featuredListing.state?.toLowerCase().replace(/\s+/g, '-')}/${featuredListing.city?.toLowerCase().replace(/\s+/g, '-')}/massagists/${featuredListing.slug || featuredListing.id}`}
+                  href={featuredListing.state && featuredListing.city
+                    ? `/united-states/${featuredListing.state.toLowerCase().replace(/\s+/g, '-')}/${featuredListing.city.toLowerCase().replace(/\s+/g, '-')}/massagists/${featuredListing.slug || featuredListing.id}`
+                    : `/listing/${featuredListing.id}`}
                   className="block bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/20"
                 >
                   {/* Featured Badge */}

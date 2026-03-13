@@ -20,8 +20,10 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
 
   if (onlyVerified && !listing.user?.verified) return null;
 
-  const resolvedState = (listing.state || state || "").toLowerCase().replace(/\s+/g, "-");
-  const resolvedCity = (listing.city || city || "").toLowerCase().replace(/\s+/g, "-");
+  const rawState = listing.state || state || "";
+  const rawCity = listing.city || city || "";
+  const resolvedState = rawState ? rawState.toLowerCase().replace(/\s+/g, "-") : "";
+  const resolvedCity = rawCity ? rawCity.toLowerCase().replace(/\s+/g, "-") : "";
   const slug = `${listing.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${listing.id}`;
   const href = resolvedState && resolvedCity
     ? `/united-states/${resolvedState}/${resolvedCity}/massagists/${slug}`

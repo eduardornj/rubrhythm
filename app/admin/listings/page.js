@@ -250,7 +250,9 @@ function ListingDetail({ listing, onAction, onDelete, actionLoading }) {
                         )}
                         <ActionBtn action="bump-up" label="Bump Up" color="border-blue-500/30 text-blue-400 hover:bg-blue-500/10" />
                         <Link
-                            href={`/united-states/${listing.state?.toLowerCase().replace(/\s+/g, "-")}/${listing.city?.toLowerCase().replace(/\s+/g, "-")}/massagists/${listing.slug || listing.id}`}
+                            href={listing.state && listing.city
+                              ? `/united-states/${listing.state.toLowerCase().replace(/\s+/g, "-")}/${listing.city.toLowerCase().replace(/\s+/g, "-")}/massagists/${listing.slug || listing.id}`
+                              : `/listing/${listing.id}`}
                             target="_blank"
                             className="px-3 py-1.5 rounded-lg text-xs font-semibold border border-white/10 text-white/50 hover:text-white hover:bg-white/5 transition-all"
                         >
@@ -613,7 +615,9 @@ function AnunciosPage() {
                                         </>
                                     )}
                                     <Link
-                                        href={`/united-states/${l.state?.toLowerCase().replace(/\s+/g, "-")}/${l.city?.toLowerCase().replace(/\s+/g, "-")}/massagists/${l.slug || l.id}`}
+                                        href={l.state && l.city
+                                          ? `/united-states/${l.state.toLowerCase().replace(/\s+/g, "-")}/${l.city.toLowerCase().replace(/\s+/g, "-")}/massagists/${l.slug || l.id}`
+                                          : `/listing/${l.id}`}
                                         target="_blank"
                                         onClick={e => e.stopPropagation()}
                                         className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-white/8 text-white/30 hover:text-white hover:bg-white/10 hover:border-white/20 transition-all"

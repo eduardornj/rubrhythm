@@ -11,6 +11,8 @@ function imgSrc(img) {
 export default function MiniCard({ listing, state, city }) {
   const img = listing.images?.[0] || null;
   const slug = listing.id;
+  const resolvedState = (listing.state || state || "").toLowerCase().replace(/\s+/g, "-");
+  const resolvedCity = (listing.city || city || "").toLowerCase().replace(/\s+/g, "-");
   const isVerified = listing.user?.verified;
   const isFeatured = listing.isFeatured && listing.featuredEndDate && new Date(listing.featuredEndDate) > new Date();
   const isPremium = listing.featureTier?.toUpperCase() === 'PREMIUM';
@@ -28,7 +30,9 @@ export default function MiniCard({ listing, state, city }) {
 
   return (
     <Link
-      href={`/united-states/${state}/${city}/massagists/${slug}`}
+      href={resolvedState && resolvedCity
+        ? `/united-states/${resolvedState}/${resolvedCity}/massagists/${slug}`
+        : `/listing/${listing.id}`}
       className={`group glass-card p-0 overflow-hidden transition-all duration-300 block border ${cardBorder}`}
     >
       <div className="relative w-full h-full aspect-[3/4] overflow-hidden">

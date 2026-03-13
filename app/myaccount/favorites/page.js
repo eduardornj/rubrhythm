@@ -218,7 +218,9 @@ export default function MyAccountFavorites() {
                     {/* Actions */}
                     <div className="flex space-x-2 pt-2 border-t border-white/6">
                       <Link
-                        href={`/united-states/${listing?.state?.toLowerCase().replace(/\s+/g, '-')}/${listing?.city?.toLowerCase().replace(/\s+/g, '-')}/massagists/${listing?.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${listing?.id}`}
+                        href={listing?.state && listing?.city
+                          ? `/united-states/${listing.state.toLowerCase().replace(/\s+/g, '-')}/${listing.city.toLowerCase().replace(/\s+/g, '-')}/massagists/${listing.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${listing.id}`
+                          : `/listing/${listing?.id}`}
                         className="flex-1 py-2 bg-primary/20 border border-primary/30 text-primary font-bold text-center rounded-xl hover:bg-primary hover:text-white transition-all text-sm"
                       >
                         Ver Detalhes
@@ -226,7 +228,10 @@ export default function MyAccountFavorites() {
                       <button
                         onClick={() => {
                           if (listing?.id) {
-                            navigator.clipboard.writeText(`${window.location.origin}/united-states/${listing?.state?.toLowerCase().replace(/\s+/g, '-')}/${listing?.city?.toLowerCase().replace(/\s+/g, '-')}/massagists/${listing?.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${listing?.id}`);
+                            const shareUrl = listing?.state && listing?.city
+                              ? `${window.location.origin}/united-states/${listing.state.toLowerCase().replace(/\s+/g, '-')}/${listing.city.toLowerCase().replace(/\s+/g, '-')}/massagists/${listing.title?.toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${listing.id}`
+                              : `${window.location.origin}/listing/${listing.id}`;
+                            navigator.clipboard.writeText(shareUrl);
                             alert('Link copied to clipboard!');
                           }
                         }}

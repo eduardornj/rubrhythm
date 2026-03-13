@@ -54,37 +54,40 @@ export async function GET(request) {
         ]);
 
         // Financial calculations (Escrow & Revenue)
+        // Each query isolated so one failure doesn't zero everything
         let totalEscrowAmount = 0;
         let pendingEscrows = 0;
         let disputedEscrows = 0;
         let totalRevenue = 0;
 
-        try {
-            const escrowStats = await Promise.all([
-                prisma.escrow.count({ where: { status: 'pending' } }),
-                prisma.escrow.count({ where: { status: 'disputed' } }),
-                prisma.escrow.aggregate({ _sum: { amount: true } }),
-                prisma.transaction.aggregate({ _sum: { amount: true } }),
-                // Sum all credit purchases (positive inflows)
-                prisma.credittransaction.aggregate({
-                    _sum: { amount: true },
-                    where: { amount: { gt: 0 }, type: { in: ['purchase', 'admin_bonus', 'referral_bonus'] } }
-                }),
-                // Sum all credit spending (negative outflows = actual revenue)
-                prisma.credittransaction.aggregate({
-                    _sum: { amount: true },
-                    where: { amount: { lt: 0 } }
-                })
-            ]);
-            pendingEscrows = escrowStats[0];
-            disputedEscrows = escrowStats[1];
-            totalEscrowAmount = toNum(escrowStats[2]._sum.amount);
-            totalRevenue = toNum(escrowStats[3]._sum.amount);
-            const creditPurchases = toNum(escrowStats[4]._sum.amount);
-            const creditSpending = Math.abs(toNum(escrowStats[5]._sum.amount));
-            // If transaction table is empty, use credit data instead
-            if (totalRevenue === 0) totalRevenue = creditPurchases;
-        } catch (e) { /* Escrow might be empty or migrating */ }
+        const safeAggregate = async (fn) => {
+            try { return await fn(); } catch { return null; }
+        };
+
+        const [escrowPending, escrowDisputed, escrowSum, creditInflow, tipSum, chatPaymentSum] = await Promise.all([
+            safeAggregate(() => prisma.escrow.count({ where: { status: 'pending' } })),
+            safeAggregate(() => prisma.escrow.count({ where: { status: 'disputed' } })),
+            safeAggregate(() => prisma.escrow.aggregate({ _sum: { amount: true } })),
+            safeAggregate(() => prisma.credittransaction.aggregate({
+                _sum: { amount: true },
+                where: { amount: { gt: 0 } }
+            })),
+            safeAggregate(() => prisma.tip.aggregate({
+                _sum: { amount: true },
+                where: { status: 'completed' }
+            })),
+            safeAggregate(() => prisma.chatpayment.aggregate({
+                _sum: { amount: true },
+                where: { status: 'completed' }
+            }))
+        ]);
+
+        pendingEscrows = escrowPending ?? 0;
+        disputedEscrows = escrowDisputed ?? 0;
+        totalEscrowAmount = toNum(escrowSum?._sum?.amount);
+        totalRevenue = toNum(creditInflow?._sum?.amount)
+            + toNum(tipSum?._sum?.amount)
+            + toNum(chatPaymentSum?._sum?.amount);
 
         // Fetch urgency queue (Top 5 items that need admin action immediately)
         const urgentVerifications = await prisma.verificationrequest.findMany({
