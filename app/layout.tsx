@@ -72,6 +72,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
         <meta name="msapplication-TileColor" content="#ff6b6b" />
         <meta name="msapplication-TileImage" content="/icons/icon-192x192.svg" />
+        {/* GA4 — RubRhythm */}
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-JL4NCC79LB" />
+        <script dangerouslySetInnerHTML={{ __html: `window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-JL4NCC79LB');` }} />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen relative`}>
         <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary z-50"></div>
