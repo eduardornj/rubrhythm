@@ -1,59 +1,118 @@
 import { auth } from "@/auth"
 import { NextRequest, NextResponse } from "next/server"
+import createIntlMiddleware from 'next-intl/middleware'
+import { routing } from './i18n/routing'
+
+const intlMiddleware = createIntlMiddleware(routing)
+
+// Paths that should skip i18n locale routing entirely
+function shouldSkipIntl(pathname: string): boolean {
+  return (
+    pathname.startsWith('/admin') ||
+    pathname.startsWith('/api') ||
+    pathname.startsWith('/_next') ||
+    pathname.startsWith('/auth') ||
+    pathname.includes('.') // static files
+  )
+}
+
+// Strip locale prefix from pathname for auth checks
+function stripLocale(pathname: string): string {
+  for (const locale of routing.locales) {
+    if (locale === routing.defaultLocale) continue
+    if (pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`) {
+      return pathname.slice(`/${locale}`.length) || '/'
+    }
+  }
+  return pathname
+}
+
+// Auth-protected path patterns (without locale prefix)
+function isProtectedPath(cleanPathname: string): boolean {
+  return (
+    cleanPathname.startsWith('/myaccount') ||
+    cleanPathname.startsWith('/my-listings') ||
+    cleanPathname.startsWith('/my-account') ||
+    cleanPathname.startsWith('/messages') ||
+    cleanPathname.startsWith('/favorites') ||
+    cleanPathname.startsWith('/add-listing') ||
+    cleanPathname.startsWith('/get-verified')
+  )
+}
+
+// API paths that need auth
+function isProtectedApiPath(pathname: string): boolean {
+  return (
+    pathname.startsWith('/api/chat') ||
+    pathname.startsWith('/api/messages') ||
+    pathname.startsWith('/api/favorites') ||
+    pathname.startsWith('/api/listing') ||
+    pathname.startsWith('/api/user') ||
+    pathname.startsWith('/api/notifications') ||
+    pathname.startsWith('/api/credits')
+  )
+}
 
 export default auth(async (req: any) => {
   const { pathname } = req.nextUrl
 
-  // Allow access to auth routes
+  // ---- API auth checks (no i18n needed) ----
   if (pathname.startsWith('/api/auth')) {
     return NextResponse.next()
   }
 
-  // Allow access to public routes and banned user page
-  if (pathname === '/' || pathname.startsWith('/login') || pathname.startsWith('/register') || pathname === '/banned') {
-    return NextResponse.next()
-  }
-
-  // Check if user is authenticated
-  if (!req.auth) {
-    if (pathname.startsWith('/myaccount') || pathname.startsWith('/my-') || pathname.startsWith('/messages')) {
-      return NextResponse.redirect(new URL('/login', req.url))
+  if (isProtectedApiPath(pathname)) {
+    if (!req.auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
-    return NextResponse.next()
-  }
-
-  // Ban check — isBanned is synced to JWT from DB on every token refresh
-  if (req.auth.user?.isBanned) {
-    if (pathname.startsWith('/api/')) {
+    if (req.auth.user?.isBanned) {
       return NextResponse.json({ error: 'Account suspended' }, { status: 403 })
     }
-    if (pathname !== '/banned') {
-      return NextResponse.redirect(new URL('/banned', req.url))
+    return NextResponse.next()
+  }
+
+  // ---- Skip i18n for admin, api, static files ----
+  if (shouldSkipIntl(pathname)) {
+    return NextResponse.next()
+  }
+
+  // ---- Run i18n middleware for locale routing ----
+  const intlResponse = intlMiddleware(req)
+
+  // Get the clean pathname (without locale prefix) for auth checks
+  const cleanPathname = stripLocale(pathname)
+
+  // ---- Auth checks on protected page routes ----
+  if (isProtectedPath(cleanPathname)) {
+    if (!req.auth) {
+      // Determine the locale to redirect to the correct login page
+      const locale = pathname.startsWith('/es') ? 'es' : 'en'
+      const loginPath = locale === 'en' ? '/login' : `/${locale}/login`
+      return NextResponse.redirect(new URL(loginPath, req.url))
+    }
+
+    if (req.auth.user?.isBanned) {
+      const locale = pathname.startsWith('/es') ? 'es' : 'en'
+      const bannedPath = locale === 'en' ? '/banned' : `/${locale}/banned`
+      if (cleanPathname !== '/banned') {
+        return NextResponse.redirect(new URL(bannedPath, req.url))
+      }
     }
   }
 
-  return NextResponse.next()
+  // ---- Ban check for authenticated users on any page ----
+  if (req.auth?.user?.isBanned && cleanPathname !== '/banned') {
+    const locale = pathname.startsWith('/es') ? 'es' : 'en'
+    const bannedPath = locale === 'en' ? '/banned' : `/${locale}/banned`
+    return NextResponse.redirect(new URL(bannedPath, req.url))
+  }
+
+  return intlResponse
 })
 
-// NOTE: Only page routes here — NOT /api/* routes.
-// API routes are protected by auth() inside each handler (Node.js runtime).
-// Middleware runs in Edge Runtime where Prisma Client cannot execute DB queries.
 export const config = {
   matcher: [
-    '/myaccount/:path*',
-    '/admin/:path*',
-    '/my-listings/:path*',
-    '/my-account/:path*',
-    '/messages/:path*',
-    '/favorites/:path*',
-    '/add-listing/:path*',
-    '/get-verified/:path*',
-    '/api/chat/:path*',
-    '/api/messages/:path*',
-    '/api/favorites/:path*',
-    '/api/listing/:path*',
-    '/api/user/:path*',
-    '/api/notifications/:path*',
-    '/api/credits/:path*',
+    // Match all paths except static files and Next.js internals
+    '/((?!_next/static|_next/image|favicon.ico|icons|manifest.json|sw.js|robots.txt|sitemap.xml).*)',
   ],
 }

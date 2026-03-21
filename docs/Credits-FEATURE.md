@@ -1,6 +1,6 @@
 Esse documento foi feito em 3 partes os nomes sao Credits-BumpUp.md, Credits-FEATURE.md, Credits-Highlight YourListing.md tudo isso eh para voce trae para voce ter uma ideia de como eh e de como vamos fazer e cobrar sobre os anuncios se voce tiver duvida pergunte no chat mas leia tudo antes .
 
-- Feature Aqui segue tudo o que peguei do Rubranking em relacao essa modalidade esta mostrando o que aparece no front end e depois mostro o que consegui coletar do console
+- Feature Aqui segue tudo o que peguei do Rubranking em relação essa modalidade esta mostrando o que aparece no front end e depois mostro o que consegui coletar do console
 https://www.rubrankings.com/upgrade-listing/featured.html?id=50828
 
 * Front end

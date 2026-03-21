@@ -237,7 +237,7 @@ rubrhythm/
 │   └── datalocations.js             # Dados de localização
 ├── 📄 debug-reviews.js              # Debug de reviews
 ├── 📁 docs/                         # Documentação
-│   ├── analise-comparativa-monetizacao.md
+│   ├── analise-comparativa-monetização.md
 │   ├── Credits-BumpUp.md
 │   ├── Credits-FEATURE.md
 │   └── payment-history.md

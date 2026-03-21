@@ -83,8 +83,14 @@ Diretorio SaaS de massagistas e body rub providers nos EUA. Providers criam perf
 | EMAIL_FROM | `RubRhythm <noreply@rubrhythm.com>` |
 | CRON_SECRET | `cf3b7843246b2a4a3552ee6dc819175d1a37e18fd07ec0a0b84620f81e7b4ae6` |
 | BLOB_READ_WRITE_TOKEN | `vercel_blob_rw_xyN3cM3fWWtBtSNu_Zy7GVkVn1gTuYVjWthXzSoCIYCpMnC` |
-| TELEGRAM_BOT_TOKEN | `8106013583:AAGunAdgWPiavf6hso4uJYgB6lWsdBiHLVA` |
-| TELEGRAM_CHAT_ID | `1715908263` |
+| TELEGRAM_BOT_TOKEN | `8657351579:AAF8J0COPX2WClu22VklfRCByJD6qcZ_HFY` |
+| TELEGRAM_CHAT_ID | `-5162228529` |
+
+**Telegram (atualizado 21/mar/2026):**
+- Bot antigo: @Clawddudubot (token 8106013583) — usado pela Bubbles, NAO usar mais pro RubRhythm
+- Bot novo: @RubRhythmAlertsBot (token 8657351579) — exclusivo pro RubRhythm
+- Grupo: "RubRhythm Alerts" (chat ID -5162228529) — alertas separados da Bubbles
+- **ATUALIZAR NO VERCEL:** trocar TELEGRAM_BOT_TOKEN e TELEGRAM_CHAT_ID pelos valores novos acima
 
 Telegram vars adicionadas no Vercel em 2026-03-20.
 

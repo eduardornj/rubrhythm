@@ -1,42 +1,7 @@
-import Link from "next/link";
+"use client";
 
-const FOOTER_COLUMNS = [
-  {
-    title: "RubRhythm",
-    links: [
-      { label: "About", href: "/about" },
-      { label: "How It Works", href: "/how-it-works" },
-      { label: "For Providers", href: "/for-providers" },
-      { label: "For Clients", href: "/for-clients" },
-      { label: "Blog", href: "/blog" },
-      { label: "Glossary", href: "/glossary" },
-      { label: "Contact", href: "/contact" },
-      { label: "FAQ", href: "/info/faq" },
-    ],
-  },
-  {
-    title: "Safety & Trust",
-    links: [
-      { label: "Get Verified", href: "/get-verified", highlight: true },
-      { label: "Safety Guide", href: "/safety-guide" },
-      { label: "Verification Guide", href: "/verification-guide" },
-      { label: "Why Verification Matters", href: "/why-verification-matters" },
-      { label: "Anti-Trafficking", href: "/info/anti-trafficking" },
-      { label: "Anti-Scam Guide", href: "/info/anti-scam" },
-      { label: "Get Help", href: "/info/get-help-from-staff" },
-    ],
-  },
-  {
-    title: "Legal",
-    links: [
-      { label: "Terms of Service", href: "/info/terms" },
-      { label: "Privacy Policy", href: "/info/privacy-policy" },
-      { label: "Law & Legal", href: "/info/law-and-legal" },
-      { label: "Section 2257", href: "/info/section-2257" },
-      { label: "Letter from Staff", href: "/letter-from-staff" },
-    ],
-  },
-];
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 const TOP_CITIES = [
   { label: "New York", href: "/united-states/new-york/new-york-city" },
@@ -58,39 +23,75 @@ const TOP_CITIES = [
 ];
 
 export default function Footer() {
+  const t = useTranslations('footer');
+
+  const FOOTER_COLUMNS = [
+    {
+      title: t('rubrhythm'),
+      links: [
+        { label: t('about'), href: "/about" },
+        { label: t('howItWorks'), href: "/how-it-works" },
+        { label: t('forProviders'), href: "/for-providers" },
+        { label: t('forClients'), href: "/for-clients" },
+        { label: t('blog'), href: "/blog" },
+        { label: t('glossary'), href: "/glossary" },
+        { label: t('contact'), href: "/contact" },
+        { label: t('faq'), href: "/info/faq" },
+      ],
+    },
+    {
+      title: t('safetyTrust'),
+      links: [
+        { label: t('getVerified'), href: "/get-verified", highlight: true },
+        { label: t('safetyGuide'), href: "/safety-guide" },
+        { label: t('verificationGuide'), href: "/verification-guide" },
+        { label: t('whyVerificationMatters'), href: "/why-verification-matters" },
+        { label: t('antiTrafficking'), href: "/info/anti-trafficking" },
+        { label: t('antiScamGuide'), href: "/info/anti-scam" },
+        { label: t('getHelp'), href: "/info/get-help-from-staff" },
+      ],
+    },
+    {
+      title: t('legal'),
+      links: [
+        { label: t('termsOfService'), href: "/info/terms" },
+        { label: t('privacyPolicy'), href: "/info/privacy-policy" },
+        { label: t('lawLegal'), href: "/info/law-and-legal" },
+        { label: t('section2257'), href: "/info/section-2257" },
+        { label: t('letterFromStaff'), href: "/letter-from-staff" },
+      ],
+    },
+  ];
+
   return (
     <footer className="w-full bg-surface border-t border-border text-text-muted py-12 mt-8 relative overflow-hidden">
-      {/* Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent blur-sm" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
 
-        {/* Top: Brand + Columns */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 mb-10">
 
-          {/* Brand Column */}
           <div className="col-span-2 sm:col-span-3 lg:col-span-1 mb-4 lg:mb-0">
-            <h3 className="text-xl font-bold text-white mb-2">RubRhythm</h3>
+            <h3 className="text-xl font-bold text-white mb-2">{t('rubrhythm')}</h3>
             <p className="text-sm leading-relaxed mb-4">
-              The only US massage directory where every provider is ID-verified. Professional. Verified. Safe.
+              {t('tagline')}
             </p>
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-1.5 text-xs text-green-400">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                SSL Secured
+                {t('sslSecured')}
               </div>
               <div className="flex items-center gap-1.5 text-xs text-primary">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                ID-Verified Providers
+                {t('idVerifiedProviders')}
               </div>
             </div>
           </div>
 
-          {/* Link Columns */}
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title}>
               <h4 className="text-sm font-semibold text-white mb-3">{col.title}</h4>
@@ -111,9 +112,8 @@ export default function Footer() {
             </div>
           ))}
 
-          {/* Cities Column */}
           <div>
-            <h4 className="text-sm font-semibold text-white mb-3">Top Cities</h4>
+            <h4 className="text-sm font-semibold text-white mb-3">{t('topCities')}</h4>
             <ul className="space-y-0.5">
               {TOP_CITIES.slice(0, 8).map((city) => (
                 <li key={city.href}>
@@ -124,47 +124,43 @@ export default function Footer() {
               ))}
               <li>
                 <Link href="/view-cities" className="text-sm text-primary font-medium hover:underline">
-                  View all cities &rarr;
+                  {t('viewAllCities')} &rarr;
                 </Link>
               </li>
             </ul>
           </div>
         </div>
 
-        {/* More Cities Row (desktop only) */}
         <div className="hidden lg:flex flex-wrap items-center gap-x-4 gap-y-1 mb-8 pb-6 border-b border-border">
-          <span className="text-xs font-medium text-white mr-2">More cities:</span>
-          {TOP_CITIES.slice(8).map((city, i) => (
+          <span className="text-xs font-medium text-white mr-2">{t('moreCities')}</span>
+          {TOP_CITIES.slice(8).map((city) => (
             <Link key={city.href} href={city.href} className="text-xs transition-colors hover:text-white">
-              {city.label}{i < TOP_CITIES.slice(8).length - 1 ? "" : ""}
+              {city.label}
             </Link>
           ))}
           <Link href="/view-cities" className="text-xs text-primary hover:underline">
-            250+ cities &rarr;
+            {t('citiesCount')} &rarr;
           </Link>
         </div>
 
-        {/* Trust Disclaimer */}
         <div className="glass-card p-4 mb-8 !rounded-xl">
           <p className="text-xs leading-relaxed text-center">
-            RubRhythm is a professional massage directory. All Blue Badge providers are ID-verified by our team.
-            We do not support, condone, or facilitate prostitution, escort services, or any form of human trafficking.
-            All users must be 18 years or older. By using this platform, you agree to our{" "}
-            <Link href="/info/terms" className="text-primary underline hover:text-white">Terms of Service</Link>{" "}
-            and{" "}
-            <Link href="/info/privacy-policy" className="text-primary underline hover:text-white">Privacy Policy</Link>.
+            {t('trustDisclaimer')}{" "}
+            {t('byUsing')}{" "}
+            <Link href="/info/terms" className="text-primary underline hover:text-white">{t('termsOfService')}</Link>{" "}
+            {t('and')}{" "}
+            <Link href="/info/privacy-policy" className="text-primary underline hover:text-white">{t('privacyPolicy')}</Link>.
           </p>
           <p className="text-xs text-center mt-2">
-            <span className="text-white font-medium">National Human Trafficking Hotline:</span>{" "}
+            <span className="text-white font-medium">{t('hotlineLabel')}</span>{" "}
             <a href="tel:1-888-373-7888" className="text-primary underline hover:text-white">1-888-373-7888</a>{" "}
-            | Text &quot;HELP&quot; to 233733
+            | {t('hotlineText')}
           </p>
         </div>
 
-        {/* Copyright */}
         <div className="text-center">
           <p className="text-xs">
-            &copy; {new Date().getFullYear()} RubRhythm. All rights reserved. Professional. Verified. Safe.
+            &copy; {new Date().getFullYear()} RubRhythm. {t('allRightsReserved')}
           </p>
         </div>
       </div>

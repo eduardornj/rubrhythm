@@ -2,7 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import ClientFloatingBar from "../components/ClientFloatingBar";
 import SessionWrapper from "../components/SessionWrapper";
 import PWAManager from "../components/PWAManager";
-import AgeGate from "../components/AgeGate";
+import { getLocale } from "next-intl/server";
 import "./tailwind.css";
 import { ReactNode } from "react";
 import { Metadata } from "next";
@@ -69,9 +69,11 @@ interface RootLayoutProps {
   children: ReactNode;
 }
 
-export default function RootLayout({ children }: RootLayoutProps) {
+export default async function RootLayout({ children }: RootLayoutProps) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en">
+    <html lang={locale}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
         <meta name="msapplication-TileColor" content="#ff6b6b" />
@@ -84,7 +86,6 @@ export default function RootLayout({ children }: RootLayoutProps) {
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased flex flex-col min-h-screen relative`}>
         <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary z-50"></div>
-        <AgeGate />
         <PWAManager>
           <SessionWrapper>
             <div className="flex-grow max-w-[85ch] md:max-w-none mx-auto w-full pb-14">

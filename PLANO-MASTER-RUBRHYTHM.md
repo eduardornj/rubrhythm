@@ -376,7 +376,7 @@ Body: {
 3. Usar o model `usernotification` do Prisma
 
 #### B) Página Admin: Central de Comunicação
-**Arquivo novo**: `app/admin/comunicacao/page.js`
+**Arquivo novo**: `app/admin/comunicação/page.js`
 
 **UI deve ter**:
 1. **Formulário de envio**: Selecionar destinatário (dropdown de users ou "Todos"), título, mensagem, tipo
@@ -656,7 +656,7 @@ rubrhythm/
 │   │   ├── relatorios/
 │   │   ├── reviews/                    # 🔴 API 500
 │   │   ├── users/                      # 🟡 Filtro role não funciona
-│   │   ├── verificacao/
+│   │   ├── verificação/
 │   │   └── verification/
 │   ├── api/
 │   │   ├── admin/                      # 11 sub-rotas
@@ -713,7 +713,7 @@ rubrhythm/
 │   └── Credits-HighlightYourListing.md
 ├── .env                                # DB + NextAuth config
 ├── package.json                        # Next.js 15, React 19, etc.
-└── reestruturacao.md                   # Plano de reestruturação anterior
+└── reestruturação.md                   # Plano de reestruturação anterior
 ```
 
 ---

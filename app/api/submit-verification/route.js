@@ -3,6 +3,7 @@ import { auth } from "../../../auth";
 import prisma from "@lib/prisma.js";
 import sharp from "sharp";
 import { uploadToBlob } from "@/lib/blob-storage";
+import { alertNewVerification } from "@/lib/telegram";
 
 export async function GET(request) {
   const session = await auth();
@@ -88,6 +89,9 @@ export async function POST(request) {
         status: "pending",
       },
     });
+
+    // Telegram alert (non-blocking)
+    alertNewVerification(user.name, user.email);
 
     return NextResponse.json({ message: "Verification submitted successfully!" });
   } catch (error) {
