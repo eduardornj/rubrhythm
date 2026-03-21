@@ -17,6 +17,7 @@ const NAV_ITEMS = [
   { emoji: "🔍", label: "Content Scan", href: "/admin/content-scan" },
   { emoji: "🤝", label: "Escrow", href: "/admin/escrow" },
   { emoji: "📊", label: "Relatorios", href: "/admin/relatorios" },
+  { emoji: "📜", label: "Logs", href: "/admin/logs" },
 ];
 
 export default async function AdminLayout({ children }) {

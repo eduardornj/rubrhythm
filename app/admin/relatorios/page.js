@@ -152,6 +152,8 @@ function downloadCSV(data, filename) {
 
 export default function RelatoriosPage() {
   const [states, setStates] = useState({});
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   const updateState = useCallback((id, patch) => {
     setStates((prev) => ({ ...prev, [id]: { ...prev[id], ...patch } }));
@@ -163,19 +165,40 @@ export default function RelatoriosPage() {
       updateState(id, { loading: true, error: null, success: false });
 
       try {
-        const res = await fetch(endpoint);
+        // Append date params if set
+        const url = new URL(endpoint, window.location.origin);
+        if (dateFrom) url.searchParams.set("from", dateFrom);
+        if (dateTo) url.searchParams.set("to", dateTo);
+
+        const res = await fetch(url.toString());
         if (!res.ok) throw new Error(`Erro ${res.status}`);
 
         const json = await res.json();
-        const items = json.data || json.users || json.listings || json.verifications || json.reviews || json.escrows || json.items || [];
+        let items = json.data || json.users || json.listings || json.verifications || json.reviews || json.escrows || json.items || [];
+
+        // Client-side date filtering (in case API doesn't support from/to)
+        if (dateFrom || dateTo) {
+          const fromTs = dateFrom ? new Date(dateFrom).getTime() : 0;
+          const toTs = dateTo ? new Date(dateTo + "T23:59:59").getTime() : Infinity;
+
+          items = items.filter((item) => {
+            const dateField = item.createdAt || item.created_at || item.date;
+            if (!dateField) return true;
+            const ts = new Date(dateField).getTime();
+            return ts >= fromTs && ts <= toTs;
+          });
+        }
 
         if (items.length === 0) {
           updateState(id, { loading: false, error: "Nenhum registro encontrado" });
           return;
         }
 
+        const suffix = dateFrom || dateTo
+          ? `_${dateFrom || "inicio"}_${dateTo || "fim"}`
+          : "";
         const mapped = items.map(mapRow);
-        downloadCSV(mapped, filename);
+        downloadCSV(mapped, filename + suffix);
         updateState(id, { loading: false, success: true });
 
         setTimeout(() => updateState(id, { success: false }), 3000);
@@ -184,19 +207,62 @@ export default function RelatoriosPage() {
         setTimeout(() => updateState(id, { error: null }), 4000);
       }
     },
-    [updateState]
+    [updateState, dateFrom, dateTo]
   );
 
   return (
     <div className="max-w-[1400px] mx-auto animate-fade-in">
       {/* ── Header ───────────────────────────────────── */}
-      <div className="mb-8">
+      <div className="mb-6">
         <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
           Relatorios
         </h1>
         <p className="text-sm mt-1 text-text-muted">
           Exportar dados do sistema
         </p>
+      </div>
+
+      {/* ── Date Range Filter ──────────────────────────── */}
+      <div className="glass-card mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-end gap-3">
+          <div className="flex-1 min-w-0">
+            <label className="block text-xs font-medium mb-1.5 text-text-muted">
+              De
+            </label>
+            <input
+              type="date"
+              value={dateFrom}
+              onChange={(e) => setDateFrom(e.target.value)}
+              className="input-field w-full"
+            />
+          </div>
+          <div className="flex-1 min-w-0">
+            <label className="block text-xs font-medium mb-1.5 text-text-muted">
+              Ate
+            </label>
+            <input
+              type="date"
+              value={dateTo}
+              onChange={(e) => setDateTo(e.target.value)}
+              className="input-field w-full"
+            />
+          </div>
+          {(dateFrom || dateTo) && (
+            <button
+              onClick={() => { setDateFrom(""); setDateTo(""); }}
+              className="btn-secondary text-sm whitespace-nowrap"
+            >
+              Limpar filtro
+            </button>
+          )}
+        </div>
+        {(dateFrom || dateTo) && (
+          <p className="text-xs mt-3 text-text-muted">
+            Exportando registros
+            {dateFrom ? ` a partir de ${dateFrom}` : ""}
+            {dateTo ? ` ate ${dateTo}` : ""}
+          </p>
+        )}
       </div>
 
       {/* ── Export Cards Grid ────────────────────────── */}
