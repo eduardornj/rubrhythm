@@ -1,81 +1,165 @@
 import Link from "next/link";
 
+const FOOTER_COLUMNS = [
+  {
+    title: "RubRhythm",
+    links: [
+      { label: "About", href: "/about" },
+      { label: "How It Works", href: "/how-it-works" },
+      { label: "For Providers", href: "/for-providers" },
+      { label: "For Clients", href: "/for-clients" },
+      { label: "FAQ", href: "/info/faq" },
+      { label: "View Letter", href: "/letter-from-staff" },
+    ],
+  },
+  {
+    title: "Safety & Trust",
+    links: [
+      { label: "Get Verified", href: "/get-verified", highlight: true },
+      { label: "Anti-Trafficking", href: "/info/anti-trafficking" },
+      { label: "Anti-Scam Guide", href: "/info/anti-scam" },
+      { label: "Get Help", href: "/info/get-help-from-staff" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Terms of Service", href: "/info/terms" },
+      { label: "Privacy Policy", href: "/info/privacy-policy" },
+      { label: "Law & Legal", href: "/info/law-and-legal" },
+      { label: "Section 2257", href: "/info/section-2257" },
+    ],
+  },
+];
+
+const TOP_CITIES = [
+  { label: "New York", href: "/united-states/new-york/new-york-city" },
+  { label: "Los Angeles", href: "/united-states/california/los-angeles" },
+  { label: "Las Vegas", href: "/united-states/nevada/las-vegas" },
+  { label: "Miami", href: "/united-states/florida/miami" },
+  { label: "Chicago", href: "/united-states/illinois/chicago" },
+  { label: "Houston", href: "/united-states/texas/houston" },
+  { label: "Atlanta", href: "/united-states/georgia/atlanta" },
+  { label: "Orlando", href: "/united-states/florida/orlando" },
+  { label: "Dallas", href: "/united-states/texas/dallas" },
+  { label: "Denver", href: "/united-states/colorado/denver" },
+  { label: "Phoenix", href: "/united-states/arizona/phoenix" },
+  { label: "San Francisco", href: "/united-states/california/san-francisco" },
+  { label: "Seattle", href: "/united-states/washington/seattle" },
+  { label: "Tampa", href: "/united-states/florida/tampa" },
+  { label: "Philadelphia", href: "/united-states/pennsylvania/philadelphia" },
+  { label: "San Diego", href: "/united-states/california/san-diego" },
+];
+
 export default function Footer() {
   return (
-    <footer className="w-full bg-surface border-t border-white/10 text-text py-12 mt-16 relative overflow-hidden">
-      {/* Luz/Glow decorativo no footer */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent blur-sm"></div>
+    <footer className="w-full bg-surface border-t border-border text-text-muted py-12 mt-16 relative overflow-hidden">
+      {/* Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent blur-sm" />
 
-      <div className="container mx-auto px-4 relative z-10">
-        <div className="flex flex-col items-center">
-          {/* Brand & Trust Section */}
-          <div className="text-center mb-8">
-            <h3 className="text-2xl font-bold text-accent mb-2">RubRhythm</h3>
-            <p className="text-text/80 text-sm max-w-prose mx-auto leading-relaxed mb-4">
-              Your trusted directory for professional massage and body rub services across America.
-              We are committed to providing a safe, reliable platform connecting verified providers with respectful clients.
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 relative z-10">
+
+        {/* Top: Brand + Columns */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-8 mb-10">
+
+          {/* Brand Column */}
+          <div className="col-span-2 sm:col-span-3 lg:col-span-1 mb-4 lg:mb-0">
+            <h3 className="text-xl font-bold text-white mb-2">RubRhythm</h3>
+            <p className="text-sm leading-relaxed mb-4">
+              The only US massage directory where every provider is ID-verified. Professional. Verified. Safe.
             </p>
-
-            {/* Trust Signals */}
-            <div className="flex items-center justify-center gap-4 mt-6">
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-green-500/10 border border-green-500/20 rounded-full text-green-400 text-xs font-medium">
+            <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-1.5 text-xs text-green-400">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
                   <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 SSL Secured
               </div>
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 border border-primary/20 rounded-full text-primary text-xs font-medium">
+              <div className="flex items-center gap-1.5 text-xs text-primary">
                 <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 1.944A11.954 11.954 0 012.166 5C2.056 5.682 2 6.35 2 7c0 5.225 3.34 9.67 8 11.317C14.66 16.67 18 12.225 18 7c0-.682-.057-1.35-.166-2.001A11.954 11.954 0 0110 1.944zM11 14a1 1 0 11-2 0 1 1 0 012 0zm0-7a1 1 0 10-2 0v3a1 1 0 102 0V7z" clipRule="evenodd" />
+                  <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
-                Verified Providers Available
+                ID-Verified Providers
               </div>
             </div>
           </div>
 
-          {/* Links with Fitts' Law compliance (min-height/paddings for tap targets) */}
-          <nav className="flex flex-wrap justify-center items-center gap-x-4 gap-y-4 mb-8">
-            <Link href="/view-cities" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              View Cities
-            </Link>
-            <Link href="/info/law-and-legal" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              Law & Legal
-            </Link>
-            <Link href="/info/anti-trafficking" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              Anti-Trafficking
-            </Link>
-            <Link href="/info/anti-scam" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              Anti-Scam Guide
-            </Link>
-            <Link href="/info/section-2257" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              Section 2257
-            </Link>
-            <Link href="/info/terms" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              Terms
-            </Link>
-            <Link href="/info/faq" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              FAQ
-            </Link>
-            <Link href="/info/get-help-from-staff" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              Get Help From Staff
-            </Link>
-            <Link href="/letter-from-staff" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              View Letter
-            </Link>
-            <Link href="/info/privacy-policy" className="hover:text-accent transition-colors duration-200 text-sm whitespace-nowrap px-4 py-2 hover:bg-white/5 rounded-lg flex items-center justify-center min-h-[44px]">
-              Privacy Policy
-            </Link>
-            <Link href="/get-verified" className="hover:text-accent transition-colors duration-200 text-sm font-medium text-primary whitespace-nowrap px-4 py-2 border border-primary/30 hover:bg-primary/10 rounded-lg flex items-center justify-center min-h-[44px]">
-              Get Verified Profile
-            </Link>
-          </nav>
+          {/* Link Columns */}
+          {FOOTER_COLUMNS.map((col) => (
+            <div key={col.title}>
+              <h4 className="text-sm font-semibold text-white mb-3">{col.title}</h4>
+              <ul className="space-y-2">
+                {col.links.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      className={`text-sm transition-colors duration-200 hover:text-white ${
+                        link.highlight ? "text-primary font-medium" : ""
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
 
-          {/* Copyright */}
-          <div className="text-center pt-4 border-t border-text/20 w-full">
-            <p className="text-text/60 text-xs">
-              © 2026 RubRhythm. All rights reserved. Professional massage directory.
-            </p>
+          {/* Cities Column */}
+          <div>
+            <h4 className="text-sm font-semibold text-white mb-3">Top Cities</h4>
+            <ul className="space-y-1.5">
+              {TOP_CITIES.slice(0, 8).map((city) => (
+                <li key={city.href}>
+                  <Link href={city.href} className="text-sm transition-colors duration-200 hover:text-white">
+                    {city.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <Link href="/view-cities" className="text-sm text-primary font-medium hover:underline">
+                  View all cities &rarr;
+                </Link>
+              </li>
+            </ul>
           </div>
+        </div>
+
+        {/* More Cities Row (desktop only) */}
+        <div className="hidden lg:flex flex-wrap items-center gap-x-4 gap-y-1 mb-8 pb-6 border-b border-border">
+          <span className="text-xs font-medium text-white mr-2">More cities:</span>
+          {TOP_CITIES.slice(8).map((city, i) => (
+            <Link key={city.href} href={city.href} className="text-xs transition-colors hover:text-white">
+              {city.label}{i < TOP_CITIES.slice(8).length - 1 ? "" : ""}
+            </Link>
+          ))}
+          <Link href="/view-cities" className="text-xs text-primary hover:underline">
+            250+ cities &rarr;
+          </Link>
+        </div>
+
+        {/* Trust Disclaimer */}
+        <div className="glass-card p-4 mb-8 !rounded-xl">
+          <p className="text-xs leading-relaxed text-center">
+            RubRhythm is a professional massage directory. All Blue Badge providers are ID-verified by our team.
+            We do not support, condone, or facilitate prostitution, escort services, or any form of human trafficking.
+            All users must be 18 years or older. By using this platform, you agree to our{" "}
+            <Link href="/info/terms" className="text-primary hover:underline">Terms of Service</Link>{" "}
+            and{" "}
+            <Link href="/info/privacy-policy" className="text-primary hover:underline">Privacy Policy</Link>.
+          </p>
+          <p className="text-xs text-center mt-2">
+            <span className="text-white font-medium">National Human Trafficking Hotline:</span>{" "}
+            <a href="tel:1-888-373-7888" className="text-primary hover:underline">1-888-373-7888</a>{" "}
+            | Text &quot;HELP&quot; to 233733
+          </p>
+        </div>
+
+        {/* Copyright */}
+        <div className="text-center">
+          <p className="text-xs">
+            &copy; {new Date().getFullYear()} RubRhythm. All rights reserved. Professional. Verified. Safe.
+          </p>
         </div>
       </div>
     </footer>

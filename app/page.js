@@ -19,19 +19,38 @@ const jsonLdOrganization = {
   "@context": "https://schema.org",
   "@type": "Organization",
   name: "RubRhythm",
-  url: "https://rubrhythm.com",
-  logo: "https://rubrhythm.com/icons/icon-512x512.svg",
-  description: "Body rub and massage provider directory across America.",
+  url: "https://www.rubrhythm.com",
+  logo: "https://www.rubrhythm.com/icons/icon-512x512.svg",
+  description:
+    "The only US massage and body rub directory where every provider is ID-verified by our team. Professional. Verified. Safe.",
+  foundingLocation: {
+    "@type": "Place",
+    address: {
+      "@type": "PostalAddress",
+      addressLocality: "Orlando",
+      addressRegion: "FL",
+      addressCountry: "US",
+    },
+  },
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "admin@rubrhythm.com",
+    contactType: "customer support",
+  },
+  sameAs: [],
 };
 
 const jsonLdWebSite = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   name: "RubRhythm",
-  url: "https://rubrhythm.com",
+  url: "https://www.rubrhythm.com",
+  description:
+    "The only US massage directory where every provider is ID-verified. Professional. Verified. Safe.",
   potentialAction: {
     "@type": "SearchAction",
-    target: "https://rubrhythm.com/search-results?city={search_term_string}",
+    target:
+      "https://www.rubrhythm.com/search-results?city={search_term_string}",
     "query-input": "required name=search_term_string",
   },
 };

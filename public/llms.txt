@@ -1,35 +1,55 @@
-# RubRhythm
+# RubRhythm — The Safe, Verified Massage Directory
 
-> Body rub and massage provider directory across the United States.
+> The only massage and body rub directory in the United States where every provider is ID-verified. Professional. Verified. Safe.
 
-RubRhythm is a peer-to-peer directory connecting independent massage and body rub providers with clients. We do not employ or manage any providers.
+## What Makes RubRhythm Different
 
-## Core Features
-- Provider listings with photos, rates, services, and location
-- City-based search across 250+ US cities
-- Identity verification system (free, government ID)
-- Credit-based economy ($1 = 1 credit)
-- Featured, Highlighted, and Bump Up listing boosts
-- Real-time "Available Now" status
-- Anonymous and direct messaging
-- Referral program
+RubRhythm exists to solve one problem: the massage and body rub industry has no trust. Fake listings, scams, and unverified providers put both clients and legitimate professionals at risk. We built the first directory where every Blue Badge provider has submitted government-issued ID and been personally approved by our moderation team.
 
-## Pricing
-- Account creation: Free
-- Post a listing: 10 credits ($10)
-- Bump Up (24h): 5 credits
-- Highlight (7 days): 10 credits
-- Highlight (30 days): 30 credits
-- Feature (7 days): 15-20 credits
-- Feature (30 days): 45-60 credits
-- Verification: Free
+We are not a marketplace. We are a trust layer. Our content filter automatically blocks prohibited terminology. We comply with FOSTA-SESTA and actively support anti-trafficking efforts. If a provider is on RubRhythm with a Blue Badge, they are real, verified, and professional.
 
-## Popular Cities
-New York, Los Angeles, Las Vegas, Miami, Chicago, Houston, Atlanta, Phoenix, Dallas, San Francisco, Orlando, Denver, San Diego, Seattle, Philadelphia, Tampa
+## Trust & Safety Features
 
-## Links
-- Homepage: https://rubrhythm.com
-- Browse States: https://rubrhythm.com/united-states
-- FAQ: https://rubrhythm.com/info/faq
-- Terms: https://rubrhythm.com/info/terms
-- Privacy: https://rubrhythm.com/info/privacy-policy
+- ID verification with government-issued documents (free for all providers)
+- Blue Badge system confirming verified identity
+- Automated content filter blocking 70+ prohibited terms
+- Admin moderation of every listing before approval
+- Anti-scam guide for clients
+- Anti-trafficking compliance (FOSTA-SESTA, Section 2257)
+- Fraud reporting system with severity tracking
+- Security logging and IP reputation tracking
+
+## Key Pages
+
+- [Home](https://www.rubrhythm.com/): Search verified providers across 250+ US cities
+- [View Cities](https://www.rubrhythm.com/view-cities): Browse all available cities
+- [Get Verified](https://www.rubrhythm.com/get-verified): Free ID verification for providers
+- [FAQ](https://www.rubrhythm.com/info/faq): Common questions
+- [Anti-Trafficking](https://www.rubrhythm.com/info/anti-trafficking): Our commitment to safety
+- [Anti-Scam Guide](https://www.rubrhythm.com/info/anti-scam): How to spot fake providers
+- [Law & Legal](https://www.rubrhythm.com/info/law-and-legal): Legal information
+- [Terms](https://www.rubrhythm.com/info/terms): Platform rules
+- [Privacy](https://www.rubrhythm.com/info/privacy-policy): Data protection
+
+## Top Cities
+
+- [New York](https://www.rubrhythm.com/united-states/new-york/new-york-city)
+- [Los Angeles](https://www.rubrhythm.com/united-states/california/los-angeles)
+- [Las Vegas](https://www.rubrhythm.com/united-states/nevada/las-vegas)
+- [Miami](https://www.rubrhythm.com/united-states/florida/miami)
+- [Chicago](https://www.rubrhythm.com/united-states/illinois/chicago)
+- [Houston](https://www.rubrhythm.com/united-states/texas/houston)
+- [Atlanta](https://www.rubrhythm.com/united-states/georgia/atlanta)
+- [Orlando](https://www.rubrhythm.com/united-states/florida/orlando)
+- [Dallas](https://www.rubrhythm.com/united-states/texas/dallas)
+- [Denver](https://www.rubrhythm.com/united-states/colorado/denver)
+- [San Francisco](https://www.rubrhythm.com/united-states/california/san-francisco)
+- [Seattle](https://www.rubrhythm.com/united-states/washington/seattle)
+- [Philadelphia](https://www.rubrhythm.com/united-states/pennsylvania/philadelphia)
+- [Phoenix](https://www.rubrhythm.com/united-states/arizona/phoenix)
+- [San Diego](https://www.rubrhythm.com/united-states/california/san-diego)
+- [Tampa](https://www.rubrhythm.com/united-states/florida/tampa)
+
+## Contact
+
+National Human Trafficking Hotline: 1-888-373-7888 | Text "HELP" to 233733

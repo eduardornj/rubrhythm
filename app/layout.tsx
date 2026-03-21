@@ -18,11 +18,12 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://www.rubrhythm.com"),
   title: {
-    default: "RubRhythm - Body Rubs & Massage Directory",
+    default: "RubRhythm - Verified Massage & Body Rub Directory",
     template: "%s | RubRhythm"
   },
-  description: "Find body rubs and massage providers across America on RubRhythm. Search for providers in cities like Dallas, Chicago, Atlanta, Houston, and more.",
+  description: "The only US massage directory where every provider is ID-verified. Browse Blue Badge providers across 250+ cities. Professional. Verified. Safe.",
   robots: {
     index: true,
     follow: true,
@@ -39,17 +40,20 @@ export const metadata: Metadata = {
     telephone: false
   },
   openGraph: {
-    title: 'RubRhythm - Authentic Massage Directory',
-    description: 'Find trusted body rubs and massage providers right in your city. Safe, verified and professional.',
-    url: 'https://rubrhythm.com',
+    title: 'RubRhythm - Verified Massage & Body Rub Directory',
+    description: 'The only US massage directory where every provider is ID-verified. Browse Blue Badge providers across 250+ cities. Professional. Verified. Safe.',
+    url: 'https://www.rubrhythm.com',
     siteName: 'RubRhythm',
     locale: 'en_US',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'RubRhythm - Body Rubs & Massage Directory',
-    description: 'Find trusted body rubs and massage providers right in your city.',
+    title: 'RubRhythm - Verified Massage & Body Rub Directory',
+    description: 'The only US massage directory where every provider is ID-verified. Professional. Verified. Safe.',
+  },
+  alternates: {
+    canonical: 'https://www.rubrhythm.com',
   },
 };
 

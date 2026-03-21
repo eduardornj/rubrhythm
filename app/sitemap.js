@@ -16,6 +16,10 @@ export default async function sitemap() {
     "/info/anti-trafficking",
     "/info/section-2257",
     "/info/get-help-from-staff",
+    "/about",
+    "/how-it-works",
+    "/for-providers",
+    "/for-clients",
     "/united-states",
   ].map((path) => ({
     url: `${baseUrl}${path}`,
