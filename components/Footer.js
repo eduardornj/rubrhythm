@@ -8,14 +8,19 @@ const FOOTER_COLUMNS = [
       { label: "How It Works", href: "/how-it-works" },
       { label: "For Providers", href: "/for-providers" },
       { label: "For Clients", href: "/for-clients" },
+      { label: "Blog", href: "/blog" },
+      { label: "Glossary", href: "/glossary" },
+      { label: "Contact", href: "/contact" },
       { label: "FAQ", href: "/info/faq" },
-      { label: "View Letter", href: "/letter-from-staff" },
     ],
   },
   {
     title: "Safety & Trust",
     links: [
       { label: "Get Verified", href: "/get-verified", highlight: true },
+      { label: "Safety Guide", href: "/safety-guide" },
+      { label: "Verification Guide", href: "/verification-guide" },
+      { label: "Why Verification Matters", href: "/why-verification-matters" },
       { label: "Anti-Trafficking", href: "/info/anti-trafficking" },
       { label: "Anti-Scam Guide", href: "/info/anti-scam" },
       { label: "Get Help", href: "/info/get-help-from-staff" },
@@ -28,6 +33,7 @@ const FOOTER_COLUMNS = [
       { label: "Privacy Policy", href: "/info/privacy-policy" },
       { label: "Law & Legal", href: "/info/law-and-legal" },
       { label: "Section 2257", href: "/info/section-2257" },
+      { label: "Letter from Staff", href: "/letter-from-staff" },
     ],
   },
 ];
