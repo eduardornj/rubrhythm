@@ -18,7 +18,7 @@ const faqs = [
       },
       {
         q: "How do I create an account?",
-        a: "Click the Sign Up button at the top of the page. You can register using your email, or sign in with Google for a faster setup. Once your account is created, you can immediately start building your listing."
+        a: "Click the Sign Up button at the top of the page and register with your email. Choose whether you're a Massage Provider or a Client, fill in your details, and you're in. Once your account is created, you can immediately start building your listing."
       },
       {
         q: "How do I post a listing?",
