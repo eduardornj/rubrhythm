@@ -375,7 +375,7 @@ export default async function CityPage({ params: paramsPromise }) {
         )}
 
         {/* SEO Content Block */}
-        <div className="mt-16 glass-card p-6 prose prose-invert max-w-none">
+        <div className="mt-8 glass-card p-6 prose prose-invert max-w-none">
           <h2 className="text-lg font-bold text-white mb-3">Body Rubs & Massage in {formattedCity}, {formattedState}</h2>
           {cityContent[formattedCity]?.content ? (
             cityContent[formattedCity].content.split('\n\n').map((paragraph, i) => (
