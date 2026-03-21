@@ -134,7 +134,7 @@ export default function Home() {
 
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">{item.tag}</span>
+                  <span className="text-[11px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">{item.tag}</span>
                 </div>
                 <h3 className="font-bold text-white text-lg tracking-tight group-hover:text-primary transition-colors">{item.city}</h3>
                 <p className="text-text-muted text-xs uppercase tracking-wider mt-1">{item.state}</p>

@@ -72,7 +72,7 @@ export default function Header() {
                 </div>
                 <div>
                   <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 tracking-tight block">RubRhythm</span>
-                  <span className="text-[10px] text-primary font-bold uppercase tracking-wider block">Verified Directory</span>
+                  <span className="text-[11px] text-primary font-bold uppercase tracking-wider block">Verified Directory</span>
                 </div>
               </div>
             </div>
@@ -178,7 +178,7 @@ export default function Header() {
               </div>
               <div>
                 <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 tracking-tight block">RubRhythm</span>
-                <span className="text-[10px] text-primary font-bold uppercase tracking-wider block">Verified Directory</span>
+                <span className="text-[11px] text-primary font-bold uppercase tracking-wider block">Verified Directory</span>
               </div>
             </Link>
 

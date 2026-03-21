@@ -150,13 +150,13 @@ export default function Footer() {
             RubRhythm is a professional massage directory. All Blue Badge providers are ID-verified by our team.
             We do not support, condone, or facilitate prostitution, escort services, or any form of human trafficking.
             All users must be 18 years or older. By using this platform, you agree to our{" "}
-            <Link href="/info/terms" className="text-primary hover:underline">Terms of Service</Link>{" "}
+            <Link href="/info/terms" className="text-primary underline hover:text-white">Terms of Service</Link>{" "}
             and{" "}
-            <Link href="/info/privacy-policy" className="text-primary hover:underline">Privacy Policy</Link>.
+            <Link href="/info/privacy-policy" className="text-primary underline hover:text-white">Privacy Policy</Link>.
           </p>
           <p className="text-xs text-center mt-2">
             <span className="text-white font-medium">National Human Trafficking Hotline:</span>{" "}
-            <a href="tel:1-888-373-7888" className="text-primary hover:underline">1-888-373-7888</a>{" "}
+            <a href="tel:1-888-373-7888" className="text-primary underline hover:text-white">1-888-373-7888</a>{" "}
             | Text &quot;HELP&quot; to 233733
           </p>
         </div>

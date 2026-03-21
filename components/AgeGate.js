@@ -49,13 +49,13 @@ export default function AgeGate() {
           </button>
           <button
             onClick={handleDecline}
-            className="w-full p-3 text-white/40 hover:text-white/60 text-sm transition-colors"
+            className="w-full p-3 text-white/70 hover:text-white text-sm transition-colors"
           >
             I am under 18 — Exit
           </button>
         </div>
 
-        <p className="mt-5 text-xs text-white/30">
+        <p className="mt-5 text-xs text-white/60">
           By entering you agree to our{" "}
           <Link href="/info/terms" className="text-primary hover:underline">
             Terms of Service
