@@ -57,22 +57,22 @@ const jsonLdWebSite = {
 
 // Top cities for body rub & massage — ranked by market demand
 const popularCities = [
-  { city: "New York", state: "New York", icon: "🍎", tag: "#1 Market" },
-  { city: "Los Angeles", state: "California", icon: "⭐", tag: "Hot" },
-  { city: "Las Vegas", state: "Nevada", icon: "🎰", tag: "Top Demand" },
-  { city: "Miami", state: "Florida", icon: "🌴", tag: "Trending" },
-  { city: "Chicago", state: "Illinois", icon: "🏙️", tag: "Popular" },
-  { city: "Houston", state: "Texas", icon: "🤠", tag: "Growing" },
-  { city: "Atlanta", state: "Georgia", icon: "🌆", tag: "Hot" },
-  { city: "Phoenix", state: "Arizona", icon: "🌵", tag: "Growing" },
-  { city: "Dallas", state: "Texas", icon: "💎", tag: "Popular" },
-  { city: "San Francisco", state: "California", icon: "🌉", tag: "Premium" },
-  { city: "Orlando", state: "Florida", icon: "🎢", tag: "Trending" },
-  { city: "Denver", state: "Colorado", icon: "🏔️", tag: "Growing" },
-  { city: "San Diego", state: "California", icon: "🏖️", tag: "Popular" },
-  { city: "Seattle", state: "Washington", icon: "☕", tag: "Hot" },
-  { city: "Philadelphia", state: "Pennsylvania", icon: "🔔", tag: "Popular" },
-  { city: "Tampa", state: "Florida", icon: "⚡", tag: "Trending" },
+  { city: "New York", state: "New York", tag: "#1 Market" },
+  { city: "Los Angeles", state: "California", tag: "Hot" },
+  { city: "Las Vegas", state: "Nevada", tag: "Top Demand" },
+  { city: "Miami", state: "Florida", tag: "Trending" },
+  { city: "Chicago", state: "Illinois", tag: "Popular" },
+  { city: "Houston", state: "Texas", tag: "Growing" },
+  { city: "Atlanta", state: "Georgia", tag: "Hot" },
+  { city: "Phoenix", state: "Arizona", tag: "Growing" },
+  { city: "Dallas", state: "Texas", tag: "Popular" },
+  { city: "San Francisco", state: "California", tag: "Premium" },
+  { city: "Orlando", state: "Florida", tag: "Trending" },
+  { city: "Denver", state: "Colorado", tag: "Growing" },
+  { city: "San Diego", state: "California", tag: "Popular" },
+  { city: "Seattle", state: "Washington", tag: "Hot" },
+  { city: "Philadelphia", state: "Pennsylvania", tag: "Popular" },
+  { city: "Tampa", state: "Florida", tag: "Trending" },
 ];
 
 export default function Home() {
@@ -134,7 +134,6 @@ export default function Home() {
 
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl opacity-80 group-hover:opacity-100 group-hover:scale-110 transition-all">{item.icon}</span>
                   <span className="text-[10px] font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20">{item.tag}</span>
                 </div>
                 <h3 className="font-bold text-white text-lg tracking-tight group-hover:text-primary transition-colors">{item.city}</h3>

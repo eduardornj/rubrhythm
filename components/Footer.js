@@ -53,7 +53,7 @@ const TOP_CITIES = [
 
 export default function Footer() {
   return (
-    <footer className="w-full bg-surface border-t border-border text-text-muted py-12 mt-16 relative overflow-hidden">
+    <footer className="w-full bg-surface border-t border-border text-text-muted py-12 mt-8 relative overflow-hidden">
       {/* Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent blur-sm" />
 
