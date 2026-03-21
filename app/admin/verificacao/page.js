@@ -1,406 +1,622 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
-import Link from "next/link";
 
-import Image from "next/image";
-import { HiOutlineCheckBadge } from "react-icons/hi2";
+import { useState, useEffect, useRef, useCallback } from "react";
 
-const STATUS_COLORS = {
-    pending: { bg: "bg-yellow-500/10", border: "border-yellow-500/20", text: "text-yellow-400", label: "Pendente" },
-    approved: { bg: "bg-green-500/10", border: "border-green-500/20", text: "text-green-400", label: "Aprovado" },
-    rejected: { bg: "bg-red-500/10", border: "border-red-500/20", text: "text-red-400", label: "Rejeitado" },
+// ── Constants ────────────────────────────────────────────────
+
+const PAGE_SIZE = 10;
+
+const STATUS_TABS = [
+    { key: "pending", label: "Pendentes" },
+    { key: "approved", label: "Aprovadas" },
+    { key: "rejected", label: "Rejeitadas" },
+];
+
+const STATUS_MAP = {
+    pending: { className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-400", label: "Pendente" },
+    approved: { className: "border-green-500/30 bg-green-500/10 text-green-400", label: "Aprovado" },
+    rejected: { className: "border-red-500/30 bg-red-500/10 text-red-400", label: "Rejeitado" },
+    needs_review: { className: "border-yellow-500/30 bg-yellow-500/10 text-yellow-400", label: "Em revisao" },
 };
 
-function Badge({ status }) {
-    const c = STATUS_COLORS[status] || STATUS_COLORS.pending;
+// ── Helpers ──────────────────────────────────────────────────
+
+function timeAgo(dateStr) {
+    if (!dateStr) return "--";
+    const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000);
+    if (seconds < 60) return "agora";
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}min atras`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h atras`;
+    if (seconds < 2592000) return `${Math.floor(seconds / 86400)}d atras`;
+    return new Date(dateStr).toLocaleDateString("pt-BR");
+}
+
+function formatDate(dateStr) {
+    if (!dateStr) return "--";
+    return new Date(dateStr).toLocaleDateString("pt-BR", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "2-digit",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
+}
+
+// ── Micro-components ─────────────────────────────────────────
+
+function StatusBadge({ status }) {
+    const s = STATUS_MAP[status] || STATUS_MAP.pending;
     return (
-        <span className={`inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full border ${c.bg} ${c.border} ${c.text}`}>
-            {c.label}
+        <span className={`px-2 py-0.5 rounded text-xs font-medium whitespace-nowrap border ${s.className}`}>
+            {s.label}
         </span>
     );
 }
 
-function DocViewer({ url, label, isLegacy }) {
-    const [err, setErr] = useState(false);
-    if (!url) return <div className="flex items-center justify-center h-full bg-white/5 rounded-xl text-white/40 text-sm font-semibold">Sem {label}</div>;
+function LegacyBadge() {
+    return (
+        <span className="px-2 py-0.5 rounded text-[10px] font-semibold whitespace-nowrap border border-orange-400/30 bg-orange-400/10 text-orange-400">
+            Arquivo legacy
+        </span>
+    );
+}
 
-    // Legacy files (pre-blob migration) don't exist on Vercel — show placeholder immediately
-    if (isLegacy) {
-        return (
-            <div className="flex items-center justify-center h-full bg-amber-500/5 rounded-xl text-amber-400 text-sm border border-amber-500/20 p-4 text-center">
-                <div>
-                    <p className="text-3xl mb-2">📁</p>
-                    <p className="font-bold">Arquivo Antigo (Pré-Migração)</p>
-                    <p className="text-[11px] mt-2 opacity-70 leading-relaxed max-w-xs">Este arquivo foi enviado antes da migração para cloud storage e não está mais disponível no servidor.</p>
-                </div>
-            </div>
-        );
-    }
+function StatCard({ label, value, colorKey }) {
+    const colorMap = {
+        yellow: "border-yellow-500/20 bg-yellow-500/[0.08] text-yellow-400",
+        green: "border-green-500/20 bg-green-500/[0.08] text-green-400",
+        red: "border-red-500/20 bg-red-500/[0.08] text-red-400",
+        gray: "border-border bg-white/[0.03] text-text-muted",
+    };
+    const cls = colorMap[colorKey] || colorMap.gray;
 
-    return err ? (
-        <div className="flex items-center justify-center h-full bg-red-500/10 rounded-xl text-red-400 text-sm border border-red-500/20 p-4 text-center">
-            <div>
-                <p className="text-3xl mb-2">📄</p>
-                <p className="font-bold">Erro ao carregar</p>
-                <p className="text-[10px] mt-1 opacity-70 break-all">{url}</p>
-            </div>
-        </div>
-    ) : (
-        <div className="relative w-full h-full">
-            <Image src={url} alt={label} fill unoptimized className="object-cover" onError={() => setErr(true)} />
+    return (
+        <div className={`rounded-lg p-4 transition-all duration-200 border ${cls}`}>
+            <div className="text-xs mb-1 text-text-muted">{label}</div>
+            <div className="text-2xl font-bold tabular-nums">{value}</div>
         </div>
     );
 }
 
-export default function VerificacaoPage() {
+function SkeletonCard() {
+    return (
+        <div className="glass-card !p-5">
+            <div className="flex items-center gap-3 mb-4">
+                <div className="w-10 h-10 rounded-full animate-pulse bg-white/[0.06]" />
+                <div className="flex-1 space-y-2">
+                    <div className="h-4 w-36 rounded animate-pulse bg-white/[0.06]" />
+                    <div className="h-3 w-48 rounded animate-pulse bg-white/[0.04]" />
+                </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4 mb-4">
+                <div className="h-48 rounded-lg animate-pulse bg-white/[0.04]" />
+                <div className="h-48 rounded-lg animate-pulse bg-white/[0.04]" />
+            </div>
+            <div className="flex gap-2">
+                <div className="h-9 w-24 rounded-lg animate-pulse bg-white/[0.04]" />
+                <div className="h-9 w-24 rounded-lg animate-pulse bg-white/[0.04]" />
+            </div>
+        </div>
+    );
+}
+
+function ImageModal({ src, alt, onClose }) {
+    useEffect(() => {
+        function handleKey(e) {
+            if (e.key === "Escape") onClose();
+        }
+        document.addEventListener("keydown", handleKey);
+        return () => document.removeEventListener("keydown", handleKey);
+    }, [onClose]);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90"
+            onClick={onClose}
+            role="dialog"
+            aria-modal="true"
+            aria-label={alt || "Imagem ampliada"}
+        >
+            <button
+                onClick={onClose}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full flex items-center justify-center text-lg font-bold transition-opacity duration-150 hover:opacity-80 bg-white/10 text-white"
+                aria-label="Fechar"
+            >
+                X
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+                src={src}
+                alt={alt || "Documento"}
+                className="max-w-full max-h-[90vh] object-contain rounded-lg"
+                onClick={(e) => e.stopPropagation()}
+            />
+        </div>
+    );
+}
+
+function PromptModal({ title, placeholder, onConfirm, onCancel }) {
+    const [value, setValue] = useState("");
+    const inputRef = useRef(null);
+
+    useEffect(() => {
+        inputRef.current?.focus();
+    }, []);
+
+    useEffect(() => {
+        function handleKey(e) {
+            if (e.key === "Escape") onCancel();
+        }
+        document.addEventListener("keydown", handleKey);
+        return () => document.removeEventListener("keydown", handleKey);
+    }, [onCancel]);
+
+    return (
+        <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80"
+            onClick={onCancel}
+            role="dialog"
+            aria-modal="true"
+            aria-label={title}
+        >
+            <div
+                className="w-full max-w-md rounded-xl p-6 bg-[#111118] border border-border"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <h3 className="text-lg font-semibold mb-4 text-white">{title}</h3>
+                <textarea
+                    ref={inputRef}
+                    rows={3}
+                    placeholder={placeholder}
+                    value={value}
+                    onChange={(e) => setValue(e.target.value)}
+                    className="input-field w-full resize-none"
+                />
+                <div className="flex justify-end gap-3 mt-4">
+                    <button
+                        onClick={onCancel}
+                        className="btn-secondary"
+                    >
+                        Cancelar
+                    </button>
+                    <button
+                        onClick={() => { if (value.trim()) onConfirm(value.trim()); }}
+                        disabled={!value.trim()}
+                        className="btn-primary disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                        Confirmar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// ── Verification Card ────────────────────────────────────────
+
+function VerificationCard({ verification, onAction, actionLoading }) {
+    const [modalImage, setModalImage] = useState(null);
+    const [prompt, setPrompt] = useState(null);
+
+    const idDoc = verification.documents?.find((d) => d.type === "id");
+    const selfieDoc = verification.documents?.find((d) => d.type === "selfie");
+    const isPending = verification.status === "pending";
+    const isApproved = verification.status === "approved";
+    const isRejected = verification.status === "rejected";
+
+    function handleApprove() {
+        onAction(verification.id, "approve");
+    }
+
+    function handleReject() {
+        setPrompt({
+            title: "Motivo da rejeicao",
+            placeholder: "Descreva o motivo da rejeicao...",
+            action: "reject",
+        });
+    }
+
+    function handleRequestReview() {
+        setPrompt({
+            title: "Mensagem de revisao",
+            placeholder: "Descreva o que precisa ser corrigido...",
+            action: "review",
+        });
+    }
+
+    function handlePromptConfirm(text) {
+        if (prompt.action === "reject") {
+            onAction(verification.id, "reject", text);
+        } else {
+            onAction(verification.id, "review", text);
+        }
+        setPrompt(null);
+    }
+
+    const isThisLoading = actionLoading === verification.id;
+
+    return (
+        <>
+            <div className="glass-card !p-0 overflow-hidden">
+                {/* User Info Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-5 py-4 border-b border-border">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full flex items-center justify-center font-semibold shrink-0 bg-gradient-to-br from-primary/20 to-accent/20 border border-primary/20 text-primary">
+                            {(verification.userName || "?")[0].toUpperCase()}
+                        </div>
+                        <div className="min-w-0">
+                            <div className="text-sm font-medium truncate text-white">
+                                {verification.userName}
+                            </div>
+                            <div className="text-xs truncate text-text-muted">
+                                {verification.userEmail}
+                            </div>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 sm:gap-4">
+                        <span className="text-xs text-text-muted">
+                            {formatDate(verification.submittedAt)}
+                        </span>
+                        <StatusBadge status={verification.status} />
+                    </div>
+                </div>
+
+                {/* Document Images */}
+                <div className="p-5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                        {/* ID Document */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-medium text-zinc-300">
+                                    Documento de Identidade
+                                </span>
+                                {idDoc?.isLegacy && <LegacyBadge />}
+                            </div>
+                            {idDoc?.url ? (
+                                <button
+                                    onClick={() => setModalImage({ src: idDoc.url, alt: "Documento de Identidade" })}
+                                    className="w-full rounded-lg overflow-hidden transition-opacity duration-150 hover:opacity-80 cursor-zoom-in border border-border"
+                                    aria-label="Ampliar documento de identidade"
+                                >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={idDoc.url}
+                                        alt="Documento de Identidade"
+                                        className="w-full max-h-64 object-contain rounded-lg bg-black/30"
+                                    />
+                                </button>
+                            ) : (
+                                <div className="w-full h-48 rounded-lg flex items-center justify-center glass-card">
+                                    <span className="text-xs text-text-muted">Sem documento</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Selfie */}
+                        <div>
+                            <div className="flex items-center gap-2 mb-2">
+                                <span className="text-xs font-medium text-zinc-300">
+                                    Selfie com Documento
+                                </span>
+                                {selfieDoc?.isLegacy && <LegacyBadge />}
+                            </div>
+                            {selfieDoc?.url ? (
+                                <button
+                                    onClick={() => setModalImage({ src: selfieDoc.url, alt: "Selfie com Documento" })}
+                                    className="w-full rounded-lg overflow-hidden transition-opacity duration-150 hover:opacity-80 cursor-zoom-in border border-border"
+                                    aria-label="Ampliar selfie com documento"
+                                >
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={selfieDoc.url}
+                                        alt="Selfie com Documento"
+                                        className="w-full max-h-64 object-contain rounded-lg bg-black/30"
+                                    />
+                                </button>
+                            ) : (
+                                <div className="w-full h-48 rounded-lg flex items-center justify-center glass-card">
+                                    <span className="text-xs text-text-muted">Sem selfie</span>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* Rejection Reason (for rejected items) */}
+                    {isRejected && verification.notes && (
+                        <div className="rounded-lg px-4 py-3 mb-4 bg-red-500/[0.06] border border-red-500/15">
+                            <span className="text-xs font-semibold text-red-400">Motivo: </span>
+                            <span className="text-xs text-red-300">{verification.notes}</span>
+                        </div>
+                    )}
+
+                    {/* Action Buttons (only for pending) */}
+                    {isPending && (
+                        <div className="flex flex-wrap gap-2">
+                            <button
+                                onClick={handleApprove}
+                                disabled={isThisLoading}
+                                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-opacity duration-150 hover:opacity-80 disabled:opacity-40 bg-green-600"
+                            >
+                                {isThisLoading ? "..." : "Aprovar"}
+                            </button>
+                            <button
+                                onClick={handleReject}
+                                disabled={isThisLoading}
+                                className="px-4 py-2 rounded-lg text-sm font-semibold text-white transition-opacity duration-150 hover:opacity-80 disabled:opacity-40 bg-red-600"
+                            >
+                                Rejeitar
+                            </button>
+                            <button
+                                onClick={handleRequestReview}
+                                disabled={isThisLoading}
+                                className="px-4 py-2 rounded-lg text-sm font-semibold transition-opacity duration-150 hover:opacity-80 disabled:opacity-40 border border-yellow-500/30 bg-yellow-500/15 text-yellow-400"
+                            >
+                                Pedir revisao
+                            </button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Image Modal */}
+            {modalImage && (
+                <ImageModal
+                    src={modalImage.src}
+                    alt={modalImage.alt}
+                    onClose={() => setModalImage(null)}
+                />
+            )}
+
+            {/* Prompt Modal */}
+            {prompt && (
+                <PromptModal
+                    title={prompt.title}
+                    placeholder={prompt.placeholder}
+                    onConfirm={handlePromptConfirm}
+                    onCancel={() => setPrompt(null)}
+                />
+            )}
+        </>
+    );
+}
+
+// ── Main Page ────────────────────────────────────────────────
+
+export default function AdminVerificacaoPage() {
     const [verifications, setVerifications] = useState([]);
     const [stats, setStats] = useState({ pending: 0, approved: 0, rejected: 0, total: 0 });
     const [loading, setLoading] = useState(true);
-    const [filter, setFilter] = useState("pending");
-    const [selected, setSelected] = useState(null);
+    const [activeTab, setActiveTab] = useState("pending");
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [actionLoading, setActionLoading] = useState(null);
-    const [motivo, setMotivo] = useState("");
-    const [showMotivo, setShowMotivo] = useState(false);
-    const [pendingAction, setPendingAction] = useState(null);
-    const [toast, setToast] = useState(null);
 
-    const showToast = useCallback((msg, type = "success") => {
-        setToast({ msg, type });
-        setTimeout(() => setToast(null), 3500);
-    }, []);
+    const abortRef = useRef(null);
 
-    const load = useCallback(async () => {
+    // ── Fetch verifications ──────────────────────────────────
+
+    const fetchVerifications = useCallback(async (status, currentPage) => {
+        if (abortRef.current) abortRef.current.abort();
+        const controller = new AbortController();
+        abortRef.current = controller;
+
         setLoading(true);
+
         try {
-            // Updated to hit the singular/plural normalized route
-            const res = await fetch(`/api/admin/verifications?status=${filter}`);
+            const params = new URLSearchParams({
+                status,
+                page: String(currentPage),
+                limit: String(PAGE_SIZE),
+            });
+
+            const res = await fetch(`/api/admin/verifications?${params.toString()}`, {
+                signal: controller.signal,
+            });
+
+            if (!res.ok) throw new Error("Fetch failed");
+
             const json = await res.json();
 
-            if (!res.ok || !json.success) {
-                showToast(json.error?.message || "Erro crasso ao buscar dados.", "error");
-                setVerifications([]);
-                return;
+            if (json.success) {
+                setVerifications(json.data?.verifications || []);
+                setStats(json.data?.stats || { pending: 0, approved: 0, rejected: 0, total: 0 });
+                const pagination = json.metadata?.pagination || {};
+                setTotalPages(pagination.pages || 1);
             }
-
-            // Using the new MCP data wrapper
-            const payload = json.data;
-            setVerifications(payload.verifications || []);
-            setStats(payload.stats || {});
-
-            if (payload.verifications?.length && filter === "pending") {
-                setSelected(payload.verifications[0] || null);
+        } catch (err) {
+            if (err.name !== "AbortError") {
+                console.error("[Verificacao] fetch error:", err);
             }
-        } catch {
-            showToast("Problema de rede. Tente recarregar a página.", "error");
         } finally {
             setLoading(false);
         }
-    }, [filter, showToast]);
+    }, []);
 
-    useEffect(() => { load(); }, [load]);
+    // ── Effects ──────────────────────────────────────────────
 
-    // Data is pre-filtered by the API now, but we keep this for visual consistency if needed
-    const filtered = verifications;
+    useEffect(() => {
+        fetchVerifications(activeTab, page);
+        return () => {
+            if (abortRef.current) abortRef.current.abort();
+        };
+    }, [activeTab, page, fetchVerifications]);
 
-    const doAction = async (id, action, reason = "") => {
-        setActionLoading(id);
+    // ── Actions ──────────────────────────────────────────────
+
+    async function handleAction(verificationId, action, text) {
+        setActionLoading(verificationId);
+
         try {
-            const res = await fetch("/api/admin/verifications", {
-                method: "PUT",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ verificationId: id, action, rejectionReason: reason }),
-            });
+            let res;
+
+            if (action === "approve" || action === "reject") {
+                const body = { verificationId, action };
+                if (action === "reject") body.rejectionReason = text;
+
+                res = await fetch("/api/admin/verifications", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(body),
+                });
+            } else if (action === "review") {
+                res = await fetch("/api/admin/verifications", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ verificationId, message: text }),
+                });
+            }
+
             const json = await res.json();
 
-            if (res.ok && json.success) {
-                showToast(json.data?.message || "Operação realizada com sucesso!", "success");
-                await load();
-                setMotivo("");
-                setShowMotivo(false);
-                setPendingAction(null);
-            } else {
-                showToast(json.error?.message || "Erro do servidor ao processar.", "error");
+            if (json.success) {
+                // Refetch to get updated data and stats
+                fetchVerifications(activeTab, page);
             }
-        } catch {
-            showToast("Falha técnica ao executar a ação.", "error");
+        } catch (err) {
+            console.error("[Verificacao] action error:", err);
+        } finally {
+            setActionLoading(null);
         }
-        setActionLoading(null);
-    };
+    }
 
-    const handleApprove = (v) => doAction(v.id, "approve");
-    const handleRejectInit = (v) => { setPendingAction(v); setShowMotivo(true); };
-    const handleRejectConfirm = () => { if (pendingAction) doAction(pendingAction.id, "reject", motivo); };
+    // ── Tab change ───────────────────────────────────────────
+
+    function handleTabChange(tab) {
+        setActiveTab(tab);
+        setPage(1);
+    }
+
+    // ── Pagination ───────────────────────────────────────────
+
+    function goPage(p) {
+        if (p < 1 || p > totalPages) return;
+        setPage(p);
+    }
+
+    // ── Render ───────────────────────────────────────────────
+
+    const isEmpty = !loading && verifications.length === 0;
 
     return (
-        <div className="space-y-5">
-            {/* Minimalist Glass Toast Notification */}
-            {toast && (
-                <div className={`fixed bottom-10 right-10 z-[100] px-6 py-4 rounded-2xl text-sm font-bold shadow-[0_10px_40px_rgba(0,0,0,0.5)] border backdrop-blur-xl animate-bounce-short
-                    ${toast.type === "success"
-                        ? "bg-emerald-500/20 border-emerald-500/30 text-emerald-400"
-                        : "bg-red-500/20 border-red-500/30 text-red-400"
-                    }`}>
-                    <div className="flex items-center gap-3">
-                        <span className="text-xl">{toast.type === "success" ? "✨" : "⚠️"}</span>
-                        {toast.msg}
-                    </div>
-                </div>
-            )}
+        <div className="max-w-[1400px] mx-auto animate-fade-in">
 
-            {/* Reject Modal */}
-            {showMotivo && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in" onClick={() => setShowMotivo(false)}>
-                    <div className="bg-[#0a0a0f] border border-white/10 rounded-3xl p-8 w-full max-w-md shadow-2xl" onClick={e => e.stopPropagation()}>
-                        <div className="mb-6">
-                            <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center text-2xl mb-4 border border-red-500/20">
-                                🛡️
-                            </div>
-                            <h3 className="text-xl text-white font-black mb-1">Rejeitar Verificação</h3>
-                            <p className="text-white/40 text-sm leading-relaxed">O usuário será notificado imediatamente. Por favor, seja claro sobre o que ele deve corrigir.</p>
-                        </div>
-
-                        <div className="flex flex-wrap gap-2 mb-3">
-                            {["Documento ilegível", "Foto muito escura ou cortada", "Selfie não corresponde ao ID", "Documento expirado", "Falta a frente/verso do doc"].map((r) => (
-                                <button key={r} onClick={() => setMotivo(prev => prev ? prev + " | " + r : r)} className="text-[10px] items-center px-2 py-1 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10 text-white/50 transition-all font-semibold">
-                                    + {r}
-                                </button>
-                            ))}
-                        </div>
-                        <textarea
-                            value={motivo}
-                            onChange={e => setMotivo(e.target.value)}
-                            placeholder="Motivo detalhado para o usuário (ou clique nas opções acima)..."
-                            rows={4}
-                            className="w-full bg-black/50 border border-white/10 rounded-2xl p-4 text-sm text-white placeholder-white/20 resize-none focus:outline-none focus:border-red-500/40 focus:ring-1 focus:ring-red-500/40 mb-6 transition-all"
-                        />
-                        <div className="flex gap-3">
-                            <button onClick={() => setShowMotivo(false)} className="flex-1 py-3.5 rounded-2xl bg-white/5 border border-white/10 text-white/60 font-semibold text-sm hover:bg-white/10 hover:text-white transition-all">Cancelar</button>
-                            <button onClick={handleRejectConfirm} className="flex-1 py-3.5 rounded-2xl bg-red-500/15 border border-red-500/30 text-red-500 font-bold text-sm hover:bg-red-500/25 transition-all shadow-[0_0_15px_rgba(239,68,68,0.15)]">Confirmar Rejeição</button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-black text-white flex items-center gap-3">
-                        <span className="p-2 bg-primary/20 text-primary rounded-xl border border-primary/30">✅</span>
-                        Centro de Auditoria
+            {/* ── Header ──────────────────────────────────────── */}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-6">
+                <div className="flex items-center gap-3">
+                    <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                        Verificacoes
                     </h1>
-                    <p className="text-white/40 text-sm mt-2">Valide a identidade das massagistas para manter a plataforma segura.</p>
+                    {stats.pending > 0 && (
+                        <span className="px-2.5 py-1 rounded-md text-xs font-semibold tabular-nums border border-yellow-500/30 bg-yellow-500/10 text-yellow-400">
+                            {stats.pending} pendente{stats.pending !== 1 ? "s" : ""}
+                        </span>
+                    )}
                 </div>
-                <button onClick={load} className="btn-secondary px-4 py-2 rounded-xl text-sm whitespace-nowrap">
-                    🔄 Sincronizar Fila
+                <button
+                    onClick={() => fetchVerifications(activeTab, page)}
+                    disabled={loading}
+                    className="btn-secondary self-start sm:self-auto disabled:opacity-50"
+                    aria-label="Atualizar lista"
+                >
+                    Atualizar
                 </button>
             </div>
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {[
-                    { label: "Pendentes (Fila)", value: stats.pending, color: "text-amber-400", bg: "from-amber-500/10 to-transparent", border: "border-amber-500/20" },
-                    { label: "Aprovações (All-time)", value: stats.approved, color: "text-emerald-400", bg: "from-emerald-500/10 to-transparent", border: "border-emerald-500/20" },
-                    { label: "Rejeições (All-time)", value: stats.rejected, color: "text-rose-400", bg: "from-rose-500/10 to-transparent", border: "border-rose-500/20" },
-                    { label: "Total Registrado", value: stats.total, color: "text-white", bg: "from-white/5 to-transparent", border: "border-white/10" },
-                ].map((s, idx) => (
-                    <div key={idx} className={`bg-gradient-to-b ${s.bg} border ${s.border} rounded-2xl p-5 backdrop-blur-sm relative overflow-hidden group`}>
-                        <div className={`absolute top-0 right-0 w-24 h-24 bg-current opacity-5 blur-2xl rounded-full translate-x-12 -translate-y-8 ${s.color}`} />
-                        <p className={`text-4xl font-black ${s.color} relative z-10`}>{s.value ?? 0}</p>
-                        <p className="text-white/50 text-sm mt-2 font-medium relative z-10">{s.label}</p>
-                    </div>
-                ))}
+            {/* ── Stats Row ───────────────────────────────────── */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                <StatCard label="Pendentes" value={stats.pending} colorKey="yellow" />
+                <StatCard label="Aprovadas" value={stats.approved} colorKey="green" />
+                <StatCard label="Rejeitadas" value={stats.rejected} colorKey="red" />
+                <StatCard label="Total" value={stats.total} colorKey="gray" />
             </div>
 
-            {/* Container for Split Layout */}
-            <div className="glass-card overflow-hidden shadow-2xl">
-                {/* Filter tabs */}
-                <div className="flex px-4 pt-4 pb-0 border-b border-white/5 overflow-x-auto no-scrollbar">
-                    {["pending", "approved", "rejected"].map(f => (
-                        <button key={f} onClick={() => { setFilter(f); setSelected(null); }}
-                            className={`px-6 py-4 text-sm font-bold transition-all relative whitespace-nowrap
-                            ${filter === f ? "text-primary" : "text-white/40 hover:text-white/80"}`}>
-                            {STATUS_COLORS[f].label.toUpperCase()}
-                            {f === "pending" && stats.pending > 0 &&
-                                <span className="ml-2 bg-amber-500/20 text-amber-500 border border-amber-500/30 text-[10px] font-black px-2 py-0.5 rounded-full inline-block -translate-y-0.5">
-                                    {stats.pending}
-                                </span>
-                            }
-                            {filter === f && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
+            {/* ── Status Filter Tabs ──────────────────────────── */}
+            <div className="flex gap-1 mb-6 overflow-x-auto" role="tablist" aria-label="Filtrar por status">
+                {STATUS_TABS.map((tab) => {
+                    const isActive = activeTab === tab.key;
+                    return (
+                        <button
+                            key={tab.key}
+                            role="tab"
+                            aria-selected={isActive}
+                            onClick={() => handleTabChange(tab.key)}
+                            className={`px-4 py-2.5 text-sm font-medium transition-all duration-150 whitespace-nowrap relative ${
+                                isActive ? "text-white" : "text-text-muted"
+                            }`}
+                        >
+                            {tab.label}
+                            {isActive && (
+                                <span className="absolute bottom-0 left-2 right-2 h-0.5 rounded-full bg-primary" />
                             )}
                         </button>
+                    );
+                })}
+            </div>
+
+            {/* ── Loading Skeletons ───────────────────────────── */}
+            {loading && (
+                <div className="space-y-4">
+                    <SkeletonCard />
+                    <SkeletonCard />
+                    <SkeletonCard />
+                </div>
+            )}
+
+            {/* ── Verification Cards ─────────────────────────── */}
+            {!loading && verifications.length > 0 && (
+                <div className="space-y-4">
+                    {verifications.map((v) => (
+                        <VerificationCard
+                            key={v.id}
+                            verification={v}
+                            onAction={handleAction}
+                            actionLoading={actionLoading}
+                        />
                     ))}
                 </div>
+            )}
 
-                <div className="grid grid-cols-1 md:grid-cols-12 min-h-[600px] divide-y md:divide-y-0 md:divide-x divide-white/5 relative">
-                    {/* List Section (Left) */}
-                    <div className="col-span-1 md:col-span-4 bg-black/20 p-4 overflow-y-auto absolute md:relative inset-x-0 top-0 bottom-0 md:h-auto">
-                        {loading ? (
-                            <div className="flex flex-col items-center justify-center py-20 opacity-50">
-                                <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin mb-4" />
-                                <span className="text-sm font-semibold text-primary">Sincronizando...</span>
-                            </div>
-                        ) : filtered.length === 0 ? (
-                            <div className="flex flex-col items-center justify-center p-12 text-center h-full">
-                                <span className="text-5xl opacity-40 mb-4">✨</span>
-                                <h3 className="text-white font-bold mb-1">Caixa Limpa!</h3>
-                                <p className="text-white/40 text-sm">Nenhuma verificação {STATUS_COLORS[filter].label.toLowerCase()} no momento.</p>
-                            </div>
-                        ) : (
-                            <div className="space-y-3">
-                                {filtered.map(v => (
-                                    <button key={v.id} onClick={() => setSelected(v)}
-                                        className={`w-full text-left p-4 rounded-2xl border transition-all relative overflow-hidden group
-                                        ${selected?.id === v.id
-                                                ? "border-primary/50 bg-primary/10 shadow-[0_0_20px_rgba(212,175,55,0.1)]"
-                                                : "border-white/5 bg-white/[0.02] hover:border-white/10 hover:bg-white/5"}`}>
-
-                                        {/* Status Glow Indicator */}
-                                        <div className={`absolute top-0 bottom-0 left-0 w-1 ${STATUS_COLORS[v.status].bg} bg-current opacity-50 ${STATUS_COLORS[v.status].text}`} />
-
-                                        <div className="flex items-start gap-4 mb-3 pl-2">
-                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center text-white font-black text-sm flex-shrink-0 shadow-inner">
-                                                {v.userName?.charAt(0) || "?"}
-                                            </div>
-                                            <div className="flex-1 min-w-0 pt-0.5">
-                                                <p className="text-white text-sm font-bold truncate group-hover:text-primary transition-colors">{v.userName || "Sem nome"}</p>
-                                                <p className="text-white/40 text-xs truncate mt-0.5">{v.userEmail}</p>
-                                            </div>
-                                        </div>
-                                        <div className="flex items-center justify-between pl-2">
-                                            <Badge status={v.status} />
-                                            <span className="text-white/30 text-[10px] uppercase font-bold tracking-widest">
-                                                {v.submittedAt ? new Date(v.submittedAt).toLocaleDateString("pt-BR") : "S/D"}
-                                            </span>
-                                        </div>
-                                    </button>
-                                ))}
-                            </div>
-                        )}
+            {/* ── Empty State ─────────────────────────────────── */}
+            {isEmpty && (
+                <div className="glass-card py-16 text-center">
+                    <div className="text-4xl mb-3">
+                        {activeTab === "pending" ? "🪪" : activeTab === "approved" ? "✅" : "❌"}
                     </div>
-
-                    {/* Viewer Section (Right) */}
-                    <div className="col-span-1 md:col-span-8 p-6 md:p-8 bg-[#08080c] relative">
-                        {loading && !selected ? (
-                            <div className="absolute inset-0 z-10 bg-[#08080c]/80 backdrop-blur-sm flex items-center justify-center">
-                                <div className="w-8 h-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
-                            </div>
-                        ) : null}
-
-                        {!selected ? (
-                            <div className="flex flex-col items-center justify-center h-full min-h-[400px] text-center border-2 border-dashed border-white/5 rounded-3xl">
-                                <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center text-2xl mb-4 text-white/20">
-                                    <HiOutlineCheckBadge className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-white/60 font-bold mb-1">Selecione um Arquivo</h3>
-                                <p className="text-white/30 text-sm max-w-xs">Clique em um item na lista ao lado para abrir e julgar os documentos de verificação.</p>
-                            </div>
-                        ) : (
-                            <div className="animate-fade-in max-w-4xl mx-auto">
-                                {/* User header expanded */}
-                                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-8 bg-white/5 border border-white/10 p-6 rounded-3xl">
-                                    <div className="flex items-center gap-5">
-                                        <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/80 to-accent/80 flex items-center justify-center text-white font-black text-xl shadow-[0_0_20px_rgba(212,175,55,0.3)] border-2 border-white/10">
-                                            {selected.userName?.charAt(0) || "?"}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <h2 className="text-xl text-white font-black">{selected.userName || "Sem nome"}</h2>
-                                                {selected.status === 'approved' && <span className="text-emerald-500 text-lg" title="Verificado">🛡️</span>}
-                                            </div>
-                                            <p className="text-white/50 text-sm">{selected.userEmail}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-col items-start sm:items-end gap-2">
-                                        <Badge status={selected.status} />
-                                        <Link href={`/admin/users?search=${selected.userEmail}`} className="text-xs text-primary font-bold hover:underline opacity-80 decoration-primary/50 underline-offset-4">
-                                            Abrir Ficha do Usuário ↗
-                                        </Link>
-                                    </div>
-                                </div>
-
-                                {/* Active Controls / Action Panel */}
-                                {selected.status === "pending" && (
-                                    <div className="flex flex-col sm:flex-row gap-4 mb-8 bg-primary/5 border border-primary/20 p-4 rounded-3xl">
-                                        <div className="flex-1">
-                                            <p className="text-xs text-primary uppercase tracking-widest font-black mb-1">Ação Requerida</p>
-                                            <p className="text-white/60 text-sm">Revise as imagens abaixo confirmando clareza e veracidade antes de aprovar.</p>
-                                        </div>
-                                        <div className="flex sm:w-auto w-full flex-shrink-0 gap-3">
-                                            <button
-                                                onClick={() => handleRejectInit(selected)}
-                                                disabled={actionLoading === selected.id}
-                                                className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-red-500/10 border border-red-500/30 text-red-500 font-bold text-sm hover:bg-red-500/20 transition-all disabled:opacity-50"
-                                            >
-                                                Refusar
-                                            </button>
-                                            <button
-                                                onClick={() => handleApprove(selected)}
-                                                disabled={actionLoading === selected.id}
-                                                className="flex-1 sm:flex-none px-8 py-2.5 rounded-xl bg-green-500/20 border border-green-500/40 text-green-400 font-black text-sm hover:bg-green-500/30 transition-all disabled:opacity-50 shadow-[0_0_15px_rgba(34,197,94,0.15)]"
-                                            >
-                                                {actionLoading === selected.id ? "⌛" : "Aprovar Identidade"}
-                                            </button>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Rejected Banner/Reason */}
-                                {selected.notes && selected.status === "rejected" && (
-                                    <div className="bg-red-500/10 border-l-4 border-l-red-500 border-r border-t border-b border-red-500/20 rounded-r-2xl p-5 mb-8">
-                                        <div className="flex items-start gap-3">
-                                            <span className="text-red-500 mt-0.5">⚠️</span>
-                                            <div>
-                                                <p className="text-red-400 text-xs font-black uppercase tracking-wider mb-1">Rejeitado Pelo Admin</p>
-                                                <p className="text-white/80 text-sm leading-relaxed">{selected.notes}</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-
-                                {/* Documents Evidence View */}
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                                    {selected.documents?.map((doc, idx) => (
-                                        <div key={idx} className="flex flex-col h-full">
-                                            <div className="flex items-center justify-between mb-3 px-1">
-                                                <p className="text-white font-bold text-sm flex items-center gap-2">
-                                                    {doc.type === 'id' ? '🪪' : '🤳'} {doc.name}
-                                                    {doc.isLegacy && <span className="text-[9px] bg-amber-500/20 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded-full font-black">LEGACY</span>}
-                                                </p>
-                                                {!doc.isLegacy && doc.url && (
-                                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-white/40 hover:text-white uppercase font-bold tracking-wider">
-                                                        Abrir Original ↗
-                                                    </a>
-                                                )}
-                                            </div>
-                                            <div className="flex-1 w-full bg-[#050508] border border-white/10 rounded-3xl overflow-hidden group relative transition-all hover:border-white/20 hover:shadow-2xl">
-                                                <div className="aspect-[4/3] w-full">
-                                                    <DocViewer url={doc.url} label={doc.name} isLegacy={doc.isLegacy} />
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-
-                                    {(!selected.documents || selected.documents.length === 0) && (
-                                        <div className="col-span-1 md:col-span-2 flex flex-col items-center justify-center py-16 bg-red-500/5 border border-red-500/20 rounded-3xl text-center">
-                                            <span className="text-4xl mb-3">👻</span>
-                                            <p className="text-red-400 font-bold">Arquivos Corrompidos ou Inexistentes</p>
-                                            <p className="text-white/40 text-sm mt-1 max-w-sm">Os ponteiros de arquivo desta solicitação estão quebrados. Peça ao usuário para reenviar as imagens.</p>
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Immutable audit log info */}
-                                <div className="bg-black/40 rounded-2xl p-4 flex flex-wrap gap-y-2 items-center justify-between text-xs text-white/30 border border-white/5 font-mono">
-                                    <span>ID: {selected.id}</span>
-                                    <span>Submetido: {selected.submittedAt ? new Date(selected.submittedAt).toLocaleString("pt-BR") : "N/A"}</span>
-                                    {selected.reviewedAt && <span className="text-primary/70">Ultima auditoria: {new Date(selected.reviewedAt).toLocaleString("pt-BR")}</span>}
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                    <p className="text-sm font-medium text-text-muted">
+                        {activeTab === "pending"
+                            ? "Nenhuma verificacao pendente"
+                            : activeTab === "approved"
+                            ? "Nenhuma verificacao aprovada"
+                            : "Nenhuma verificacao rejeitada"}
+                    </p>
                 </div>
-            </div>
+            )}
+
+            {/* ── Pagination ──────────────────────────────────── */}
+            {totalPages > 1 && !loading && (
+                <div className="flex items-center justify-between gap-4 mt-8 mb-8">
+                    <button
+                        onClick={() => goPage(page - 1)}
+                        disabled={page <= 1}
+                        className="btn-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                        Anterior
+                    </button>
+
+                    <span className="text-sm tabular-nums text-text-muted">
+                        Pagina <span className="text-zinc-300">{page}</span> de{" "}
+                        <span className="text-zinc-300">{totalPages}</span>
+                    </span>
+
+                    <button
+                        onClick={() => goPage(page + 1)}
+                        disabled={page >= totalPages}
+                        className="btn-secondary disabled:opacity-30 disabled:cursor-not-allowed"
+                    >
+                        Proxima
+                    </button>
+                </div>
+            )}
         </div>
     );
 }
