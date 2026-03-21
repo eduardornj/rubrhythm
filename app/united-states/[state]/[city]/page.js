@@ -228,7 +228,7 @@ export async function generateMetadata({ params: paramsPromise }) {
   const count = await prisma.listing.count({ where: { state: formattedState, city: formattedCity, isActive: true, isApproved: true } });
 
   return {
-    title: `Body Rubs & Massage in ${formattedCity}, ${formattedState} | RubRhythm`,
+    title: `Body Rubs & Massage in ${formattedCity}, ${formattedState}`,
     description: `Find ${count > 0 ? count + ' verified' : 'top-rated'} body rub & massage providers in ${formattedCity}, ${formattedState}. Browse profiles, read reviews, and connect directly.`,
     alternates: { canonical: `/united-states/${state}/${city}` },
     ...(count === 0 && { robots: { index: false, follow: true } }),
