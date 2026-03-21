@@ -55,7 +55,7 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline'",
               "img-src 'self' data: blob: https: http:",
               "font-src 'self'",
-              "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://api.nowpayments.io",
+              "connect-src 'self' https://rubrhythm.com https://www.rubrhythm.com https://www.google-analytics.com https://analytics.google.com https://stats.g.doubleclick.net https://www.googletagmanager.com https://api.nowpayments.io",
               "frame-ancestors 'none'",
               "base-uri 'self'",
               "form-action 'self'",
