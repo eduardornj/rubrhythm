@@ -83,9 +83,11 @@ export default function GeoLocationRedirect() {
       return;
     }
 
-    // Tentar obter localização do usuário
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
+    // Only request geolocation if permission was already granted (avoid prompt on page load)
+    if ("geolocation" in navigator && navigator.permissions) {
+      navigator.permissions.query({ name: "geolocation" }).then((result) => {
+        if (result.state !== "granted") return; // Don't prompt — only use if already allowed
+        navigator.geolocation.getCurrentPosition(
         (position) => {
           const { latitude, longitude } = position.coords;
           const nearestCity = findNearestCity(latitude, longitude);
@@ -115,6 +117,7 @@ export default function GeoLocationRedirect() {
           enableHighAccuracy: false
         }
       );
+      }).catch(() => {});
     }
   }, [pathname, router, hasRedirected, redirectToCity]);
 
