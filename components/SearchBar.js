@@ -160,7 +160,7 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
     }),
     placeholder: (base) => ({
       ...base,
-      color: "#a1a1aa", // text-muted
+      color: "#d4d4d8", // zinc-300, sufficient contrast on dark bg
       fontWeight: "400",
     }),
     menu: (base) => ({
@@ -281,7 +281,7 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
 
             {/* Quick Filters */}
             <div className="mb-6 mt-6 border-t border-white/5 pt-6">
-              <h3 className="text-sm font-semibold text-text-muted mb-3 uppercase tracking-wider">Quick Filters</h3>
+              <p className="text-sm font-semibold text-text-muted mb-3 uppercase tracking-wider">Quick Filters</p>
               <div className="flex flex-wrap gap-2">
                 {[
                   { label: "Under $200", param: "priceRange", value: "0-100,100-200" },

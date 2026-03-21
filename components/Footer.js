@@ -94,12 +94,12 @@ export default function Footer() {
           {FOOTER_COLUMNS.map((col) => (
             <div key={col.title}>
               <h4 className="text-sm font-semibold text-white mb-3">{col.title}</h4>
-              <ul className="space-y-2">
+              <ul className="space-y-0.5">
                 {col.links.map((link) => (
                   <li key={link.href}>
                     <Link
                       href={link.href}
-                      className={`text-sm transition-colors duration-200 hover:text-white ${
+                      className={`text-sm transition-colors duration-200 hover:text-white inline-block py-1.5 min-h-[44px] flex items-center ${
                         link.highlight ? "text-primary font-medium" : ""
                       }`}
                     >
@@ -114,10 +114,10 @@ export default function Footer() {
           {/* Cities Column */}
           <div>
             <h4 className="text-sm font-semibold text-white mb-3">Top Cities</h4>
-            <ul className="space-y-1.5">
+            <ul className="space-y-0.5">
               {TOP_CITIES.slice(0, 8).map((city) => (
                 <li key={city.href}>
-                  <Link href={city.href} className="text-sm transition-colors duration-200 hover:text-white">
+                  <Link href={city.href} className="text-sm transition-colors duration-200 hover:text-white inline-block py-1.5 min-h-[44px] flex items-center">
                     {city.label}
                   </Link>
                 </li>

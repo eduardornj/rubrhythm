@@ -179,6 +179,40 @@
       opacity: 1;
     }
   }
+
+  .animate-slide-in-up {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: slideInUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+  }
+
+  @keyframes slideInUp {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    @media (prefers-reduced-motion: no-preference) {
+      animation: fadeIn 0.4s ease-out forwards;
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
 }
 
 @layer components {
@@ -194,6 +228,10 @@
     font-weight: 500;
     box-shadow: 0 10px 15px -3px rgba(225, 29, 72, 0.2);
     transition: all 300ms;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .btn-primary:hover {
@@ -231,6 +269,10 @@
     border-radius: 0.75rem;
     font-weight: 500;
     transition: all 300ms;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .btn-secondary:hover {
@@ -244,10 +286,13 @@
   }
 
   .btn-ghost {
-    padding: 0.5rem 1rem;
+    padding: 0.625rem 1rem;
     border-radius: 0.75rem;
     color: var(--color-text-muted);
     transition: all 200ms;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
   }
 
   .btn-ghost:hover {
