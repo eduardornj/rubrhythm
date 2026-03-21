@@ -58,7 +58,32 @@ export default function Header() {
   }, [pathname]);
 
   if (status === "loading") {
-    return null;
+    return (
+      <>
+        <header className="fixed top-0 w-full z-[100] glass">
+          <div className="bg-primary/90 text-white py-1">
+            <div className="container mx-auto px-4 h-5" />
+          </div>
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center space-x-3">
+                <div className="bg-gradient-to-r from-primary to-accent p-2 rounded-xl">
+                  <span className="text-white font-bold text-xl tracking-tighter">RR</span>
+                </div>
+                <div>
+                  <span className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/70 tracking-tight block">RubRhythm</span>
+                  <span className="text-[10px] text-primary font-bold uppercase tracking-wider block">Verified Directory</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="bg-surface/30 backdrop-blur-md border-t border-white/5">
+            <div className="container mx-auto px-4 py-2 h-7" />
+          </div>
+        </header>
+        <div className="h-[140px] md:h-[132px]" />
+      </>
+    );
   }
 
   const isLoggedIn = !!session;
