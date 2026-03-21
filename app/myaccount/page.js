@@ -119,6 +119,22 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
         </div>
       </div>
 
+      {/* Welcome Bonus Banner — shows when provider has credits but no listings */}
+      {stats.totalListings === 0 && stats.creditsBalance >= 10 && (
+        <Link href="/myaccount/listings/add-listing" className="glass-card p-5 border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10 flex items-center gap-4 hover:border-green-500/50 transition-all block animate-fade-in">
+          <div className="w-14 h-14 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-2xl">🎁</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-white font-bold text-lg">You have ${stats.creditsBalance} in free credits!</p>
+            <p className="text-green-300/70 text-sm">Your welcome bonus is ready. Create your first listing for just 10 credits and start connecting with clients today.</p>
+          </div>
+          <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl flex-shrink-0 shadow-lg shadow-green-500/20">
+            Create Listing
+          </span>
+        </Link>
+      )}
+
       {/* Stats Grid */}
       <div>
         <h2 className="text-white font-semibold mb-4">Your Performance</h2>
@@ -290,6 +306,22 @@ function ClientDashboard({ session, stats, alerts }) {
         </div>
       </div>
 
+      {/* Welcome Bonus Banner — shows when client has credits from welcome bonus */}
+      {(stats?.creditsBalance || 0) > 0 && (stats?.totalFavorites || 0) === 0 && (
+        <Link href="/view-cities" className="glass-card p-5 border-green-500/30 bg-gradient-to-r from-green-500/10 to-emerald-500/10 flex items-center gap-4 hover:border-green-500/50 transition-all block animate-fade-in">
+          <div className="w-12 h-12 rounded-xl bg-green-500/20 flex items-center justify-center flex-shrink-0">
+            <span className="text-2xl">🎁</span>
+          </div>
+          <div className="flex-1">
+            <p className="text-white font-bold">You have ${stats?.creditsBalance || 0} in free credits!</p>
+            <p className="text-green-300/70 text-sm">Use them to message verified providers. Start browsing now.</p>
+          </div>
+          <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl flex-shrink-0 shadow-lg shadow-green-500/20">
+            Browse Providers
+          </span>
+        </Link>
+      )}
+
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard icon="❤️" label="Favorites" value={stats?.totalFavorites || 0} sub="Saved profiles" href="/myaccount/favorites" color="accent" />
@@ -363,7 +395,7 @@ function AdminDashboard({ session, alerts }) {
               <p className="text-sm text-text-muted mt-1">Active Listings</p>
               <p className="text-xs text-yellow-400 mt-0.5">{ov?.listings?.pending ?? 0} pending approval</p>
             </Link>
-            <Link href="/admin/verificacao" className="glass-card p-5 bg-gradient-to-br from-yellow-500/15 to-yellow-500/5 border-yellow-500/20 hover:scale-[1.02] transition-all block">
+            <Link href="/admin/verificação" className="glass-card p-5 bg-gradient-to-br from-yellow-500/15 to-yellow-500/5 border-yellow-500/20 hover:scale-[1.02] transition-all block">
               <p className="text-2xl font-black text-white">{aq?.pendingVerificationsCount ?? "—"}</p>
               <p className="text-sm text-text-muted mt-1">Pending Verifications</p>
               <p className="text-xs text-yellow-400 mt-0.5">{aq?.pendingReviewsCount ?? 0} pending reviews</p>
@@ -385,7 +417,7 @@ function AdminDashboard({ session, alerts }) {
           </h3>
           <div className="space-y-2">
             {(aq?.pendingVerificationsCount ?? 0) > 0 && (
-              <Link href="/admin/verificacao" className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all">
+              <Link href="/admin/verificação" className="flex items-center justify-between p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all">
                 <span className="text-white/80 text-sm">Verifications awaiting approval</span>
                 <span className="bg-yellow-500/20 text-yellow-400 text-xs font-bold px-2.5 py-1 rounded-full">{aq.pendingVerificationsCount}</span>
               </Link>
@@ -407,7 +439,7 @@ function AdminDashboard({ session, alerts }) {
           <ActionCard icon="👥" title="User Management" description="Manage providers and clients" href="/admin/users" />
           <ActionCard icon="📋" title="Listings" description="Approve and moderate listings" href="/admin/listings" />
           <ActionCard icon="💰" title="Financial" description="Credits, transactions and escrow" href="/admin/financeiro" />
-          <ActionCard icon="📧" title="Communication" description="Send notifications to users" href="/admin/comunicacao" />
+          <ActionCard icon="📧" title="Communication" description="Send notifications to users" href="/admin/comunicação" />
         </div>
       </div>
     </div>

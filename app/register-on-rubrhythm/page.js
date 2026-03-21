@@ -116,8 +116,9 @@ function RegisterOnRubrhythm() {
       }
 
       analytics.signUp(role, !!referralCode);
-      setSuccess("Account created! Redirecting to login...");
-      setTimeout(() => router.push("/login"), 2000);
+      const bonus = role === "provider" ? "$50" : "$5";
+      setSuccess(`Account created! You received ${bonus} in free credits to get started. Redirecting to login...`);
+      setTimeout(() => router.push("/login"), 3500);
     } catch {
       setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
