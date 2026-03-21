@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import crypto from "crypto";
 import { sendCreditsConfirmedEmail } from "@/lib/email";
+import { alertPurchase } from "@/lib/telegram";
 
 // NowPayments uses HMAC-SHA512 with IPN secret
 // Uses timing-safe comparison to prevent timing attacks
@@ -107,11 +108,12 @@ export async function POST(request) {
 
         console.log(`[NowPayments] ✅ ${credits} credits added for user ${userId} (order: ${order_id})`);
 
-        // Send confirmation email (non-blocking)
+        // Send confirmation email + Telegram alert (non-blocking)
         const userData = await prisma.user.findUnique({ where: { id: userId }, select: { email: true, name: true } }).catch(() => null);
         if (userData?.email) {
             sendCreditsConfirmedEmail(userData.email, userData.name || "User", credits, credits).catch(() => {});
         }
+        alertPurchase(userData?.name, userData?.email, credits, payment_id);
 
         return NextResponse.json({ received: true, action: "credits_added", credits });
 
