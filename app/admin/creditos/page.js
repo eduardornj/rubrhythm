@@ -101,10 +101,10 @@ export default function CreditosPage() {
   // -- Computed data -------------------------------------------------------
 
   const usersWithCredits = users
-    .filter((u) => (u.credits || 0) > 0)
-    .sort((a, b) => (b.credits || 0) - (a.credits || 0));
+    .filter((u) => Number(u.credits || 0) > 0)
+    .sort((a, b) => Number(b.credits || 0) - Number(a.credits || 0));
 
-  const totalCredits = users.reduce((sum, u) => sum + (u.credits || 0), 0);
+  const totalCredits = users.reduce((sum, u) => sum + Number(u.credits || 0), 0);
   const usersWithCreditsCount = usersWithCredits.length;
   const averageBalance = usersWithCreditsCount > 0 ? Math.round(totalCredits / usersWithCreditsCount) : 0;
 
