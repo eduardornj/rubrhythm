@@ -14,6 +14,7 @@ import { detectFacePosition } from "@/lib/face-focus";
 import ReviewForm from "@/components/ReviewForm";
 import ListingCard from "@/components/ListingCard";
 import MiniCard from "@/components/MiniCard";
+import { analytics } from "@/lib/analytics";
 
 // ─── Skeleton ───────────────────────────────────────────────────────────────
 function ProfileSkeleton() {
@@ -142,6 +143,7 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
         const data = await listingRes.json();
         setListing(data);
         setIsFavorited(data.isFavorited);
+        analytics.viewListing(data.id, data.title, data.city, data.state);
 
         // Increment view count and notify provider (fire-and-forget)
         fetch("/api/listing/view", {
@@ -216,6 +218,7 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
         if (msgRes.status === 402) throw new Error("Insufficient credits.");
         throw new Error("Failed to send message");
       }
+      analytics.sendMessage(listing.id);
       setChatMessage("");
       setChatSuccess(true);
       setTimeout(() => setChatSuccess(false), 4000);
@@ -673,6 +676,7 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                 {phone && (
                   <a
                     href={`tel:${phone.replace(/\D/g, "")}`}
+                    onClick={() => analytics.phoneClick(listing.id, listing.city)}
                     className="block w-full bg-gradient-to-r from-primary to-accent text-white font-black text-center py-3.5 rounded-2xl hover:shadow-xl hover:shadow-primary/25 transition-all mb-3 hover:-translate-y-0.5"
                   >
                     📞 Call Now — {phone}
@@ -685,6 +689,7 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                     href={`https://wa.me/${phone.replace(/\D/g, "")}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => analytics.whatsappClick(listing.id, listing.city)}
                     className="block w-full bg-green-500/20 border border-green-500/30 text-green-400 font-bold text-center py-3 rounded-2xl hover:bg-green-500/30 transition-all mb-3"
                   >
                     💬 WhatsApp

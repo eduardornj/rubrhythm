@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { analytics } from "@/lib/analytics";
 
 export default function FavoriteButton({ userId, listingId, initialIsFavorited, variant = "default" }) {
   const [isFavorited, setIsFavorited] = useState(initialIsFavorited);
@@ -36,6 +37,9 @@ export default function FavoriteButton({ userId, listingId, initialIsFavorited, 
 
       if (response.ok) {
         setIsFavorited(newIsFavorited);
+        if (newIsFavorited) {
+          analytics.addFavorite(listingId, '');
+        }
         // Show success message instead of redirecting
         console.log(newIsFavorited ? 'Added to favorites' : 'Removed from favorites');
       } else {

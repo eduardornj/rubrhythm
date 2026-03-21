@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
+import { analytics } from '@/lib/analytics';
 
 export default function AnonymousMessaging({ providerId, listingId }) {
   const { data: session } = useSession();
@@ -77,12 +78,13 @@ export default function AnonymousMessaging({ providerId, listingId }) {
 
       if (response.ok) {
         const data = await response.json();
+        analytics.sendMessage(listingId);
         setMessages(prev => [...prev, data.message]);
         setNewMessage('');
         // Update conversation last message time
-        setConversations(prev => 
-          prev.map(conv => 
-            conv.id === activeConversation.id 
+        setConversations(prev =>
+          prev.map(conv =>
+            conv.id === activeConversation.id
               ? { ...conv, lastMessageAt: new Date().toISOString() }
               : conv
           )

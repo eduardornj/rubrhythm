@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import ListingCard from "@components/ListingCard";
 import AdvancedSearchFilters from "@components/AdvancedSearchFilters";
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
+import { analytics } from "@/lib/analytics";
 
 const SORT_OPTIONS = [
   { value: "relevance", label: "Most Relevant" },
@@ -35,6 +36,15 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
     minRating: parseInt(searchParams.get("minRating")) || 0,
   });
   const itemsPerPage = 12;
+
+  // Track search event on initial load
+  const searchTracked = useRef(false);
+  useEffect(() => {
+    if (!searchTracked.current && (city || state || keyword)) {
+      analytics.search(city, state, keyword);
+      searchTracked.current = true;
+    }
+  }, [city, state, keyword]);
 
   // Sync state with props when data changes via Next Router
   useEffect(() => {

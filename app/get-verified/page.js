@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import MainLayout from "@components/MainLayout";
 import Link from "next/link";
+import { analytics } from "@/lib/analytics";
 
 function PhotoUpload({ id, label, hint, file, onFile }) {
     const ref = useRef(null);
@@ -79,6 +80,7 @@ export default function GetVerifiedPage() {
             const json = await res.json();
 
             if (!res.ok) throw new Error(json.error || "Submission failed");
+            analytics.verificationSubmitted();
             setSuccess(true);
         } catch (err) {
             setError(err.message || "Something went wrong. Please try again.");

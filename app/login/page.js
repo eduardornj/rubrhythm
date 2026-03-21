@@ -5,6 +5,7 @@ import MainLayout from "@components/MainLayout";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { analytics } from "@/lib/analytics";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -29,6 +30,7 @@ export default function Login() {
       setError("Invalid email or password. Please try again.");
       setIsLoading(false);
     } else {
+      analytics.login();
       router.push("/myaccount");
     }
   };

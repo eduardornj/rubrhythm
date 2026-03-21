@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import useSWR, { mutate } from "swr";
 import { MessageCircle, Send, Check, CheckCheck, User, Search, Clock, ShieldCheck, Ghost, AlertCircle } from "lucide-react";
+import { analytics } from "@/lib/analytics";
 
 const fetcher = (url) => fetch(url).then((res) => {
   if (!res.ok) throw new Error("Failed to fetch");
@@ -76,6 +77,7 @@ export default function ProviderChatDashboard() {
       });
 
       if (res.ok) {
+        analytics.sendMessage(selectedConv?.listingId || selectedConvId);
         mutateMsgs();
         mutateConvs();
         mutate(`/api/credits?userId=${session.user.id}`);

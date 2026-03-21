@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import Link from "next/link";
+import { analytics } from "@/lib/analytics";
 
 import Image from "next/image";
 
@@ -104,6 +105,7 @@ export default function VerificationPage() {
         throw new Error(errorMsg);
       }
 
+      analytics.verificationSubmitted();
       setSuccess(true);
       await fetchStatus();
     } catch (err) {

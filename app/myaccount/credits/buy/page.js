@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { analytics } from "@/lib/analytics";
 
 const PACKAGES = [
   {
@@ -85,6 +86,7 @@ export default function BuyCredits() {
       if (!res.ok || !data.payAddress) {
         throw new Error(data.error || "Failed to create payment.");
       }
+      analytics.creditsBuy(pkg.label, pkg.priceUSD);
       // Save payment data in sessionStorage for the checkout page
       sessionStorage.setItem(`payment_${data.orderId}`, JSON.stringify(data));
       // Redirect to internal checkout

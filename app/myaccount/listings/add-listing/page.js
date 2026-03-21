@@ -7,6 +7,7 @@ import locations from '../../../../data/datalocations';
 import { scanContent } from '@/lib/contentFilter';
 import dynamic from 'next/dynamic';
 const ModernImageUpload = dynamic(() => import('@/components/ModernImageUpload'), { ssr: false });
+import { analytics } from '@/lib/analytics';
 
 function WritingTips() {
   const [open, setOpen] = useState(false);
@@ -254,6 +255,9 @@ function AddListing() {
       });
 
       if (response.ok) {
+        if (!listingId) {
+          analytics.listingCreated(title, state, city);
+        }
         setSuccess(listingId ? 'Listing updated successfully!' : 'Listing posted successfully!');
         if (!listingId) setBalance(balance - LISTING_FEE);
         setTimeout(() => router.push('/myaccount/listings'), 2000);

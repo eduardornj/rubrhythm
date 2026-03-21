@@ -11,6 +11,7 @@ import dynamic from "next/dynamic";
 const PhotoModal = dynamic(() => import("../../components/PhotoModal"), { ssr: false });
 import ListingCard from "@components/ListingCard";
 import { processListingImages } from "@/lib/image-utils";
+import { analytics } from "@/lib/analytics";
 
 function safeJsonParse(str, fallback = []) {
   try {
@@ -43,6 +44,7 @@ export default function ListingDetailPage() {
         }
 
         setListing(data);
+        analytics.viewListing(data.id, data.title, data.city, data.state);
 
         // Fetch featured listings and favorite status in parallel (eliminates waterfall)
         const parallelRequests = [
@@ -298,7 +300,7 @@ export default function ListingDetailPage() {
               {listing.phoneArea && listing.phoneNumber && (
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-400 mb-1">Telefone</h4>
-                  <p className="text-white font-mono">({listing.phoneArea}) {listing.phoneNumber}</p>
+                  <a href={`tel:${listing.phoneArea}${listing.phoneNumber}`} onClick={() => analytics.phoneClick(listing.id, listing.city)} className="text-white font-mono hover:text-primary transition-colors">({listing.phoneArea}) {listing.phoneNumber}</a>
                 </div>
               )}
 
@@ -308,6 +310,7 @@ export default function ListingDetailPage() {
                     href={`https://wa.me/${listing.phoneArea}${listing.phoneNumber}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => analytics.whatsappClick(listing.id, listing.city)}
                     className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-xl font-medium transition-all"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -324,6 +327,7 @@ export default function ListingDetailPage() {
                     href={`https://t.me/${listing.telegram}`}
                     target="_blank"
                     rel="noopener noreferrer"
+                    onClick={() => analytics.telegramClick(listing.id, listing.city)}
                     className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl font-medium transition-all"
                   >
                     <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">

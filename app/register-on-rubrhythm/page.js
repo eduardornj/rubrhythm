@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import MainLayout from "@components/MainLayout";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { analytics } from "@/lib/analytics";
 
 const RoleCard = ({ role, selected, onSelect, icon, title, description, perks }) => (
   <button
@@ -114,6 +115,7 @@ function RegisterOnRubrhythm() {
         return;
       }
 
+      analytics.signUp(role, !!referralCode);
       setSuccess("Account created! Redirecting to login...");
       setTimeout(() => router.push("/login"), 2000);
     } catch {
