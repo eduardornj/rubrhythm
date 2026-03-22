@@ -16,7 +16,7 @@ function formatTimeLeft(endDate) {
   if (diff <= 0) return null;
   const h = Math.floor(diff / (1000 * 60 * 60));
   const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return h > 0 ? `${h}h ${m}m remaining` : `${m}m remaining`;
+  return { h, m };
 }
 
 export default function AvailableNowPageWrapper() {
@@ -193,7 +193,13 @@ function AvailableNowPage() {
         <div className="flex-1">
           <h3 className="text-xl font-bold text-white mb-2">{t('howAvailableNowWorks')}</h3>
           <p className="text-text-muted mb-4 max-w-2xl leading-relaxed">
-            By spending <strong className="text-green-400">{AVAILABLE_NOW_COST} credits</strong>, a <strong className="text-white">pulsing green badge</strong> appears on your listing card and profile page for <strong className="text-white">{DURATION_HOURS} hours</strong>, letting clients know you're ready to take appointments right now.
+            {t.rich('availNow_howItWorksDesc', {
+              cost: AVAILABLE_NOW_COST,
+              hours: DURATION_HOURS,
+              strong1: (chunks) => <strong className="text-green-400">{chunks}</strong>,
+              strong2: (chunks) => <strong className="text-white">{chunks}</strong>,
+              strong3: (chunks) => <strong className="text-white">{chunks}</strong>,
+            })}
           </p>
           <div className="flex flex-wrap gap-2 text-xs font-semibold">
             <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">{t('instantActivation')}</span>
@@ -223,7 +229,8 @@ function AvailableNowPage() {
           {listings.map((listing) => {
             const imageUrl = getFirstListingImage(listing.images);
             const isActive = listing.availableNow && listing.availableUntil && new Date(listing.availableUntil) > new Date();
-            const timeLeft = isActive ? formatTimeLeft(listing.availableUntil) : null;
+            const timeData = isActive ? formatTimeLeft(listing.availableUntil) : null;
+            const timeLeft = timeData ? t('availNow_remaining', { value: timeData.h > 0 ? `${timeData.h}h ${timeData.m}m` : `${timeData.m}m` }) : null;
             const isBusy = processing === listing.id;
             const isPreselected = listing.id === preselectedId;
 

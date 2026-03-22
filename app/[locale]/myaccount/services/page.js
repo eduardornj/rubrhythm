@@ -72,24 +72,37 @@ export default function ServicesPage() {
     }
   };
 
+  // Map service IDs to JSON key prefixes (no hyphens in JSON keys)
+  const KEY_PREFIX = {
+    "available-now": "availableNow_",
+    "bump-up": "bumpUp_",
+    "auto-bump": "autoBump_",
+    "highlight": "highlight_",
+    "feature": "feature_",
+    "feature-premium": "featurePremium_",
+  };
+
   // Build services array with translations
-  const services = SERVICE_IDS.map(id => ({
-    id,
-    name: t(`${id}.name`),
-    tagline: t(`${id}.tagline`),
-    description: t(`${id}.description`),
-    color: SERVICE_COLORS[id],
-    cost: t(`${id}.cost`),
-    duration: t(`${id}.duration`),
-    effect: t(`${id}.effect`),
-    icon: SERVICE_ICONS[id],
-    benefits: [t(`${id}.benefit1`), t(`${id}.benefit2`), t(`${id}.benefit3`), t(`${id}.benefit4`)],
-    requiresVerification: id === "feature-premium",
-    pricingDetails: (id === "feature" || id === "feature-premium") ? [
-      { label: t(`${id}.price7d`), cost: id === "feature" ? 15 : 20 },
-      { label: t(`${id}.price30d`), cost: id === "feature" ? 45 : 60 },
-    ] : null,
-  }));
+  const services = SERVICE_IDS.map(id => {
+    const k = KEY_PREFIX[id];
+    return {
+      id,
+      name: t(`${k}name`),
+      tagline: t(`${k}tagline`),
+      description: t(`${k}description`),
+      color: SERVICE_COLORS[id],
+      cost: t(`${k}cost`),
+      duration: t(`${k}duration`),
+      effect: t(`${k}effect`),
+      icon: SERVICE_ICONS[id],
+      benefits: [t(`${k}benefit1`), t(`${k}benefit2`), t(`${k}benefit3`), t(`${k}benefit4`)],
+      requiresVerification: id === "feature-premium",
+      pricingDetails: (id === "feature" || id === "feature-premium") ? [
+        { label: t(`${k}price7d`), cost: id === "feature" ? 15 : 20 },
+        { label: t(`${k}price30d`), cost: id === "feature" ? 45 : 60 },
+      ] : null,
+    };
+  });
 
   if (loading) {
     return (

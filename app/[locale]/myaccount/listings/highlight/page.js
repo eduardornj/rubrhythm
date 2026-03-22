@@ -8,14 +8,14 @@ import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { getFirstListingImage } from "@/lib/image-utils";
 
-function formatTimeLeft(endDate) {
+function getTimeLeft(endDate) {
   const diff = new Date(endDate) - new Date();
   if (diff <= 0) return null;
   const d = Math.floor(diff / (1000 * 60 * 60 * 24));
   const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  if (d > 0) return `${d}d ${h}h remaining`;
   const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return h > 0 ? `${h}h ${m}m remaining` : `${m}m remaining`;
+  if (d > 0) return `${d}d ${h}h`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 export default function HighlightListingsPage() {
@@ -81,7 +81,7 @@ function HighlightListings() {
       setListings(approved);
       setCredits(creditsData.balance || 0);
     } catch (error) {
-      setError('Failed to load data. Please try again.');
+      setError(t('highlight_failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -111,11 +111,11 @@ function HighlightListings() {
     const totalCost = selectedListings.size * HIGHLIGHT_COST;
 
     if (totalCost > credits) {
-      alert(`Insufficient credits. You need ${totalCost} credits but only have ${credits}.`);
+      alert(t('highlight_insufficientCredits', { needed: totalCost, have: credits }));
       return;
     }
 
-    if (!confirm(`Highlight ${selectedListings.size} listing(s) for ${totalCost} credits?`)) {
+    if (!confirm(t('highlight_confirmPrompt', { count: selectedListings.size, cost: totalCost }))) {
       return;
     }
 
@@ -135,14 +135,14 @@ function HighlightListings() {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to highlight listings');
+        throw new Error(t('highlight_failedError'));
       }
 
       await fetchData();
       setSelectedListings(new Set());
-      alert(`Successfully highlighted!`);
+      alert(t('highlight_successAlert'));
     } catch (error) {
-      setError('Failed to highlight listings. Please try again.');
+      setError(t('highlight_failedError'));
     } finally {
       setProcessing(false);
     }
@@ -200,7 +200,10 @@ function HighlightListings() {
         <div className="flex-1">
           <h3 className="text-xl font-bold text-white mb-2">{t('howHighlightWorks')}</h3>
           <p className="text-text-muted mb-4 max-w-2xl leading-relaxed">
-            By spending <strong className="text-yellow-400">{HIGHLIGHT_COST} credits</strong>, your ad will receive a special colorful background border and a badge in search results, converting up to 300% more clicks.
+            {t.rich('highlight_howItWorksDesc', {
+              cost: HIGHLIGHT_COST,
+              strong1: (chunks) => <strong className="text-yellow-400">{chunks}</strong>,
+            })}
           </p>
           <div className="flex flex-wrap gap-2 text-xs font-semibold">
             <span className="px-3 py-1.5 rounded-lg bg-yellow-500/20 text-yellow-300 border border-yellow-500/20">{t('lasts14Days')}</span>
@@ -270,7 +273,7 @@ function HighlightListings() {
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <div className="text-right">
                   <p className="text-[10px] uppercase font-bold text-text-muted">{t('totalCost')}</p>
-                  <p className={`text-xl font-black ${canAfford ? 'text-yellow-400' : 'text-red-500'}`}>{totalCost} credits</p>
+                  <p className={`text-xl font-black ${canAfford ? 'text-yellow-400' : 'text-red-500'}`}>{t('boost_credits', { count: totalCost })}</p>
                 </div>
                 <button
                   onClick={handleHighlight}
@@ -289,7 +292,8 @@ function HighlightListings() {
             {listings.map((listing) => {
               const checked = selectedListings.has(listing.id);
               const isCurrentlyHighlighted = listing.isHighlighted && listing.highlightEndDate && new Date(listing.highlightEndDate) > new Date();
-              const highlightTimeLeft = isCurrentlyHighlighted ? formatTimeLeft(listing.highlightEndDate) : null;
+              const timeValue = isCurrentlyHighlighted ? getTimeLeft(listing.highlightEndDate) : null;
+              const highlightTimeLeft = timeValue ? t('availNow_remaining', { value: timeValue }) : null;
 
               return (
                 <div
@@ -323,7 +327,7 @@ function HighlightListings() {
 
                   <div className="flex-1 min-w-0 flex flex-col justify-center">
                     <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      {checked && <span className="text-[10px] bg-yellow-500 text-black font-black px-1.5 py-0.5 rounded uppercase">Preview</span>}
+                      {checked && <span className="text-[10px] bg-yellow-500 text-black font-black px-1.5 py-0.5 rounded uppercase">{t('highlight_preview')}</span>}
                       <h3 className={`font-bold truncate text-lg ${checked ? 'text-yellow-400' : 'text-gray-200'}`}>
                         {listing.title}
                       </h3>

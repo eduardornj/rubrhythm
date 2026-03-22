@@ -101,11 +101,11 @@ function BumpUpListings() {
     const totalCost = selectedListings.size * BUMP_UP_COST;
 
     if (totalCost > credits) {
-      alert(`Insufficient credits. You need ${totalCost} credits but only have ${credits}.`);
+      alert(t('bumpUp_insufficientCredits', { needed: totalCost, have: credits }));
       return;
     }
 
-    if (!confirm(`Bump up ${selectedListings.size} listing(s) for ${totalCost} credits?`)) {
+    if (!confirm(t('bumpUp_confirmPrompt', { count: selectedListings.size, cost: totalCost }))) {
       return;
     }
 
@@ -125,17 +125,17 @@ function BumpUpListings() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || errorData.message || 'Failed to bump up listings');
+        throw new Error(errorData.error || errorData.message || t('bumpUp_failedError'));
       }
 
       const result = await response.json();
-      alert(`Successfully bumped up ${result.count} listing(s)!`);
+      alert(t('bumpUp_successAlert', { count: result.count }));
 
       await fetchData();
       setSelectedListings(new Set());
     } catch (error) {
       console.error('Error bumping up listings:', error);
-      setError(error.message || 'Failed to bump up listings. Please try again.');
+      setError(error.message || t('bumpUp_failedError'));
     } finally {
       setProcessing(false);
     }
@@ -228,7 +228,11 @@ function BumpUpListings() {
         <div className="flex-1">
           <h3 className="text-xl font-bold text-white mb-2">{t('howBumpUpWorks')}</h3>
           <p className="text-text-muted mb-4 max-w-2xl leading-relaxed">
-            By spending <strong className="text-blue-400">{BUMP_UP_COST} credits</strong>, your listing gets refreshed timestamps, sending it right to the <strong className="text-white">very top of the newest listings list</strong> in your city.
+            {t.rich('bumpUp_howItWorksDesc', {
+              cost: BUMP_UP_COST,
+              strong1: (chunks) => <strong className="text-blue-400">{chunks}</strong>,
+              strong2: (chunks) => <strong className="text-white">{chunks}</strong>,
+            })}
           </p>
           <div className="flex flex-wrap gap-2 text-xs font-semibold">
             <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/20">{t('worksInstantly')}</span>
@@ -246,11 +250,11 @@ function BumpUpListings() {
           </div>
           <div>
             <h3 className="text-cyan-400 font-bold text-base">{t('tiredOfManualBumps')}</h3>
-            <p className="text-cyan-300/70 text-sm">Enable <strong className="text-white">Auto-Bump</strong> to automatically bump your listing every day at your chosen hour. Just 5 credits/day.</p>
+            <p className="text-cyan-300/70 text-sm">{t.rich('bumpUp_autoBumpPromoDesc', { strong1: (chunks) => <strong className="text-white">{chunks}</strong> })}</p>
           </div>
         </div>
         <Link href="/myaccount/listings/auto-bump" className="px-5 py-2.5 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-300 font-bold rounded-xl whitespace-nowrap transition-all text-sm border border-cyan-500/30">
-          Configure Auto-Bump
+          {t('bumpUp_configureAutoBump')}
         </Link>
       </div>
 
@@ -301,7 +305,7 @@ function BumpUpListings() {
                 <div className="text-right">
                   <p className="text-[10px] uppercase font-bold text-text-muted">{t('totalCost')}</p>
                   <p className={`text-xl font-black ${canAfford ? 'text-blue-400' : 'text-red-500'}`}>
-                    {totalCost} credits
+                    {t('boost_credits', { count: totalCost })}
                   </p>
                 </div>
                 <button
@@ -374,7 +378,7 @@ function BumpUpListings() {
                           <span className="text-white/20">•</span>
                           <span className="inline-flex items-center gap-1 text-blue-400 font-bold text-xs">
                             <span className="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                            Last bumped {formatDate(listing.updatedAt)}
+                            {t('bumpUp_lastBumpedDate', { date: formatDate(listing.updatedAt) })}
                           </span>
                         </>
                       )}

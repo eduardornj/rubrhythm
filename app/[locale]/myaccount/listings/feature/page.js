@@ -10,26 +10,26 @@ import Image from "next/image";
 import { getFirstListingImage } from "@/lib/image-utils";
 
 // ── Helpers ───────────────────────────────────────────────────────
-function formatTimeLeft(endDate) {
+function getTimeLeft(endDate) {
   const diff = new Date(endDate) - new Date();
   if (diff <= 0) return null;
   const d = Math.floor(diff / (1000 * 60 * 60 * 24));
   const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-  if (d > 0) return `${d}d ${h}h remaining`;
   const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-  return h > 0 ? `${h}h ${m}m remaining` : `${m}m remaining`;
+  if (d > 0) return `${d}d ${h}h`;
+  return h > 0 ? `${h}h ${m}m` : `${m}m`;
 }
 
 // ── Tier configs (prices from lib/feature-pricing.js) ─────────────
 const TIERS = {
   feature: {
     key: "feature",
-    label: "Feature",
+    labelKey: "feature_tierFeatureLabel",
     emoji: "⭐",
-    tagline: "Highlighted placement in the regular Featured section",
+    taglineKey: "feature_tierFeatureTagline",
     packages: [
-      { key: "7d", days: 7, credits: 15, label: "7 Days" },
-      { key: "30d", days: 30, credits: 45, label: "30 Days", badge: "Best Value" },
+      { key: "7d", days: 7, credits: 15, labelKey: "feature_7days" },
+      { key: "30d", days: 30, credits: 45, labelKey: "feature_30days", badgeKey: "feature_bestValue" },
     ],
     accentColor: "from-amber-500 to-orange-500",
     bgGlow: "rgba(245,158,11,0.15)",
@@ -39,21 +39,21 @@ const TIERS = {
     requiresVerification: false,
     apiEndpoint: "/api/listing/feature",
     apiTierValue: "BASIC",
-    description: [
-      "Appears in the Featured section on city pages",
-      "37% rotation weight among Featured listings",
-      "⭐ Featured badge on your listing card",
-      "Available to all providers",
+    descriptionKeys: [
+      "featureTierDesc1",
+      "featureTierDesc2",
+      "featureTierDesc3",
+      "featureTierDesc4",
     ],
   },
   premium: {
     key: "premium",
-    label: "Feature Premium",
+    labelKey: "feature_tierPremiumLabel",
     emoji: "💎",
-    tagline: "Top-priority placement — the most visible spot on the platform",
+    taglineKey: "feature_tierPremiumTagline",
     packages: [
-      { key: "7d", days: 7, credits: 20, label: "7 Days" },
-      { key: "30d", days: 30, credits: 60, label: "30 Days", badge: "Best Value" },
+      { key: "7d", days: 7, credits: 20, labelKey: "feature_7days" },
+      { key: "30d", days: 30, credits: 60, labelKey: "feature_30days", badgeKey: "feature_bestValue" },
     ],
     accentColor: "from-violet-500 to-fuchsia-600",
     bgGlow: "rgba(139,92,246,0.2)",
@@ -63,11 +63,11 @@ const TIERS = {
     requiresVerification: true,
     apiEndpoint: "/api/listing/feature",
     apiTierValue: "PREMIUM",
-    description: [
-      "Top banner rotation — maximum visibility",
-      "Premium Featured badge (💎) on your card",
-      "63% rotation weight — priority over standard",
-      "Requires Verified account ✅",
+    descriptionKeys: [
+      "premiumTierDesc1",
+      "premiumTierDesc2",
+      "premiumTierDesc3",
+      "premiumTierDesc4",
     ],
   },
 };
@@ -138,7 +138,7 @@ function FeatureListings() {
         setIsVerified(true);
       }
     } catch {
-      setError("Failed to load data. Please try again.");
+      setError(t('feature_failedToLoad'));
     } finally {
       setLoading(false);
     }
@@ -155,7 +155,7 @@ function FeatureListings() {
   const handleFeature = async () => {
     if (!canUse) return;
     if (totalCost > credits) {
-      setError(`Insufficient credits. You need ${totalCost} credits but only have ${credits}.`);
+      setError(t('feature_insufficientCredits', { needed: totalCost, have: credits }));
       return;
     }
 
@@ -176,14 +176,14 @@ function FeatureListings() {
 
       if (!res.ok) {
         const d = await res.json();
-        throw new Error(d.error || "Failed to feature listings");
+        throw new Error(d.error || t('feature_failedError'));
       }
 
-      setSuccess(`${tier.emoji} ${selectedListings.size} listing(s) ${tier.label === "Feature Premium" ? "Premium Featured" : "Featured"} for ${pkg.days} days!`);
+      setSuccess(t('feature_successMsg', { emoji: tier.emoji, count: selectedListings.size, tierName: t(tier.labelKey), days: pkg.days }));
       setSelectedListings(new Set());
       await fetchData();
     } catch (err) {
-      setError(err.message || "Failed. Please try again.");
+      setError(err.message || t('feature_failedGeneric'));
     } finally {
       setProcessing(false);
     }
@@ -209,11 +209,11 @@ function FeatureListings() {
         </div>
         <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
           <div className="text-right">
-            <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">Credits</p>
+            <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">{t('feature_creditsLabel')}</p>
             <p className="text-2xl font-black text-white leading-none">{credits}</p>
           </div>
           <Link href="/myaccount/credits/buy" className="px-3 py-1.5 bg-primary text-white text-sm font-bold rounded-xl hover:bg-primary/80 transition-colors">
-            + Buy
+            {t('feature_buyCredits')}
           </Link>
         </div>
       </div>
@@ -253,14 +253,14 @@ function FeatureListings() {
                   )}
                 </div>
                 <h3 className={`text-xl font-black mb-1 ${active ? "text-white" : "text-gray-300"}`}>
-                  {tierItem.label}
+                  {t(tierItem.labelKey)}
                 </h3>
-                <p className="text-text-muted text-sm mb-4">{tierItem.tagline}</p>
+                <p className="text-text-muted text-sm mb-4">{t(tierItem.taglineKey)}</p>
                 <ul className="space-y-1.5">
-                  {tierItem.description.map((d, i) => (
+                  {tierItem.descriptionKeys.map((dk, i) => (
                     <li key={i} className={`text-xs flex items-start gap-2 ${active ? tierItem.textActive : "text-text-muted"}`}>
                       <span className="mt-0.5 flex-shrink-0">✓</span>
-                      {d}
+                      {t(dk)}
                     </li>
                   ))}
                 </ul>
@@ -293,14 +293,14 @@ function FeatureListings() {
                   className={`relative p-5 rounded-xl border-2 text-left transition-all ${sel ? `${tier.borderActive} ${tier.bgActive}` : "border-white/10 bg-black/20 hover:border-white/30"
                     }`}
                 >
-                  {p.badge && (
+                  {p.badgeKey && (
                     <span className={`absolute top-2 right-2 text-[10px] font-black px-2 py-0.5 rounded-full bg-gradient-to-r ${tier.accentColor} text-white`}>
-                      {p.badge}
+                      {t(p.badgeKey)}
                     </span>
                   )}
-                  <p className={`text-xl font-black ${sel ? "text-white" : "text-gray-300"}`}>{p.label}</p>
+                  <p className={`text-xl font-black ${sel ? "text-white" : "text-gray-300"}`}>{t(p.labelKey)}</p>
                   <p className={`text-3xl font-black mt-1 ${sel ? tier.textActive : "text-gray-400"}`}>
-                    {p.credits} <span className="text-sm font-semibold text-text-muted">credits</span>
+                    {p.credits} <span className="text-sm font-semibold text-text-muted">{t('credits')}</span>
                   </p>
                   <p className="text-text-muted text-xs mt-1">{t('perListing')}</p>
                 </button>
@@ -329,7 +329,7 @@ function FeatureListings() {
               <p className="text-white font-bold text-sm">{t('autoRenewLabel')}</p>
               {autoRenew ? (
                 <p className="text-amber-400 text-xs mt-1 font-semibold">
-                  {t('autoRenewFeatureOn', { cost: pkg.credits, tier: tier.label.toLowerCase() })}
+                  {t('autoRenewFeatureOn', { cost: pkg.credits, tier: t(tier.labelKey).toLowerCase() })}
                 </p>
               ) : (
                 <p className="text-text-muted text-xs mt-1">
@@ -366,7 +366,7 @@ function FeatureListings() {
                 <div className="text-right">
                   <p className="text-[10px] uppercase font-bold text-text-muted">{t('total')}</p>
                   <p className={`text-xl font-black ${canAfford ? tier.textActive : "text-red-400"}`}>
-                    {totalCost} credits
+                    {t('boost_credits', { count: totalCost })}
                   </p>
                 </div>
                 <button
@@ -377,7 +377,7 @@ function FeatureListings() {
                       : `bg-gradient-to-r ${tier.accentColor} text-white hover:scale-105 shadow-lg`
                     }`}
                 >
-                  {processing ? t('processing') : t('confirmFeature', { tier: tier.label })}
+                  {processing ? t('processing') : t('confirmFeature', { tier: t(tier.labelKey) })}
                 </button>
               </div>
             )}
@@ -395,7 +395,8 @@ function FeatureListings() {
               {listings.map((listing) => {
                 const checked = selectedListings.has(listing.id);
                 const isCurrentlyFeatured = listing.isFeatured && listing.featuredEndDate && new Date(listing.featuredEndDate) > new Date();
-                const featureTimeLeft = isCurrentlyFeatured ? formatTimeLeft(listing.featuredEndDate) : null;
+                const featureTimeValue = isCurrentlyFeatured ? getTimeLeft(listing.featuredEndDate) : null;
+                const featureTimeLeft = featureTimeValue ? t('availNow_remaining', { value: featureTimeValue }) : null;
                 const isPremiumTier = listing.featureTier?.toUpperCase() === "PREMIUM";
 
                 return (
@@ -429,7 +430,7 @@ function FeatureListings() {
                       <div className="flex items-center gap-2 flex-wrap">
                         {checked && (
                           <span className={`text-[10px] font-black px-2 py-0.5 rounded bg-gradient-to-r ${tier.accentColor} text-white`}>
-                            {tier.emoji} WILL {tier.key === "premium" ? "PREMIUM FEATURE" : "FEATURE"}
+                            {tier.emoji} {tier.key === "premium" ? t('feature_willPremiumFeature') : t('feature_willFeature')}
                           </span>
                         )}
                         <p className={`font-bold truncate ${checked ? "text-white" : "text-gray-200"}`}>{listing.title}</p>
@@ -441,7 +442,7 @@ function FeatureListings() {
                             <span className="text-white/20">•</span>
                             <span className="inline-flex items-center gap-1 text-amber-400 font-bold">
                               <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse"></span>
-                              {isPremiumTier ? "💎 Premium" : "⭐ Featured"} — {featureTimeLeft}
+                              {isPremiumTier ? `💎 ${t('feature_premiumActive')}` : `⭐ ${t('feature_featuredActive')}`} — {featureTimeLeft}
                             </span>
                           </>
                         )}
