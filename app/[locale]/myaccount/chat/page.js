@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "next-auth/react";
+import { useTranslations } from "next-intl";
 import useSWR, { mutate } from "swr";
 import { MessageCircle, Send, Check, CheckCheck, User, Search, Clock, ShieldCheck, Ghost, AlertCircle } from "lucide-react";
 import { analytics } from "@/lib/analytics";
@@ -12,6 +13,7 @@ const fetcher = (url) => fetch(url).then((res) => {
 });
 
 export default function ProviderChatDashboard() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const [selectedConvId, setSelectedConvId] = useState(null);
   const [newMessage, setNewMessage] = useState("");
@@ -83,7 +85,7 @@ export default function ProviderChatDashboard() {
         mutate(`/api/credits?userId=${session.user.id}`);
       } else {
         setNewMessage(content); // Restore on error
-        alert("Failed to send message. Please try again.");
+        alert(t('failedToSendMessage'));
       }
     } catch (err) {
       console.error(err);
@@ -96,8 +98,8 @@ export default function ProviderChatDashboard() {
     return (
       <div className="h-[80vh] flex flex-col items-center justify-center text-center px-4">
         <AlertCircle className="w-12 h-12 text-red-500/50 mb-4" />
-        <h2 className="text-xl font-bold text-white mb-2">Error Loading Chats</h2>
-        <p className="text-white/40text-sm">Please refresh the page or try again later.</p>
+        <h2 className="text-xl font-bold text-white mb-2">{t('errorLoadingChats')}</h2>
+        <p className="text-white/40 text-sm">{t('errorLoadingChatsDesc')}</p>
       </div>
     );
   }
@@ -116,14 +118,14 @@ export default function ProviderChatDashboard() {
         <div className="p-5 border-b border-white/5">
           <h1 className="text-xl font-bold text-white flex items-center gap-2 mb-4">
             <MessageCircle className="w-5 h-5 text-primary" />
-            Inbox
+            {t('inbox')}
           </h1>
 
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
             <input
               type="text"
-              placeholder="Search messages..."
+              placeholder={t('searchMessages')}
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
               className="w-full bg-white/5 border border-white/10 rounded-xl py-2 pl-9 pr-4 text-sm text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-colors"
@@ -140,7 +142,7 @@ export default function ProviderChatDashboard() {
           ) : filteredConvs.length === 0 ? (
             <div className="text-center py-10 px-4">
               <Ghost className="w-10 h-10 text-white/10 mx-auto mb-3" />
-              <p className="text-white/40 text-sm">No conversations found.</p>
+              <p className="text-white/40 text-sm">{t('noConversations')}</p>
             </div>
           ) : (
             filteredConvs.map(conv => (
@@ -175,7 +177,7 @@ export default function ProviderChatDashboard() {
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-center mb-0.5">
                     <span className={`text-sm font-semibold truncate pr-2 ${selectedConvId === conv.id ? 'text-primary' : 'text-white'}`}>
-                      {conv.isAnonymous ? 'Anonymous Client' : (conv.otherUser?.name || conv.otherUser?.email?.split('@')[0] || 'Client')}
+                      {conv.isAnonymous ? t('anonymousClient') : (conv.otherUser?.name || conv.otherUser?.email?.split('@')[0] || t('client'))}
                     </span>
                     <span className="text-[10px] text-white/30 whitespace-nowrap">
                       {new Date(conv.lastMessageAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
@@ -198,9 +200,9 @@ export default function ProviderChatDashboard() {
             <div className="w-20 h-20 rounded-full bg-white/2 border border-white/5 flex items-center justify-center mb-6 shadow-2xl">
               <MessageCircle className="w-8 h-8 text-white/20" />
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Your Messages</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">{t('yourMessages')}</h2>
             <p className="text-white/40 max-w-sm">
-              Select a conversation from the sidebar to view the message history or reply to a client. As a provider, replying is always free.
+              {t('yourMessagesDesc')}
             </p>
           </div>
         ) : (
@@ -216,12 +218,12 @@ export default function ProviderChatDashboard() {
                 </button>
                 <div>
                   <h2 className="text-white font-bold text-lg flex items-center gap-2">
-                    {selectedConv.isAnonymous ? 'Anonymous Client' : (selectedConv.otherUser?.name || 'Client')}
+                    {selectedConv.isAnonymous ? t('anonymousClient') : (selectedConv.otherUser?.name || t('client'))}
                     {!selectedConv.isAnonymous && selectedConv.otherUser?.verified && <ShieldCheck className="w-4 h-4 text-primary" />}
                   </h2>
                   <p className="text-xs text-white/40 flex items-center gap-1.5">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 shadow-[0_0_10px_rgba(34,197,94,0.5)]"></span>
-                    Inquiry via {selectedConv.listing?.title || 'Profile'}
+                    {t('inquiryVia', { listing: selectedConv.listing?.title || 'Profile' })}
                   </p>
                   {!selectedConv.isAnonymous && selectedConv.otherUser?.email && (
                     <p className="text-xs text-primary mt-1 flex flex-col">
@@ -234,7 +236,7 @@ export default function ProviderChatDashboard() {
 
               <div className="hidden sm:flex px-3 py-1.5 rounded-full bg-primary/10 border border-primary/20 items-center gap-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-primary" />
-                <span className="text-xs font-medium text-primary shadow-sm">Secure Chat</span>
+                <span className="text-xs font-medium text-primary shadow-sm">{t('secureChat')}</span>
               </div>
             </div>
 
@@ -244,9 +246,9 @@ export default function ProviderChatDashboard() {
               <div className="flex justify-center mb-8">
                 <div className="bg-white/5 backdrop-blur-md border border-white/10 rounded-2xl p-4 max-w-md text-center">
                   <ShieldCheck className="w-6 h-6 text-primary mx-auto mb-2" />
-                  <h4 className="text-sm font-bold text-white mb-1">End-to-End Encryption</h4>
+                  <h4 className="text-sm font-bold text-white mb-1">{t('endToEndEncryption')}</h4>
                   <p className="text-xs text-white/40">
-                    Messages are secure. Do not share financial information or move off-platform. Violating terms will result in account termination.
+                    {t('encryptionWarning')}
                   </p>
                 </div>
               </div>
@@ -257,7 +259,7 @@ export default function ProviderChatDashboard() {
                 </div>
               ) : messages.length === 0 ? (
                 <div className="text-center py-10">
-                  <p className="text-white/30 text-sm">No messages yet. Say hello!</p>
+                  <p className="text-white/30 text-sm">{t('noMessagesYet')}</p>
                 </div>
               ) : (
                 messages.map((msg, idx) => {
@@ -309,7 +311,7 @@ export default function ProviderChatDashboard() {
                         handleSendMessage(e);
                       }
                     }}
-                    placeholder="Message safely & securely..."
+                    placeholder={t('messagePlaceholder')}
                     className="w-full bg-transparent text-sm text-white placeholder-white/30 resize-none py-3.5 px-4 max-h-[120px] focus:outline-none hide-scrollbar"
                     rows={1}
                     style={{ minHeight: "52px" }}
@@ -329,7 +331,7 @@ export default function ProviderChatDashboard() {
                 </button>
               </form>
               <p className="text-center text-[10px] text-white/20 mt-3 font-medium tracking-wide">
-                PRESS <span className="text-white/40">ENTER</span> TO SEND • REPLIES ARE ALWAYS FREE
+                {t('pressEnterToSend')} • {t('repliesFree')}
               </p>
             </div>
           </>

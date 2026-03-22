@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { getFirstListingImage } from "@/lib/image-utils";
 
@@ -27,6 +28,7 @@ export default function AvailableNowPageWrapper() {
 }
 
 function AvailableNowPage() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const preselectedId = searchParams.get('id');
@@ -65,7 +67,7 @@ function AvailableNowPage() {
       setAutoRenewMap(renewMap);
     } catch (err) {
       console.error('Error:', err);
-      setError('Failed to load data. Please try again.');
+      setError(t('failedToLoadData'));
     } finally {
       setLoading(false);
     }
@@ -73,11 +75,11 @@ function AvailableNowPage() {
 
   const handleActivate = async (listingId) => {
     if (credits < AVAILABLE_NOW_COST) {
-      alert(`Insufficient credits. You need ${AVAILABLE_NOW_COST} credits but only have ${credits}.`);
+      alert(t('insufficientCreditsMsg', { needed: AVAILABLE_NOW_COST, have: credits }));
       return;
     }
 
-    if (!confirm(`Activate "Available Now" for ${DURATION_HOURS} hours?\n\nCost: ${AVAILABLE_NOW_COST} credits`)) return;
+    if (!confirm(t('activateConfirm', { hours: DURATION_HOURS, cost: AVAILABLE_NOW_COST }))) return;
 
     try {
       setProcessing(listingId);
@@ -92,10 +94,10 @@ function AvailableNowPage() {
         await fetchData();
       } else {
         const data = await res.json();
-        alert(data.error || 'Failed to activate.');
+        alert(data.error || t('failedToActivate'));
       }
     } catch {
-      alert('Something went wrong. Please try again.');
+      alert(t('somethingWentWrong'));
     } finally {
       setProcessing(null);
     }
@@ -113,10 +115,10 @@ function AvailableNowPage() {
       if (res.ok) {
         await fetchData();
       } else {
-        alert('Failed to deactivate.');
+        alert(t('failedToDeactivate'));
       }
     } catch {
-      alert('Something went wrong.');
+      alert(t('somethingWentWrong'));
     } finally {
       setProcessing(null);
     }
@@ -140,7 +142,7 @@ function AvailableNowPage() {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-green-500 animate-spin mb-4" />
-        <p className="text-text-muted animate-pulse">Loading...</p>
+        <p className="text-text-muted animate-pulse">{t('loading')}</p>
       </div>
     );
   }
@@ -148,10 +150,10 @@ function AvailableNowPage() {
   if (error) {
     return (
       <div className="bg-red-500/10 border border-red-500/20 rounded-2xl p-6">
-        <h3 className="text-red-400 font-semibold text-lg">Error</h3>
+        <h3 className="text-red-400 font-semibold text-lg">{t('error')}</h3>
         <p className="text-red-400/80 text-sm mt-1">{error}</p>
         <button onClick={fetchData} className="mt-4 px-5 py-2 bg-red-500/20 text-red-400 font-medium rounded-xl hover:bg-red-500/30 transition-colors border border-red-500/30">
-          Try Again
+          {t('tryAgain')}
         </button>
       </div>
     );
@@ -164,18 +166,18 @@ function AvailableNowPage() {
         <div>
           <div className="inline-flex items-center gap-2 mb-2 px-3 py-1 rounded-full bg-green-500/10 border border-green-500/20 text-green-400 text-sm font-semibold">
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
-            Availability Status
+            {t('availabilityStatus')}
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Available Now</h1>
-          <p className="text-text-muted mt-1">Let clients know you're ready for appointments right now.</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">{t('availableNowPageTitle')}</h1>
+          <p className="text-text-muted mt-1">{t('availableNowPageSubtitle')}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 border border-white/10 p-3 sm:px-6 sm:py-3 rounded-2xl">
           <div className="text-center sm:text-right">
-            <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">Available Credits</p>
+            <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">{t('availableCredits')}</p>
             <p className="text-2xl font-black text-white leading-none">{credits}</p>
           </div>
           <Link href="/myaccount/credits/buy" className="px-4 py-2 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors shadow-lg">
-            + Buy More
+            {t('buyMore')}
           </Link>
         </div>
       </div>
@@ -189,15 +191,15 @@ function AvailableNowPage() {
           </svg>
         </div>
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-white mb-2">How Available Now Works</h3>
+          <h3 className="text-xl font-bold text-white mb-2">{t('howAvailableNowWorks')}</h3>
           <p className="text-text-muted mb-4 max-w-2xl leading-relaxed">
             By spending <strong className="text-green-400">{AVAILABLE_NOW_COST} credits</strong>, a <strong className="text-white">pulsing green badge</strong> appears on your listing card and profile page for <strong className="text-white">{DURATION_HOURS} hours</strong>, letting clients know you're ready to take appointments right now.
           </p>
           <div className="flex flex-wrap gap-2 text-xs font-semibold">
-            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">Instant activation</span>
-            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">Lasts {DURATION_HOURS} hours</span>
-            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">Visible on card & profile</span>
-            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">Free to turn off early</span>
+            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">{t('instantActivation')}</span>
+            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">{t('lastsDuration', { hours: DURATION_HOURS })}</span>
+            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">{t('visibleOnCardProfile')}</span>
+            <span className="px-3 py-1.5 rounded-lg bg-green-500/20 text-green-300 border border-green-500/20">{t('freeToTurnOff')}</span>
           </div>
         </div>
       </div>
@@ -210,10 +212,10 @@ function AvailableNowPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-2xl font-bold text-white mb-2">No active listings</h3>
-          <p className="text-text-muted mb-8 max-w-md mx-auto">You need at least one approved listing to use Available Now.</p>
+          <h3 className="text-2xl font-bold text-white mb-2">{t('noActiveListingsAvailNow')}</h3>
+          <p className="text-text-muted mb-8 max-w-md mx-auto">{t('needApprovedListing')}</p>
           <Link href="/myaccount/listings/add-listing" className="px-6 py-3 bg-white text-black font-semibold rounded-xl hover:bg-gray-200 transition-colors">
-            Create Listing
+            {t('createListing')}
           </Link>
         </div>
       ) : (
@@ -257,7 +259,7 @@ function AvailableNowPage() {
                     <div className="flex items-center gap-2 mt-2">
                       <span className="inline-flex items-center gap-1.5 text-xs text-green-400 bg-green-500/20 px-2.5 py-1 rounded-full font-bold border border-green-500/30">
                         <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
-                        Active
+                        {t('activeStatus')}
                       </span>
                       <span className="text-xs text-green-400/60">{timeLeft}</span>
                     </div>
@@ -276,7 +278,7 @@ function AvailableNowPage() {
                     <span className={`inline-block h-3.5 w-3.5 rounded-full bg-white shadow-md transition-transform ${autoRenewMap[listing.id] ? "translate-x-4.5" : "translate-x-0.5"}`} />
                   </button>
                   <span className={`text-[10px] font-bold ${autoRenewMap[listing.id] ? "text-green-400" : "text-text-muted"}`}>
-                    {autoRenewMap[listing.id] ? "Auto" : "Manual"}
+                    {autoRenewMap[listing.id] ? t('autoMode') : t('manualMode')}
                   </span>
                 </div>
 
@@ -290,7 +292,7 @@ function AvailableNowPage() {
                         isBusy ? 'opacity-50 cursor-not-allowed' : ''
                       } bg-red-500/10 border-red-500/30 text-red-400 hover:bg-red-500/20`}
                     >
-                      {isBusy ? 'Turning off...' : 'Turn Off'}
+                      {isBusy ? t('turningOff') : t('turnOff')}
                     </button>
                   ) : (
                     <button
@@ -300,7 +302,7 @@ function AvailableNowPage() {
                         isBusy ? 'opacity-50 cursor-not-allowed' : ''
                       } bg-green-500/20 border-green-500/30 text-green-300 hover:bg-green-500/30 shadow-[0_0_15px_rgba(34,197,94,0.15)]`}
                     >
-                      {isBusy ? 'Activating...' : `Activate (${AVAILABLE_NOW_COST} credits)`}
+                      {isBusy ? t('activating') : t('activateCredits', { cost: AVAILABLE_NOW_COST })}
                     </button>
                   )}
                 </div>

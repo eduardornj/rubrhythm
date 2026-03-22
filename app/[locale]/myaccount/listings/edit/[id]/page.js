@@ -1,13 +1,16 @@
 "use client";
 import React, { useState, useEffect } from 'react';
-import { useRouter, useParams } from 'next/navigation';
+import { useParams } from 'next/navigation';
+import { useRouter } from '@/i18n/navigation';
 import { useSession } from 'next-auth/react';
-import Link from 'next/link';
+import { Link } from '@/i18n/navigation';
+import { useTranslations } from 'next-intl';
 import locations from '@/data/datalocations';
 import dynamic from 'next/dynamic';
 const ModernImageUpload = dynamic(() => import('@/components/ModernImageUpload'), { ssr: false });
 
 export default function EditListing() {
+  const t = useTranslations('myaccount');
   const { data: session, status } = useSession();
   const router = useRouter();
   const params = useParams();
@@ -239,10 +242,10 @@ export default function EditListing() {
           </div>
           <div className="flex-1">
             <h1 className="text-2xl md:text-3xl font-black text-white leading-tight mb-2">
-              Edit Listing
+              {t('editListingTitle')}
             </h1>
             <p className="text-white/50 text-sm font-medium">
-              Update your listing details, photos, and ensure you stay at the top.
+              {t('editListingSubtitle')}
             </p>
           </div>
         </div>
@@ -269,12 +272,12 @@ export default function EditListing() {
           <div className="absolute top-0 right-0 w-64 h-64 bg-accent/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:bg-accent/10 transition-all" />
           <h2 className="text-xl font-black text-white mb-6 uppercase tracking-wider border-b border-white/10 pb-4 flex items-center gap-3">
             <span className="w-8 h-8 rounded-full bg-accent/20 text-accent flex items-center justify-center text-sm font-bold">1</span>
-            Media Gallery
+            {t('mediaGallery')}
           </h2>
           <div className="bg-amber-500/10 border border-amber-500/30 rounded-xl px-4 py-3 mb-4 flex items-start gap-3">
             <svg className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
             <div>
-              <p className="text-amber-400 text-xs font-bold mb-1">Photo Guidelines</p>
+              <p className="text-amber-400 text-xs font-bold mb-1">{t('photoGuidelines')}</p>
               <ul className="text-amber-400/70 text-xs space-y-0.5 list-disc list-inside">
                 <li>No explicit, nude, or sexually suggestive photos</li>
                 <li>No photos showing illegal activity or substances</li>
@@ -296,7 +299,7 @@ export default function EditListing() {
         <div className="bg-[#0d0d15] rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all">
           <h2 className="text-xl font-black text-white mb-6 uppercase tracking-wider border-b border-white/10 pb-4 flex items-center gap-3">
             <span className="w-8 h-8 rounded-full bg-primary/20 text-primary flex items-center justify-center text-sm font-bold">2</span>
-            Basic Information
+            {t('basicInfo')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
@@ -357,7 +360,7 @@ export default function EditListing() {
           <div className="absolute bottom-0 left-0 w-64 h-64 bg-yellow-500/5 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2 pointer-events-none group-hover:bg-yellow-500/10 transition-all" />
           <h2 className="text-xl font-black text-white mb-6 uppercase tracking-wider border-b border-white/10 pb-4 flex items-center gap-3">
             <span className="w-8 h-8 rounded-full bg-yellow-500/20 text-yellow-400 flex items-center justify-center text-sm font-bold">3</span>
-            Session Rates
+            {t('sessionRates')}
           </h2>
 
           <div className="space-y-3 relative z-10">
@@ -422,7 +425,7 @@ export default function EditListing() {
         <div className="bg-[#0d0d15] rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl relative overflow-hidden group hover:border-white/20 transition-all">
           <h2 className="text-xl font-black text-white mb-6 uppercase tracking-wider border-b border-white/10 pb-4 flex items-center gap-3">
             <span className="w-8 h-8 rounded-full bg-blue-500/20 text-blue-400 flex items-center justify-center text-sm font-bold">4</span>
-            Location & Contact
+            {t('locationContact')}
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
@@ -536,14 +539,14 @@ export default function EditListing() {
         {/* SUBMIT ACTIONS */}
         <div className="bg-[#0d0d15] rounded-3xl p-6 md:p-8 border border-white/10 shadow-2xl backdrop-blur-xl flex flex-col sm:flex-row items-center justify-between gap-6">
           <p className="text-white/50 text-sm font-medium flex-1 text-center sm:text-left">
-            By clicking "Save Changes", you agree to our Terms of Service and confirm all information applies to our community guidelines.
+            {t('publishDisclaimer')}
           </p>
           <div className="flex w-full sm:w-auto items-center gap-4">
             <Link href="/myaccount/listings" className="px-8 py-4 bg-white/5 border border-white/10 text-white font-bold rounded-xl hover:bg-white/10 transition-all text-center flex-1 sm:flex-none">
-              Cancel
+              {t('cancel')}
             </Link>
             <button type="submit" disabled={loading} className="px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold rounded-xl hover:shadow-[0_0_30px_rgba(255,42,127,0.4)] hover:scale-[1.02] transition-all disabled:opacity-50 text-center flex-1 sm:flex-none uppercase tracking-widest text-sm">
-              {loading ? 'Processing...' : 'Save Changes'}
+              {loading ? t('processing') : t('saveChanges')}
             </button>
           </div>
         </div>

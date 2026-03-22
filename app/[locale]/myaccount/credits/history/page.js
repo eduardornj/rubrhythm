@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export default function CreditsHistory() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -67,7 +69,7 @@ export default function CreditsHistory() {
       });
     } catch (error) {
       console.error('Error fetching transactions:', error);
-      setError('Failed to load transaction history. Please try again.');
+      setError(t('errorLoadHistoryDesc'));
     } finally {
       setLoading(false);
     }
@@ -133,10 +135,10 @@ export default function CreditsHistory() {
 
   const getStatusBadge = (status) => {
     const statusConfig = {
-      completed: { color: 'bg-green-500/10 text-green-400 border-green-500/20', text: 'Completed' },
-      pending: { color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', text: 'Pending' },
-      failed: { color: 'bg-red-500/10 text-red-400 border-red-500/20', text: 'Failed' },
-      cancelled: { color: 'bg-white/5 text-text-muted border-white/10', text: 'Cancelled' }
+      completed: { color: 'bg-green-500/10 text-green-400 border-green-500/20', text: t('statusCompleted') },
+      pending: { color: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20', text: t('statusPendingTx') },
+      failed: { color: 'bg-red-500/10 text-red-400 border-red-500/20', text: t('statusFailed') },
+      cancelled: { color: 'bg-white/5 text-text-muted border-white/10', text: t('statusCancelled') }
     };
 
     const config = statusConfig[status] || statusConfig.completed;
@@ -152,7 +154,7 @@ export default function CreditsHistory() {
     return (
       <div className="flex justify-center flex-col items-center py-24 space-y-4">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-        <span className="text-text-muted text-sm font-medium">Loading history...</span>
+        <span className="text-text-muted text-sm font-medium">{t('loadingHistory')}</span>
       </div>
     );
   }
@@ -162,14 +164,14 @@ export default function CreditsHistory() {
       <div className="glass-card bg-red-500/10 border-red-500/20 p-6 flex flex-col items-center text-center gap-3">
         <span className="text-red-400 text-4xl">⚠️</span>
         <div>
-          <h3 className="text-white font-bold text-lg mb-1">Error Loading History</h3>
+          <h3 className="text-white font-bold text-lg mb-1">{t('errorLoadingHistory')}</h3>
           <p className="text-red-200 text-sm font-medium">{error}</p>
         </div>
         <button
           onClick={fetchTransactions}
           className="mt-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 border border-red-500/30 px-6 py-2 rounded-xl transition-all"
         >
-          Try Again
+          {t('tryAgain')}
         </button>
       </div>
     );
@@ -180,16 +182,16 @@ export default function CreditsHistory() {
       {/* Header */}
       <div className="glass-card p-6 bg-gradient-to-r from-primary/10 via-background to-accent/10 border-primary/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-black text-white">Credits History</h1>
+          <h1 className="text-2xl font-black text-white">{t('historyTitle')}</h1>
           <p className="text-text-muted text-sm mt-1">
-            Track your purchases and credit usage
+            {t('historySubtitle')}
           </p>
         </div>
         <Link
           href="/myaccount/credits/buy"
           className="btn-primary py-2.5 px-6 shadow-lg shadow-primary/20 whitespace-nowrap"
         >
-          Buy Credits
+          {t('buyCredits')}
         </Link>
       </div>
 
@@ -197,25 +199,25 @@ export default function CreditsHistory() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div className="glass-card p-5 border-white/10 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-primary/10 rounded-full blur-xl group-hover:bg-primary/20 transition-all"></div>
-          <p className="text-text-muted text-xs uppercase tracking-wider font-bold mb-1">Current Balance</p>
+          <p className="text-text-muted text-xs uppercase tracking-wider font-bold mb-1">{t('currentBalance')}</p>
           <p className="text-3xl font-black text-white">{stats.currentBalance}</p>
         </div>
 
         <div className="glass-card p-5 border-green-500/20 bg-green-500/5 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-green-500/10 rounded-full blur-xl group-hover:bg-green-500/20 transition-all"></div>
-          <p className="text-green-400/80 text-xs uppercase tracking-wider font-bold mb-1">Total Purchased</p>
+          <p className="text-green-400/80 text-xs uppercase tracking-wider font-bold mb-1">{t('totalPurchased')}</p>
           <p className="text-3xl font-black text-green-400">+{stats.totalPurchased}</p>
         </div>
 
         <div className="glass-card p-5 border-red-500/20 bg-red-500/5 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-red-500/10 rounded-full blur-xl group-hover:bg-red-500/20 transition-all"></div>
-          <p className="text-red-400/80 text-xs uppercase tracking-wider font-bold mb-1">Total Spent</p>
+          <p className="text-red-400/80 text-xs uppercase tracking-wider font-bold mb-1">{t('totalSpent')}</p>
           <p className="text-3xl font-black text-red-400">-{stats.totalSpent}</p>
         </div>
 
         <div className="glass-card p-5 border-white/10 relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-16 h-16 bg-white/5 rounded-full blur-xl group-hover:bg-white/10 transition-all"></div>
-          <p className="text-text-muted text-xs uppercase tracking-wider font-bold mb-1">Transactions</p>
+          <p className="text-text-muted text-xs uppercase tracking-wider font-bold mb-1">{t('transactions')}</p>
           <p className="text-3xl font-black text-white">{stats.totalTransactions}</p>
         </div>
       </div>
@@ -230,25 +232,25 @@ export default function CreditsHistory() {
               className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${filter === 'all' ? 'bg-white/10 text-white shadow' : 'text-text-muted hover:text-white'
                 }`}
             >
-              All
+              {t('filterAll')}
             </button>
             <button
               onClick={() => { setFilter('purchase'); setCurrentPage(1); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${filter === 'purchase' ? 'bg-green-500/20 text-green-400 shadow' : 'text-text-muted hover:text-white'
                 }`}
             >
-              Purchases
+              {t('filterPurchases')}
             </button>
             <button
               onClick={() => { setFilter('spent'); setCurrentPage(1); }}
               className={`px-4 py-1.5 rounded-lg text-sm font-bold transition-all ${filter === 'spent' ? 'bg-red-500/20 text-red-400 shadow' : 'text-text-muted hover:text-white'
                 }`}
             >
-              Spent
+              {t('filterSpent')}
             </button>
           </div>
           <span className="text-xs text-text-muted font-medium bg-white/5 px-3 py-1.5 rounded-lg">
-            Showing {transactions.length} items
+            {t('showingItems', { count: transactions.length })}
           </span>
         </div>
 
@@ -258,11 +260,11 @@ export default function CreditsHistory() {
             <div className="w-16 h-16 bg-white/5 rounded-2xl flex items-center justify-center mb-4">
               <span className="text-3xl">👻</span>
             </div>
-            <p className="text-white font-bold text-lg mb-1">No transactions found</p>
+            <p className="text-white font-bold text-lg mb-1">{t('noTransactions')}</p>
             <p className="text-text-muted text-sm">
               {filter === 'all'
-                ? 'Your transaction history is completely clear.'
-                : `You dont have any ${filter} transactions.`
+                ? t('noTransactionsAllDesc')
+                : t('noTransactionsFilterDesc', { filter })
               }
             </p>
           </div>
@@ -294,7 +296,7 @@ export default function CreditsHistory() {
                     {transaction.type === 'purchase' ? '+' : '-'}{Math.abs(transaction.amount)}
                   </p>
                   <p className="text-xs text-text-muted font-medium mt-0.5">
-                    Bal: {transaction.balanceAfter}
+                    {t('balanceAfter', { amount: transaction.balanceAfter })}
                   </p>
                 </div>
               </div>
@@ -316,7 +318,7 @@ export default function CreditsHistory() {
 
           <div className="flex items-center gap-1 mx-2">
             <span className="text-sm font-bold text-white bg-white/10 px-4 py-2 rounded-lg border border-white/10">
-              Page {currentPage} <span className="text-text-muted font-medium mx-1">of</span> {totalPages}
+              {t('pageOf', { current: currentPage, total: totalPages })}
             </span>
           </div>
 

@@ -3,7 +3,8 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { getFirstListingImage } from "@/lib/image-utils";
 
@@ -16,6 +17,7 @@ export default function BumpUpListingsPage() {
 }
 
 function BumpUpListings() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const preselectedId = searchParams.get('id');
@@ -69,7 +71,7 @@ function BumpUpListings() {
       setCredits(creditsData.balance || 0);
     } catch (error) {
       console.error('Error fetching data:', error);
-      setError('Failed to load data. Please try again.');
+      setError(t('failedToLoadData'));
     } finally {
       setLoading(false);
     }
@@ -158,7 +160,7 @@ function BumpUpListings() {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-blue-500 animate-spin mb-4" />
-        <p className="text-text-muted animate-pulse">Loading VIP engine...</p>
+        <p className="text-text-muted animate-pulse">{t('loadingBumpUp')}</p>
       </div>
     );
   }
@@ -173,7 +175,7 @@ function BumpUpListings() {
             </svg>
           </div>
           <div>
-            <h3 className="text-red-400 font-semibold text-lg">Error loading data</h3>
+            <h3 className="text-red-400 font-semibold text-lg">{t('errorLoadingData')}</h3>
             <p className="text-red-400/80 text-sm mt-1">{error}</p>
           </div>
         </div>
@@ -181,7 +183,7 @@ function BumpUpListings() {
           onClick={fetchData}
           className="mt-6 px-5 py-2.5 bg-red-500/20 text-red-400 font-medium rounded-xl hover:bg-red-500/30 transition-colors border border-red-500/30"
         >
-          Try Again
+          {t('tryAgain')}
         </button>
       </div>
     );
@@ -197,21 +199,21 @@ function BumpUpListings() {
         <div>
           <div className="inline-flex items-center gap-2 mb-2 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-sm font-semibold">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-            VIP Promotion
+            {t('vipPromotion')}
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight leading-tight">Bump Up Listings</h1>
-          <p className="text-text-muted mt-1">Push your ads back to the top of the search results immediately.</p>
+          <h1 className="text-3xl font-black text-white tracking-tight leading-tight">{t('bumpUpPageTitle')}</h1>
+          <p className="text-text-muted mt-1">{t('bumpUpPageSubtitle')}</p>
         </div>
         <div className="flex flex-col sm:flex-row items-center gap-4 bg-white/5 border border-white/10 p-3 sm:px-6 sm:py-3 rounded-2xl backdrop-blur-sm">
           <div className="text-center sm:text-right">
-            <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">Available Credits</p>
+            <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">{t('availableCredits')}</p>
             <p className="text-2xl font-black text-white leading-none">{credits}</p>
           </div>
           <Link
             href="/myaccount/credits/buy"
             className="px-4 py-2 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors shadow-lg"
           >
-            + Buy More
+            {t('buyMore')}
           </Link>
         </div>
       </div>
@@ -224,14 +226,14 @@ function BumpUpListings() {
           </svg>
         </div>
         <div className="flex-1">
-          <h3 className="text-xl font-bold text-white mb-2">How Bump Up Works</h3>
+          <h3 className="text-xl font-bold text-white mb-2">{t('howBumpUpWorks')}</h3>
           <p className="text-text-muted mb-4 max-w-2xl leading-relaxed">
             By spending <strong className="text-blue-400">{BUMP_UP_COST} credits</strong>, your listing gets refreshed timestamps, sending it right to the <strong className="text-white">very top of the newest listings list</strong> in your city.
           </p>
           <div className="flex flex-wrap gap-2 text-xs font-semibold">
-            <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/20">Works instantly</span>
-            <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/20">Stays on top until next new listing</span>
-            <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/20">More clicks guaranteed</span>
+            <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/20">{t('worksInstantly')}</span>
+            <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/20">{t('staysOnTop')}</span>
+            <span className="px-3 py-1.5 rounded-lg bg-blue-500/20 text-blue-300 border border-blue-500/20">{t('moreClicksGuaranteed')}</span>
           </div>
         </div>
       </div>
@@ -243,7 +245,7 @@ function BumpUpListings() {
             <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
           </div>
           <div>
-            <h3 className="text-cyan-400 font-bold text-base">Tired of manual bumps?</h3>
+            <h3 className="text-cyan-400 font-bold text-base">{t('tiredOfManualBumps')}</h3>
             <p className="text-cyan-300/70 text-sm">Enable <strong className="text-white">Auto-Bump</strong> to automatically bump your listing every day at your chosen hour. Just 5 credits/day.</p>
           </div>
         </div>
@@ -259,22 +261,22 @@ function BumpUpListings() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
           </div>
-          <h3 className="text-2xl font-bold text-white mb-2">No active listings available</h3>
+          <h3 className="text-2xl font-bold text-white mb-2">{t('noActiveListingsBump')}</h3>
           <p className="text-text-muted mb-8 max-w-md mx-auto">
-            You don't have any approved listings available to bump up. Only active, non-bumped listings appear here.
+            {t('noApprovedBumpDesc')}
           </p>
           <div className="flex justify-center gap-4">
             <Link
               href="/myaccount/listings/add-listing"
               className="px-6 py-3 bg-white text-black font-semibold rounded-xl hover:bg-gray-200 transition-colors"
             >
-              Create Listing
+              {t('createListing')}
             </Link>
             <Link
               href="/myaccount/listings"
               className="px-6 py-3 bg-white/10 text-white font-semibold rounded-xl border border-white/20 hover:bg-white/20 transition-colors"
             >
-              Manage Listings
+              {t('manageListings')}
             </Link>
           </div>
         </div>
@@ -287,17 +289,17 @@ function BumpUpListings() {
                 onClick={selectAll}
                 className="px-5 py-2 bg-white/10 text-white font-medium rounded-xl hover:bg-white/20 transition-colors border border-white/10"
               >
-                {selectedListings.size === listings.length ? 'Deselect All' : 'Select All'}
+                {selectedListings.size === listings.length ? t('deselectAll') : t('selectAll')}
               </button>
               <span className="text-text-muted text-sm font-semibold">
-                <strong className="text-white">{selectedListings.size}</strong> selected
+                <strong className="text-white">{selectedListings.size}</strong> {t('selected')}
               </span>
             </div>
 
             {selectedListings.size > 0 && (
               <div className="flex items-center gap-4 w-full sm:w-auto">
                 <div className="text-right">
-                  <p className="text-[10px] uppercase font-bold text-text-muted">Total Cost</p>
+                  <p className="text-[10px] uppercase font-bold text-text-muted">{t('totalCost')}</p>
                   <p className={`text-xl font-black ${canAfford ? 'text-blue-400' : 'text-red-500'}`}>
                     {totalCost} credits
                   </p>
@@ -313,12 +315,12 @@ function BumpUpListings() {
                   {processing ? (
                     <>
                       <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin"></div>
-                      Processing
+                      {t('processing')}
                     </>
                   ) : (
                     <>
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" /></svg>
-                      Buy Bump Up
+                      {t('buyBumpUp')}
                     </>
                   )}
                 </button>

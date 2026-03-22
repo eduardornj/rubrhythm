@@ -2,11 +2,13 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { getFirstListingImage } from "@/lib/image-utils";
 import { detectFacePosition } from "@/lib/face-focus";
 
 export default function MyListings() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,7 +55,7 @@ export default function MyListings() {
   };
 
   const deleteListing = async (listingId) => {
-    if (!confirm('Are you sure you want to delete this listing? This action cannot be undone.')) {
+    if (!confirm(t('deleteConfirm'))) {
       return;
     }
 
@@ -69,7 +71,7 @@ export default function MyListings() {
       setListings(prev => prev.filter(listing => listing.id !== listingId));
     } catch (error) {
       console.error('Error deleting listing:', error);
-      alert('Failed to delete listing. Please try again.');
+      alert(t('deleteError'));
     }
   };
 
@@ -78,7 +80,7 @@ export default function MyListings() {
     const next = !current;
 
     // Turning ON costs 3 credits — confirm first
-    if (next && !confirm('Activate "Available Now" for 6 hours?\n\nCost: 3 credits')) {
+    if (next && !confirm(t('availableConfirm'))) {
       return;
     }
 
@@ -95,11 +97,11 @@ export default function MyListings() {
       if (!response.ok) {
         setAvailableToggles((prev) => ({ ...prev, [listingId]: current }));
         const data = await response.json();
-        alert(data.error || 'Failed to update availability.');
+        alert(data.error || t('availableError'));
       }
     } catch {
       setAvailableToggles((prev) => ({ ...prev, [listingId]: current }));
-      alert('Failed to update availability. Please try again.');
+      alert(t('availableError'));
     }
   };
 
@@ -121,21 +123,21 @@ export default function MyListings() {
     if (listing.priceRange) {
       return `$${listing.priceRange}`;
     }
-    return 'Price not set';
+    return t('priceNotSet');
   };
 
   const getStatusBadge = (listing) => {
     if (!listing.isApproved && !listing.isRejected) {
       return (
         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-yellow-500/20 text-yellow-400 border border-yellow-500/30">
-          Pending
+          {t('statusPending')}
         </span>
       );
     }
     if (listing.isRejected) {
       return (
         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-red-500/20 text-red-400 border border-red-500/30">
-          Rejected
+          {t('statusRejected')}
         </span>
       );
     }
@@ -143,13 +145,13 @@ export default function MyListings() {
       if (!listing.isActive) {
         return (
           <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-white/10 text-text-muted border border-white/20">
-            Inactive
+            {t('statusInactive')}
           </span>
         );
       }
       return (
         <span className="inline-flex items-center px-2.5 py-1 rounded-lg text-xs font-semibold bg-green-500/20 text-green-400 border border-green-500/30">
-          Active
+          {t('statusActive')}
         </span>
       );
     }
@@ -167,7 +169,7 @@ export default function MyListings() {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-primary animate-spin mb-4" />
-        <p className="text-text-muted animate-pulse">Loading amazing listings...</p>
+        <p className="text-text-muted animate-pulse">{t('loadingListings')}</p>
       </div>
     );
   }
@@ -182,7 +184,7 @@ export default function MyListings() {
             </svg>
           </div>
           <div>
-            <h3 className="text-red-400 font-semibold text-lg">Error loading listings</h3>
+            <h3 className="text-red-400 font-semibold text-lg">{t('errorLoadingListings')}</h3>
             <p className="text-red-400/80 text-sm mt-1">{error}</p>
           </div>
         </div>
@@ -190,7 +192,7 @@ export default function MyListings() {
           onClick={fetchListings}
           className="mt-6 px-5 py-2.5 bg-red-500/20 text-red-400 font-medium rounded-xl hover:bg-red-500/30 transition-colors border border-red-500/30"
         >
-          Try Again
+          {t('tryAgain')}
         </button>
       </div>
     );
@@ -203,10 +205,10 @@ export default function MyListings() {
         <div className="absolute top-0 right-1/4 w-96 h-32 bg-primary/10 rounded-full blur-[80px] pointer-events-none -z-10"></div>
         <div>
           <h1 className="text-4xl font-black tracking-tight mb-2 text-transparent bg-clip-text bg-gradient-to-r from-white via-white to-white/70">
-            My Listings
+            {t('myListingsTitle')}
           </h1>
           <p className="text-text-muted text-sm sm:text-base font-medium">
-            You have <span className="text-white font-black">{listings.length}</span> {listings.length === 1 ? 'listing' : 'listings'} active on our network
+            {t('listingsOnNetwork', { count: listings.length })}
           </p>
         </div>
         <Link
@@ -216,17 +218,17 @@ export default function MyListings() {
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 4v16m8-8H4" />
           </svg>
-          Create New Listing
+          {t('createNewListing')}
         </Link>
       </div>
 
       {/* Modern Filter Tabs */}
       <div className="p-1.5 bg-[#0d0d15]/60 border border-white/5 shadow-inner rounded-2xl inline-flex flex-wrap gap-1 backdrop-blur-xl">
         {[
-          { key: 'all', label: 'All Listings', count: listings.length },
-          { key: 'active', label: 'Active', count: listings.filter(l => l.isApproved && l.isActive).length },
-          { key: 'pending', label: 'Pending', count: listings.filter(l => !l.isApproved && !l.isRejected).length },
-          { key: 'expired', label: 'Inactive', count: listings.filter(l => l.isApproved && !l.isActive).length },
+          { key: 'all', label: t('allListings'), count: listings.length },
+          { key: 'active', label: t('activeFilter'), count: listings.filter(l => l.isApproved && l.isActive).length },
+          { key: 'pending', label: t('pendingFilter'), count: listings.filter(l => !l.isApproved && !l.isRejected).length },
+          { key: 'expired', label: t('inactiveFilter'), count: listings.filter(l => l.isApproved && !l.isActive).length },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -260,8 +262,8 @@ export default function MyListings() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-black text-white text-xl tracking-tight">Bump Up</h3>
-                <p className="text-sm font-medium text-blue-400/80">Push to top of search</p>
+                <h3 className="font-black text-white text-xl tracking-tight">{t('bumpUp')}</h3>
+                <p className="text-sm font-medium text-blue-400/80">{t('pushToTop')}</p>
               </div>
             </div>
           </Link>
@@ -278,8 +280,8 @@ export default function MyListings() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-black text-white text-xl tracking-tight">Highlight</h3>
-                <p className="text-sm font-medium text-yellow-400/80">Stand out with colors</p>
+                <h3 className="font-black text-white text-xl tracking-tight">{t('highlight')}</h3>
+                <p className="text-sm font-medium text-yellow-400/80">{t('standOutColors')}</p>
               </div>
             </div>
           </Link>
@@ -296,8 +298,8 @@ export default function MyListings() {
                 </svg>
               </div>
               <div>
-                <h3 className="font-black text-white text-xl tracking-tight">Feature Premium</h3>
-                <p className="text-sm font-medium text-purple-400/80">Top page placement</p>
+                <h3 className="font-black text-white text-xl tracking-tight">{t('featurePremium')}</h3>
+                <p className="text-sm font-medium text-purple-400/80">{t('topPagePlacement')}</p>
               </div>
             </div>
           </Link>
@@ -313,12 +315,12 @@ export default function MyListings() {
             </svg>
           </div>
           <h3 className="text-2xl font-black text-white mb-2 tracking-tight">
-            {filter === 'all' ? 'No Listings Found' : `No ${filter.charAt(0).toUpperCase() + filter.slice(1)} Listings`}
+            {filter === 'all' ? t('noListingsFound') : t('noFilteredListings', { filter })}
           </h3>
           <p className="text-text-muted mb-8 max-w-md mx-auto leading-relaxed">
             {filter === 'all'
-              ? 'You haven\'t created any listings yet. Start publishing to get more clients and boost your business.'
-              : `You don't have any ${filter} listings at the moment. Try changing your filters.`
+              ? t('noListingsYetDesc')
+              : t('noFilteredListingsDesc', { filter })
             }
           </p>
           {filter === 'all' && (
@@ -326,7 +328,7 @@ export default function MyListings() {
               href="/myaccount/listings/add-listing"
               className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-primary to-accent text-white font-bold tracking-wide rounded-xl top-button-glow hover:scale-105 transition-all duration-300"
             >
-              Post Your First Ad
+              {t('postFirstAd')}
             </Link>
           )}
         </div>
@@ -376,7 +378,7 @@ export default function MyListings() {
                         <div className="relative overflow-hidden py-1.5 flex items-center justify-center gap-2">
                           <span className="absolute inset-0 bg-gradient-to-r from-violet-600 via-fuchsia-500 to-pink-500 animate-gradient bg-[length:200%_auto]"></span>
                           <span className="relative z-10 text-lg">💎</span>
-                          <span className="relative z-10 text-white font-black text-[11px] uppercase tracking-[0.2em] drop-shadow-lg">Premium Provider</span>
+                          <span className="relative z-10 text-white font-black text-[11px] uppercase tracking-[0.2em] drop-shadow-lg">{t('premiumProvider')}</span>
                         </div>
                       </div>
                     )}
@@ -387,7 +389,7 @@ export default function MyListings() {
                       {availableToggles[listing.id] && (
                         <span className="inline-flex items-center gap-1.5 text-xs text-white bg-green-500 px-2.5 py-1 rounded-full font-bold shadow-[0_0_15px_rgba(74,222,128,0.5)]">
                           <span className="w-2 h-2 rounded-full bg-white animate-pulse"></span>
-                          Available Now
+                          {t('availableNow')}
                         </span>
                       )}
                     </div>
@@ -397,7 +399,7 @@ export default function MyListings() {
                       <div className="absolute top-3 right-3 z-10">
                         <span className="inline-flex items-center gap-1 text-[11px] font-bold text-white bg-blue-500/90 px-2.5 py-1 rounded-full shadow-[0_0_12px_rgba(59,130,246,0.5)] backdrop-blur-sm border border-blue-400/30">
                           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                          Verified
+                          {t('verified')}
                         </span>
                       </div>
                     )}
@@ -407,13 +409,13 @@ export default function MyListings() {
                       {isStandardFeaturedActive && (
                         <span className="inline-flex items-center gap-1.5 text-[11px] text-white bg-gradient-to-r from-amber-500 to-orange-500 px-3 py-1 rounded-full font-black shadow-[0_0_12px_rgba(245,158,11,0.5)] tracking-wide">
                           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" /></svg>
-                          Featured
+                          {t('featured')}
                         </span>
                       )}
                       {isHighlightedActive && (
                         <span className="inline-flex items-center gap-1.5 text-[11px] text-black bg-gradient-to-r from-yellow-300 to-yellow-500 px-3 py-1 rounded-full font-black shadow-[0_0_12px_rgba(234,179,8,0.5)] tracking-wide">
                           <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path d="M11.3 1.046A1 1 0 0112 2v5h4a1 1 0 01.82 1.573l-7 10A1 1 0 018 18v-5H4a1 1 0 01-.82-1.573l7-10a1 1 0 011.12-.38z" /></svg>
-                          Highlighted
+                          {t('highlighted')}
                         </span>
                       )}
                       {listing.isWhatsAppAvailable && (
@@ -446,7 +448,7 @@ export default function MyListings() {
                       </div>
 
                       <p className="text-text-muted text-sm line-clamp-2 mb-4 leading-relaxed font-medium">
-                        {listing.description || "No description provided."}
+                        {listing.description || t('noDescriptionProvided')}
                       </p>
                     </div>
 
@@ -464,7 +466,7 @@ export default function MyListings() {
                             title={availableToggles[listing.id] ? 'Click to mark as unavailable' : 'Click to mark as available now (2h)'}
                           >
                             <span className={`w-2 h-2 rounded-full ${availableToggles[listing.id] ? 'bg-green-400 animate-pulse' : 'bg-white/30'}`}></span>
-                            {availableToggles[listing.id] ? 'Available Now' : 'Set Available (3 credits)'}
+                            {availableToggles[listing.id] ? t('availableNow') : t('setAvailable')}
                           </button>
                         )}
 
@@ -474,20 +476,20 @@ export default function MyListings() {
                             className="px-4 py-2 flex-grow text-center bg-primary/20 hover:bg-primary/30 text-primary border border-primary/30 text-sm font-bold tracking-wide rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(255,42,127,0.1)] hover:shadow-[0_0_20px_rgba(255,42,127,0.3)] hover:-translate-y-0.5"
                           >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                            Boost Listing
+                            {t('boostListing')}
                           </Link>
                         )}
                         <Link
                           href={`/myaccount/listings/edit/${listing.id}`}
                           className="px-4 py-2 flex-1 text-center bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-xl transition-all border border-white/10 hover:border-white/20"
                         >
-                          Edit
+                          {t('edit')}
                         </Link>
                         <Link
                           href={`/united-states/${(listing.state || 'us').toLowerCase().replace(/\s+/g, '-')}/${(listing.city || 'anywhere').toLowerCase().replace(/\s+/g, '-')}/massagists/${(listing.title || 'listing').toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${listing.id}`}
                           className="px-4 py-2 flex-1 text-center bg-white/5 hover:bg-white/10 text-white text-sm font-semibold rounded-xl transition-all border border-white/10 hover:border-white/20"
                         >
-                          Preview
+                          {t('preview')}
                         </Link>
                         <button
                           onClick={() => deleteListing(listing.id)}

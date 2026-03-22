@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { getFirstListingImage } from "@/lib/image-utils";
 
@@ -112,6 +113,7 @@ const COLOR_CLASSES = {
 };
 
 export default function ServicesPage() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const [listings, setListings] = useState([]);
   const [balance, setBalance] = useState(0);
@@ -151,7 +153,7 @@ export default function ServicesPage() {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-primary animate-spin mb-4" />
-        <p className="text-white/40 animate-pulse font-medium">Loading services...</p>
+        <p className="text-white/40 animate-pulse font-medium">{t('loadingServices')}</p>
       </div>
     );
   }
@@ -161,16 +163,16 @@ export default function ServicesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6 pb-6 border-b border-white/10">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Boost Services</h1>
-          <p className="text-text-muted mt-1">Promote your listings and get more clients with our premium services.</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">{t('boostServicesTitle')}</h1>
+          <p className="text-text-muted mt-1">{t('boostServicesSubtitle')}</p>
         </div>
         <div className="flex items-center gap-4 bg-white/5 border border-white/10 px-5 py-3 rounded-2xl">
           <div>
-            <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">Your Balance</p>
+            <p className="text-[10px] uppercase font-bold text-text-muted tracking-wider">{t('yourBalance')}</p>
             <p className="text-2xl font-black text-white leading-none">{balance} <span className="text-sm text-text-muted font-normal">credits</span></p>
           </div>
           <Link href="/myaccount/credits/buy" className="px-4 py-2 bg-white text-black font-bold rounded-xl hover:bg-gray-200 transition-colors text-sm">
-            + Buy
+            {t('buyShort')}
           </Link>
         </div>
       </div>
@@ -178,7 +180,7 @@ export default function ServicesPage() {
       {/* Select Listing (if user has listings) */}
       {listings.length > 0 && (
         <div className="bg-[#0d0d15] rounded-2xl p-5 border border-white/10">
-          <p className="text-sm font-bold text-white mb-3">Select a listing to boost:</p>
+          <p className="text-sm font-bold text-white mb-3">{t('selectListingToBoost')}</p>
           <div className="flex flex-wrap gap-3">
             {listings.map((listing) => {
               const imgUrl = getFirstListingImage(listing.images);
@@ -218,11 +220,11 @@ export default function ServicesPage() {
       {listings.length === 0 && (
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>
-            <h3 className="text-amber-400 font-bold text-base">No active listings yet</h3>
-            <p className="text-amber-300/70 text-sm">Create a listing first, then come back to boost it with these services.</p>
+            <h3 className="text-amber-400 font-bold text-base">{t('noActiveListings')}</h3>
+            <p className="text-amber-300/70 text-sm">{t('noActiveListingsDesc')}</p>
           </div>
           <Link href="/myaccount/listings/add-listing" className="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 text-white font-bold rounded-xl whitespace-nowrap transition-all text-sm">
-            Create Listing
+            {t('createListing')}
           </Link>
         </div>
       )}
@@ -238,7 +240,7 @@ export default function ServicesPage() {
               {/* Verified badge */}
               {service.requiresVerification && (
                 <div className="absolute top-5 right-5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-[9px] font-black uppercase tracking-widest px-2.5 py-0.5 rounded-full">
-                  Verified Only
+                  {t('verifiedOnly')}
                 </div>
               )}
 
@@ -289,7 +291,7 @@ export default function ServicesPage() {
                   href="/myaccount/listings/auto-bump"
                   className={`w-full text-center px-5 py-2.5 border font-bold rounded-xl transition-all block text-sm ${c.btn}`}
                 >
-                  Configure Auto-Bump
+                  {t('configureAutoBump')}
                 </Link>
               ) : selectedListing ? (
                 <Link
@@ -303,7 +305,7 @@ export default function ServicesPage() {
                   href="/myaccount/listings/add-listing"
                   className="w-full text-center px-5 py-2.5 border border-white/10 bg-white/5 text-white/40 font-bold rounded-xl transition-all block text-sm hover:border-white/20 hover:text-white/60"
                 >
-                  Create a Listing First
+                  {t('createListingFirst')}
                 </Link>
               )}
             </div>
@@ -313,15 +315,15 @@ export default function ServicesPage() {
 
       {/* Comparison Table */}
       <div className="bg-[#0d0d15] rounded-3xl p-6 md:p-8 border border-white/10">
-        <h3 className="text-lg font-black text-white mb-4">Quick Comparison</h3>
+        <h3 className="text-lg font-black text-white mb-4">{t('quickComparison')}</h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-white/10 text-white/40 text-xs uppercase tracking-wider">
-                <th className="text-left py-3 pr-4">Service</th>
-                <th className="text-center py-3 px-2">Cost</th>
-                <th className="text-center py-3 px-2">Duration</th>
-                <th className="text-center py-3 px-2">What it Does</th>
+                <th className="text-left py-3 pr-4">{t('thService')}</th>
+                <th className="text-center py-3 px-2">{t('thCost')}</th>
+                <th className="text-center py-3 px-2">{t('thDuration')}</th>
+                <th className="text-center py-3 px-2">{t('thEffect')}</th>
               </tr>
             </thead>
             <tbody className="text-white/70">

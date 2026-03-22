@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 const POLL_INTERVAL = 10000; // 10s
 const MAX_POLLS = 36; // 6 min
@@ -34,9 +36,9 @@ function CopyButton({ text, label }) {
       className="shrink-0 px-3 py-2 rounded-lg bg-white/5 border border-white/10 text-white/60 hover:text-white hover:bg-white/10 text-xs font-medium transition-all flex items-center gap-1.5"
     >
       {copied ? (
-        <><span className="text-green-400">✓</span> Copied!</>
+        <><span className="text-green-400">✓</span> {t('copied')}</>
       ) : (
-        <><span>📋</span> {label || "Copy"}</>
+        <><span>📋</span> {label || t('copy')}</>
       )}
     </button>
   );
@@ -71,6 +73,7 @@ function Countdown({ expiresAt, onExpire }) {
 }
 
 export default function CheckoutPage() {
+  const t = useTranslations('myaccount');
   const { orderId } = useParams();
   const router = useRouter();
 
@@ -125,15 +128,15 @@ export default function CheckoutPage() {
         <div className="w-24 h-24 rounded-full bg-green-500/10 border border-green-500/20 flex items-center justify-center">
           <span className="text-5xl">✅</span>
         </div>
-        <h1 className="text-3xl font-black text-white">Payment Confirmed!</h1>
+        <h1 className="text-3xl font-black text-white">{t('paymentConfirmed')}</h1>
         <p className="text-text-muted max-w-sm text-sm">
-          Your Bitcoin payment has been confirmed on the network. {payment?.credits} credits have been added to your account.
+          {t('paymentConfirmedDesc', { credits: payment?.credits })}
         </p>
         <Link
           href="/myaccount/credits"
           className="btn-primary px-8 py-3 rounded-xl font-bold text-white"
         >
-          View My Credits →
+          {t('viewMyCredits')} →
         </Link>
       </div>
     );
@@ -146,15 +149,15 @@ export default function CheckoutPage() {
         <div className="w-24 h-24 rounded-full bg-red-500/10 border border-red-500/20 flex items-center justify-center">
           <span className="text-5xl">⏰</span>
         </div>
-        <h1 className="text-3xl font-black text-white">Time Expired</h1>
+        <h1 className="text-3xl font-black text-white">{t('timeExpired')}</h1>
         <p className="text-text-muted max-w-sm text-sm">
-          The BTC address has expired. Please generate a new payment to continue.
+          {t('timeExpiredDesc')}
         </p>
         <Link
           href="/myaccount/credits/buy"
           className="btn-primary px-8 py-3 rounded-xl font-bold text-white"
         >
-          Try Again
+          {t('tryAgain')}
         </Link>
       </div>
     );
@@ -174,7 +177,7 @@ export default function CheckoutPage() {
           <span className="text-2xl">₿</span>
         </div>
         <div className="flex-1 min-w-0">
-          <h1 className="text-xl font-black text-white">Pay with Bitcoin</h1>
+          <h1 className="text-xl font-black text-white">{t('checkoutTitle')}</h1>
           {payment && (
             <p className="text-text-muted text-sm mt-0.5">
               {payment.label} — <span className="text-orange-400 font-bold">${payment.priceUSD}</span> →{" "}
@@ -190,9 +193,9 @@ export default function CheckoutPage() {
       {/* No payment data fallback */}
       {!payment && (
         <div className="glass-card p-6 bg-yellow-500/5 border-yellow-500/20 text-center space-y-3">
-          <p className="text-yellow-300 text-sm">Payment data not found. Please go back and try again.</p>
+          <p className="text-yellow-300 text-sm">{t('paymentNotFound')}</p>
           <Link href="/myaccount/credits/buy" className="btn-secondary px-6 py-2 rounded-xl text-sm inline-block">
-            ← Go Back
+            ← {t('goBack')}
           </Link>
         </div>
       )}
@@ -207,14 +210,14 @@ export default function CheckoutPage() {
                 <a href={btcUri} title="Open in Bitcoin wallet">
                   <QRCode value={btcUri || btcAddress} size={180} />
                 </a>
-                <p className="text-white/30 text-xs text-center mt-2">Click to open in wallet</p>
+                <p className="text-white/30 text-xs text-center mt-2">{t('clickToOpenWallet')}</p>
               </div>
 
               {/* Details */}
               <div className="flex-1 space-y-4 w-full">
                 {/* BTC Amount */}
                 <div>
-                  <p className="text-white/40 text-xs mb-1.5 uppercase tracking-wider">Amount to Pay</p>
+                  <p className="text-white/40 text-xs mb-1.5 uppercase tracking-wider">{t('amountToPay')}</p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-mono text-orange-400 font-bold text-lg truncate">
                       {btcAmount} BTC
@@ -226,7 +229,7 @@ export default function CheckoutPage() {
 
                 {/* BTC Address */}
                 <div>
-                  <p className="text-white/40 text-xs mb-1.5 uppercase tracking-wider">Bitcoin Address</p>
+                  <p className="text-white/40 text-xs mb-1.5 uppercase tracking-wider">{t('bitcoinAddress')}</p>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-white/5 border border-white/10 rounded-xl px-4 py-3 font-mono text-white/70 text-xs break-all">
                       {btcAddress}
@@ -247,9 +250,9 @@ export default function CheckoutPage() {
               </svg>
             </div>
             <div className="flex-1">
-              <p className="text-white font-semibold text-sm">Waiting for payment on the Bitcoin network</p>
+              <p className="text-white font-semibold text-sm">{t('waitingForPayment')}</p>
               <p className="text-white/30 text-xs mt-0.5">
-                This page checks automatically every 10 seconds. Do not close this tab.
+                {t('waitingDesc')}
               </p>
             </div>
             <span className="text-white/20 text-xs font-mono">{polls}/{MAX_POLLS}</span>
@@ -257,12 +260,12 @@ export default function CheckoutPage() {
 
           {/* Instructions */}
           <div className="glass-card p-5 space-y-3">
-            <h3 className="text-white font-bold text-sm">How to pay</h3>
+            <h3 className="text-white font-bold text-sm">{t('howToPay')}</h3>
             <ol className="space-y-2 text-text-muted text-xs list-decimal list-inside">
-              <li>Open your Bitcoin wallet (Coinbase, Cash App, Exodus, etc.)</li>
-              <li>Scan the QR Code <strong className="text-white/60">or</strong> copy the address above</li>
-              <li>Send exactly <strong className="text-orange-400">{btcAmount} BTC</strong></li>
-              <li>Wait — your credits appear automatically after confirmation</li>
+              <li>{t('howToPayStep1')}</li>
+              <li>{t('howToPayStep2')}</li>
+              <li>{t('howToPayStep3', { amount: btcAmount })}</li>
+              <li>{t('howToPayStep4')}</li>
             </ol>
           </div>
 
@@ -270,15 +273,15 @@ export default function CheckoutPage() {
           <div className="glass-card p-4 bg-red-500/5 border-red-500/10 flex items-start gap-3">
             <span className="text-red-400 text-lg shrink-0 mt-0.5">⚠️</span>
             <p className="text-red-300/70 text-xs">
-              Send <strong className="text-red-300">only Bitcoin (BTC)</strong> to this address. Other tokens or networks will result in permanent loss of funds.
+              {t('btcWarning')}
             </p>
           </div>
 
           {/* Order ID */}
           <div className="flex items-center justify-between text-white/20 text-xs px-1">
-            <span>Order: <span className="font-mono">{orderId}</span></span>
+            <span>{t('order')}: <span className="font-mono">{orderId}</span></span>
             <Link href="/myaccount/credits/buy" className="hover:text-white/40 transition-all">
-              ← Cancel
+              ← {t('cancelPayment')}
             </Link>
           </div>
         </>

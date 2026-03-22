@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import { analytics } from "@/lib/analytics";
 
 const PACKAGES = [
@@ -54,6 +55,7 @@ const PACKAGES = [
 ];
 
 export default function BuyCredits() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const router = useRouter();
   const [loading, setLoading] = useState(null); // packageId being processed
@@ -104,16 +106,16 @@ export default function BuyCredits() {
         <div className="w-16 h-16 bg-gradient-to-br from-orange-500 to-yellow-400 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 mb-4">
           <span className="text-3xl">₿</span>
         </div>
-        <h1 className="text-3xl font-black text-white mb-2">Buy Credits</h1>
+        <h1 className="text-3xl font-black text-white mb-2">{t('buyCreditsTitle')}</h1>
         <p className="text-text-muted max-w-lg mb-4 text-sm">
-          Secure payment via Bitcoin. Credits delivered automatically after network confirmation. Credits never expire.
+          {t('buyCreditsSubtitle')}
         </p>
         {currentBalance !== null && (
           <div className="inline-flex items-center gap-3 bg-white/5 border border-white/10 px-5 py-2.5 rounded-2xl">
-            <span className="text-text-muted text-sm font-medium">Current Balance:</span>
+            <span className="text-text-muted text-sm font-medium">{t('currentBalance')}:</span>
             <span className="text-xl font-bold text-white flex items-center gap-1.5">
               <span className="text-primary text-2xl">⚡</span>
-              {currentBalance} credits
+              {currentBalance} {t('credits')}
             </span>
           </div>
         )}
@@ -131,9 +133,9 @@ export default function BuyCredits() {
       <div className="glass-card bg-orange-500/5 border border-orange-500/15 p-4 flex items-start gap-3">
         <span className="text-orange-400 text-lg mt-0.5">₿</span>
         <div>
-          <p className="text-orange-300 text-sm font-semibold">Bitcoin Payment (NowPayments)</p>
+          <p className="text-orange-300 text-sm font-semibold">{t('bitcoinPayment')}</p>
           <p className="text-orange-400/60 text-xs mt-0.5">
-            We accept BTC on-chain and Lightning Network. ~0.5% fee charged by NowPayments.
+            {t('bitcoinPaymentDesc')}
           </p>
         </div>
       </div>
@@ -150,7 +152,7 @@ export default function BuyCredits() {
           >
             {pkg.popular && (
               <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-bold px-4 py-1 rounded-full shadow-lg shadow-primary/30 uppercase tracking-widest whitespace-nowrap">
-                Most Popular
+                {t('mostPopular')}
               </div>
             )}
 
@@ -164,10 +166,10 @@ export default function BuyCredits() {
                 {pkg.credits}
               </div>
               {pkg.bonus && (
-                <div className="text-xs text-green-400 font-bold mt-1">+{pkg.bonus} bonus</div>
+                <div className="text-xs text-green-400 font-bold mt-1">+{pkg.bonus} {t('bonus')}</div>
               )}
               <div className="text-2xl font-bold text-orange-400 mt-2">${pkg.priceUSD}</div>
-              <div className="text-xs text-white/30 mt-0.5">${(pkg.priceUSD / pkg.credits).toFixed(2)}/credit</div>
+              <div className="text-xs text-white/30 mt-0.5">${(pkg.priceUSD / pkg.credits).toFixed(2)}{t('perCredit')}</div>
             </div>
 
             <div className="space-y-2 mb-5">
@@ -193,10 +195,10 @@ export default function BuyCredits() {
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                   </svg>
-                  Creating payment...
+                  {t('creatingPayment')}
                 </>
               ) : (
-                <>₿ Pay with Bitcoin</>
+                <>₿ {t('payWithBitcoin')}</>
               )}
             </button>
           </div>
@@ -207,24 +209,24 @@ export default function BuyCredits() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <div className="glass-card p-5 border-orange-500/15 bg-orange-500/5">
           <h3 className="text-white font-bold mb-2 flex items-center gap-2">
-            <span>₿</span> Bitcoin & Lightning
+            <span>₿</span> {t('bitcoinLightning')}
           </h3>
-          <p className="text-text-muted text-xs">We accept BTC on-chain and Lightning Network via NowPayments. Payments confirmed in seconds (Lightning) or minutes (on-chain).</p>
+          <p className="text-text-muted text-xs">{t('bitcoinLightningDesc')}</p>
         </div>
         <div className="glass-card p-5 border-green-500/15 bg-green-500/5">
           <h3 className="text-white font-bold mb-2 flex items-center gap-2">
-            <span>⚡</span> Automatic Credits
+            <span>⚡</span> {t('automaticCredits')}
           </h3>
-          <p className="text-text-muted text-xs">As soon as your payment is confirmed on the network, credits are added automatically. You receive an in-app notification.</p>
+          <p className="text-text-muted text-xs">{t('automaticCreditsDesc')}</p>
         </div>
         <div className="glass-card p-5">
           <h3 className="text-white font-bold mb-2 flex items-center gap-2">
-            <span>💡</span> How to use credits
+            <span>💡</span> {t('howToUseCredits')}
           </h3>
           <ul className="text-text-muted text-xs space-y-1">
-            <li>⚡ Bump up your listing — 5 credits</li>
-            <li>✨ Gold highlight — 10 credits</li>
-            <li>🌟 Feature Premium — 25 credits</li>
+            <li>⚡ {t('useBumpUp')}</li>
+            <li>✨ {t('useHighlight')}</li>
+            <li>🌟 {t('useFeature')}</li>
           </ul>
         </div>
       </div>

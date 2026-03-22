@@ -2,8 +2,10 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { useSearchParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { getFirstListingImage } from "@/lib/image-utils";
 
@@ -79,6 +81,7 @@ export default function FeatureListingsPage() {
 }
 
 function FeatureListings() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -190,7 +193,7 @@ function FeatureListings() {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-amber-500 animate-spin mb-4" />
-        <p className="text-text-muted animate-pulse">Loading Feature module...</p>
+        <p className="text-text-muted animate-pulse">{t('loadingFeature')}</p>
       </div>
     );
   }
@@ -201,8 +204,8 @@ function FeatureListings() {
       {/* ── Page Header ── */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-white/10">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tight">Feature Listings</h1>
-          <p className="text-text-muted mt-1">Choose your promotion tier and boost your listing's visibility.</p>
+          <h1 className="text-3xl font-black text-white tracking-tight">{t('featurePageTitle')}</h1>
+          <p className="text-text-muted mt-1">{t('featurePageSubtitle')}</p>
         </div>
         <div className="flex items-center gap-3 bg-white/5 border border-white/10 px-4 py-2.5 rounded-2xl">
           <div className="text-right">
@@ -217,15 +220,15 @@ function FeatureListings() {
 
       {/* ── Tier Tabs ── */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {Object.values(TIERS).map((t) => {
-          const active = activeTier === t.key;
-          const locked = t.requiresVerification && !isVerified;
+        {Object.values(TIERS).map((tierItem) => {
+          const active = activeTier === tierItem.key;
+          const locked = tierItem.requiresVerification && !isVerified;
           return (
             <button
-              key={t.key}
-              onClick={() => { if (!locked) setActiveTier(t.key); }}
+              key={tierItem.key}
+              onClick={() => { if (!locked) setActiveTier(tierItem.key); }}
               className={`relative text-left p-6 rounded-2xl border-2 transition-all duration-300 overflow-hidden ${active
-                  ? `${t.borderActive} ${t.bgActive} shadow-[0_0_30px_${t.bgGlow}]`
+                  ? `${tierItem.borderActive} ${tierItem.bgActive} shadow-[0_0_30px_${tierItem.bgGlow}]`
                   : locked
                     ? "border-white/10 bg-white/3 opacity-60 cursor-not-allowed"
                     : "border-white/10 bg-black/20 hover:border-white/30 hover:bg-white/5 cursor-pointer"
@@ -233,29 +236,29 @@ function FeatureListings() {
             >
               {active && (
                 <div className="absolute top-0 right-0 w-40 h-40 blur-3xl rounded-full pointer-events-none -mr-10 -mt-10"
-                  style={{ background: t.bgGlow }} />
+                  style={{ background: tierItem.bgGlow }} />
               )}
               <div className="relative z-10">
                 <div className="flex items-center justify-between mb-3">
-                  <span className="text-3xl">{t.emoji}</span>
+                  <span className="text-3xl">{tierItem.emoji}</span>
                   {active && (
-                    <span className={`text-xs font-black px-2 py-1 rounded-full bg-gradient-to-r ${t.accentColor} text-white`}>
-                      SELECTED
+                    <span className={`text-xs font-black px-2 py-1 rounded-full bg-gradient-to-r ${tierItem.accentColor} text-white`}>
+                      {t('selectedLabel')}
                     </span>
                   )}
                   {locked && (
                     <span className="text-xs font-bold px-2 py-1 rounded-full bg-white/10 text-white/40">
-                      🔒 Verified Only
+                      {t('lockedVerifiedOnly')}
                     </span>
                   )}
                 </div>
                 <h3 className={`text-xl font-black mb-1 ${active ? "text-white" : "text-gray-300"}`}>
-                  {t.label}
+                  {tierItem.label}
                 </h3>
-                <p className="text-text-muted text-sm mb-4">{t.tagline}</p>
+                <p className="text-text-muted text-sm mb-4">{tierItem.tagline}</p>
                 <ul className="space-y-1.5">
-                  {t.description.map((d, i) => (
-                    <li key={i} className={`text-xs flex items-start gap-2 ${active ? t.textActive : "text-text-muted"}`}>
+                  {tierItem.description.map((d, i) => (
+                    <li key={i} className={`text-xs flex items-start gap-2 ${active ? tierItem.textActive : "text-text-muted"}`}>
                       <span className="mt-0.5 flex-shrink-0">✓</span>
                       {d}
                     </li>
@@ -267,7 +270,7 @@ function FeatureListings() {
                     onClick={e => e.stopPropagation()}
                     className="mt-4 inline-block text-xs font-bold text-violet-400 underline hover:text-violet-300"
                   >
-                    Get Verified to unlock →
+                    {t('getVerifiedToUnlock')} →
                   </Link>
                 )}
               </div>
@@ -279,7 +282,7 @@ function FeatureListings() {
       {/* ── Package selector for active tier ── */}
       {canUse && (
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6">
-          <h3 className="text-lg font-bold text-white mb-4">Select Duration</h3>
+          <h3 className="text-lg font-bold text-white mb-4">{t('selectDuration')}</h3>
           <div className="grid grid-cols-2 gap-4">
             {tier.packages.map((p) => {
               const sel = selectedPackageKey === p.key;
@@ -299,7 +302,7 @@ function FeatureListings() {
                   <p className={`text-3xl font-black mt-1 ${sel ? tier.textActive : "text-gray-400"}`}>
                     {p.credits} <span className="text-sm font-semibold text-text-muted">credits</span>
                   </p>
-                  <p className="text-text-muted text-xs mt-1">Per listing</p>
+                  <p className="text-text-muted text-xs mt-1">{t('perListing')}</p>
                 </button>
               );
             })}
@@ -323,14 +326,14 @@ function FeatureListings() {
               </button>
             </div>
             <div className="flex-1">
-              <p className="text-white font-bold text-sm">Auto-renew when expired</p>
+              <p className="text-white font-bold text-sm">{t('autoRenewLabel')}</p>
               {autoRenew ? (
                 <p className="text-amber-400 text-xs mt-1 font-semibold">
-                  Auto-renewal is ON. You will be automatically charged {pkg.credits} credits per listing when your {tier.label.toLowerCase()} expires. Turn off anytime.
+                  {t('autoRenewFeatureOn', { cost: pkg.credits, tier: tier.label.toLowerCase() })}
                 </p>
               ) : (
                 <p className="text-text-muted text-xs mt-1">
-                  Your listing will be automatically re-featured and charged when it expires. You can turn this off anytime.
+                  {t('autoRenewFeatureOff')}
                 </p>
               )}
             </div>
@@ -344,7 +347,7 @@ function FeatureListings() {
           {/* toolbar */}
           <div className="p-4 border-b border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <h3 className="text-white font-bold">Select Listings</h3>
+              <h3 className="text-white font-bold">{t('selectListings')}</h3>
               <button
                 onClick={() =>
                   setSelectedListings(
@@ -355,13 +358,13 @@ function FeatureListings() {
                 }
                 className="text-xs px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-colors"
               >
-                {selectedListings.size === listings.length ? "Deselect All" : "Select All"}
+                {selectedListings.size === listings.length ? t('deselectAll') : t('selectAll')}
               </button>
             </div>
             {selectedListings.size > 0 && (
               <div className="flex items-center gap-4">
                 <div className="text-right">
-                  <p className="text-[10px] uppercase font-bold text-text-muted">Total</p>
+                  <p className="text-[10px] uppercase font-bold text-text-muted">{t('total')}</p>
                   <p className={`text-xl font-black ${canAfford ? tier.textActive : "text-red-400"}`}>
                     {totalCost} credits
                   </p>
@@ -374,7 +377,7 @@ function FeatureListings() {
                       : `bg-gradient-to-r ${tier.accentColor} text-white hover:scale-105 shadow-lg`
                     }`}
                 >
-                  {processing ? "Processing..." : `Confirm ${tier.label}`}
+                  {processing ? t('processing') : t('confirmFeature', { tier: tier.label })}
                 </button>
               </div>
             )}
@@ -383,9 +386,9 @@ function FeatureListings() {
           {/* list */}
           {listings.length === 0 ? (
             <div className="p-16 text-center">
-              <p className="text-white font-bold text-lg mb-2">No eligible listings</p>
-              <p className="text-text-muted text-sm mb-6">You don't have any approved listings available.</p>
-              <Link href="/myaccount/listings" className="btn-primary inline-block">Manage Listings</Link>
+              <p className="text-white font-bold text-lg mb-2">{t('noEligibleListings')}</p>
+              <p className="text-text-muted text-sm mb-6">{t('noApprovedFeatureDesc')}</p>
+              <Link href="/myaccount/listings" className="btn-primary inline-block">{t('manageListings')}</Link>
             </div>
           ) : (
             <div className="divide-y divide-white/5">
@@ -445,13 +448,13 @@ function FeatureListings() {
                         {listing.isFeatured && !isCurrentlyFeatured && (
                           <>
                             <span className="text-white/20">•</span>
-                            <span className="text-red-400/70 font-semibold">Feature expired</span>
+                            <span className="text-red-400/70 font-semibold">{t('featureExpired')}</span>
                           </>
                         )}
                         {listing.autoRenewFeatured && (
                           <>
                             <span className="text-white/20">•</span>
-                            <span className="text-green-400 font-semibold text-xs">Auto-renew ON</span>
+                            <span className="text-green-400 font-semibold text-xs">{t('autoRenewON')}</span>
                           </>
                         )}
                       </div>
@@ -482,12 +485,12 @@ function FeatureListings() {
       {activeTier === "premium" && !isVerified && (
         <div className="bg-violet-500/10 border border-violet-500/30 rounded-2xl p-8 text-center">
           <div className="text-5xl mb-4">🔒</div>
-          <h3 className="text-xl font-black text-white mb-2">Verification Required</h3>
+          <h3 className="text-xl font-black text-white mb-2">{t('verificationRequired')}</h3>
           <p className="text-text-muted mb-6 max-w-sm mx-auto">
-            Feature Premium is exclusive to Verified providers. Get verified to unlock the top placement spots.
+            {t('verificationRequiredDesc')}
           </p>
           <Link href="/myaccount/verification" className="inline-block px-6 py-3 bg-gradient-to-r from-violet-500 to-fuchsia-600 text-white font-bold rounded-xl hover:scale-105 transition-all shadow-lg">
-            Get Verified →
+            {t('getVerified')} →
           </Link>
         </div>
       )}
