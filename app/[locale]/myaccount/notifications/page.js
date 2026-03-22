@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
 
 const TYPE_CONFIG = {
   success: {
@@ -12,7 +13,7 @@ const TYPE_CONFIG = {
     iconBg: "bg-green-500/20",
     iconText: "text-green-300",
     badge: "bg-green-500/20 text-green-300 border border-green-500/30",
-    badgeLabel: "Success",
+    badgeLabelKey: "notificationsBadgeSuccess",
     dot: "bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.6)]",
     icon: "✅",
     titleColor: "text-green-50",
@@ -24,7 +25,7 @@ const TYPE_CONFIG = {
     iconBg: "bg-yellow-500/20",
     iconText: "text-yellow-300",
     badge: "bg-yellow-500/20 text-yellow-300 border border-yellow-500/30",
-    badgeLabel: "Warning",
+    badgeLabelKey: "notificationsBadgeWarning",
     dot: "bg-yellow-400 shadow-[0_0_8px_rgba(250,204,21,0.6)]",
     icon: "⚠️",
     titleColor: "text-yellow-50",
@@ -36,7 +37,7 @@ const TYPE_CONFIG = {
     iconBg: "bg-red-500/20",
     iconText: "text-red-300",
     badge: "bg-red-500/20 text-red-300 border border-red-500/30",
-    badgeLabel: "Urgente",
+    badgeLabelKey: "notificationsBadgeUrgent",
     dot: "bg-red-400 shadow-[0_0_8px_rgba(248,113,113,0.8)] animate-pulse",
     icon: "🚨",
     titleColor: "text-red-50",
@@ -48,7 +49,7 @@ const TYPE_CONFIG = {
     iconBg: "bg-blue-500/20",
     iconText: "text-blue-300",
     badge: "bg-blue-500/20 text-blue-300 border border-blue-500/30",
-    badgeLabel: "Info",
+    badgeLabelKey: "notificationsBadgeInfo",
     dot: "bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.6)]",
     icon: "ℹ️",
     titleColor: "text-blue-50",
@@ -60,25 +61,25 @@ const TYPE_CONFIG = {
     iconBg: "bg-white/10",
     iconText: "text-white/60",
     badge: "bg-white/10 text-white/50 border border-white/15",
-    badgeLabel: "Geral",
+    badgeLabelKey: "notificationsBadgeGeneral",
     dot: "bg-white/50",
     icon: "🔔",
     titleColor: "text-white",
   },
 };
 
-function formatDate(dateString) {
+function formatDate(dateString, t) {
   const date = new Date(dateString);
   const now = new Date();
   const diff = (now - date) / 1000;
-  if (diff < 60) return "Agora mesmo";
-  if (diff < 3600) return `${Math.floor(diff / 60)}m atrás`;
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h atrás`;
-  if (diff < 604800) return `${Math.floor(diff / 86400)}d atrás`;
-  return date.toLocaleDateString("pt-BR", { day: "2-digit", month: "short" });
+  if (diff < 60) return t('notificationsTimeJustNow');
+  if (diff < 3600) return t('notificationsTimeMinutes', { count: Math.floor(diff / 60) });
+  if (diff < 86400) return t('notificationsTimeHours', { count: Math.floor(diff / 3600) });
+  if (diff < 604800) return t('notificationsTimeDays', { count: Math.floor(diff / 86400) });
+  return date.toLocaleDateString("en-US", { day: "2-digit", month: "short" });
 }
 
-function NotifCard({ notif, onRead, onDelete, onClick }) {
+function NotifCard({ notif, onRead, onDelete, onClick, t }) {
   const cfg = TYPE_CONFIG[notif.type] || TYPE_CONFIG.general;
   const isUnread = !notif.isRead;
 
@@ -106,9 +107,9 @@ function NotifCard({ notif, onRead, onDelete, onClick }) {
           {/* Top row: badge + time + dot */}
           <div className="flex items-center gap-2 mb-1.5 flex-wrap">
             <span className={`text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full ${cfg.badge}`}>
-              {cfg.badgeLabel}
+              {t(cfg.badgeLabelKey)}
             </span>
-            <span className="text-white/25 text-xs">{formatDate(notif.createdAt)}</span>
+            <span className="text-white/25 text-xs">{formatDate(notif.createdAt, t)}</span>
             {isUnread && (
               <span className={`w-2 h-2 rounded-full shrink-0 ${cfg.dot}`} />
             )}
@@ -130,7 +131,7 @@ function NotifCard({ notif, onRead, onDelete, onClick }) {
           {isUnread && (
             <button
               onClick={(e) => { e.stopPropagation(); onRead(notif.id); }}
-              title="Marcar como lida"
+              title={t('notificationsMarkAsRead')}
               className="p-1.5 rounded-lg text-white/30 hover:text-green-400 hover:bg-green-500/15 transition-all"
             >
               <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -140,7 +141,7 @@ function NotifCard({ notif, onRead, onDelete, onClick }) {
           )}
           <button
             onClick={(e) => { e.stopPropagation(); onDelete(notif.id, isUnread); }}
-            title="Excluir"
+            title={t('notificationsDelete')}
             className="p-1.5 rounded-lg text-white/30 hover:text-red-400 hover:bg-red-500/15 transition-all"
           >
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -154,6 +155,7 @@ function NotifCard({ notif, onRead, onDelete, onClick }) {
 }
 
 export default function NotificationsPage() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const router = useRouter();
   const [notifications, setNotifications] = useState([]);
@@ -246,11 +248,11 @@ export default function NotificationsPage() {
               )}
             </div>
             <div>
-              <h1 className="text-xl font-black text-white">Notificações</h1>
+              <h1 className="text-xl font-black text-white">{t('notificationsTitle')}</h1>
               <p className="text-text-muted text-sm mt-0.5">
                 {unreadCount > 0
-                  ? <span className="text-accent font-semibold">{unreadCount} não lida{unreadCount > 1 ? "s" : ""}</span>
-                  : <span className="text-green-400">✓ Tudo em dia</span>
+                  ? <span className="text-accent font-semibold">{t('notificationsUnread', { count: unreadCount })}</span>
+                  : <span className="text-green-400">✓ {t('notificationsAllCaughtUp')}</span>
                 }
               </p>
             </div>
@@ -260,7 +262,7 @@ export default function NotificationsPage() {
               onClick={markAllAsRead}
               className="text-xs font-semibold text-white/50 hover:text-white border border-white/10 hover:border-white/25 px-3 py-1.5 rounded-lg transition-all"
             >
-              Marcar todas como lidas
+              {t('notificationsMarkAllRead')}
             </button>
           )}
         </div>
@@ -275,7 +277,7 @@ export default function NotificationsPage() {
             return (
               <div key={type} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold ${cfg.badge}`}>
                 <span>{cfg.icon}</span>
-                <span>{cfg.badgeLabel}</span>
+                <span>{t(cfg.badgeLabelKey)}</span>
                 <span className="opacity-60">({count})</span>
               </div>
             );
@@ -286,8 +288,8 @@ export default function NotificationsPage() {
       {/* Filter Tabs */}
       <div className="flex gap-2">
         {[
-          { key: "all", label: "Todas" },
-          { key: "unread", label: "Não lidas" },
+          { key: "all", label: t('notificationsFilterAll') },
+          { key: "unread", label: t('notificationsFilterUnread') },
         ].map((tab) => (
           <button
             key={tab.key}
@@ -320,11 +322,11 @@ export default function NotificationsPage() {
               🔔
             </div>
             <div>
-              <p className="text-white font-bold text-lg">Nenhuma notificação</p>
+              <p className="text-white font-bold text-lg">{t('notificationsNoNotifications')}</p>
               <p className="text-text-muted text-sm mt-1">
                 {filter === "unread"
-                  ? "Você está em dia! Tudo lido."
-                  : "Você não tem notificações ainda."}
+                  ? t('notificationsEmptyUnread')
+                  : t('notificationsEmptyAll')}
               </p>
             </div>
           </div>
@@ -333,7 +335,7 @@ export default function NotificationsPage() {
             {/* Unread section */}
             {notifications.some((n) => !n.isRead) && (
               <div className="space-y-2">
-                <p className="text-xs font-bold text-white/30 uppercase tracking-widest px-1">Não lidas</p>
+                <p className="text-xs font-bold text-white/30 uppercase tracking-widest px-1">{t('notificationsSectionUnread')}</p>
                 {notifications
                   .filter((n) => !n.isRead)
                   .map((notif) => (
@@ -343,6 +345,7 @@ export default function NotificationsPage() {
                       onRead={markAsRead}
                       onDelete={deleteNotif}
                       onClick={() => handleNotifClick(notif)}
+                      t={t}
                     />
                   ))}
               </div>
@@ -352,7 +355,7 @@ export default function NotificationsPage() {
             {notifications.some((n) => n.isRead) && (
               <div className="space-y-2 mt-4">
                 {notifications.some((n) => !n.isRead) && (
-                  <p className="text-xs font-bold text-white/20 uppercase tracking-widest px-1 pt-2">Lidas</p>
+                  <p className="text-xs font-bold text-white/20 uppercase tracking-widest px-1 pt-2">{t('notificationsSectionRead')}</p>
                 )}
                 {notifications
                   .filter((n) => n.isRead)
@@ -363,6 +366,7 @@ export default function NotificationsPage() {
                       onRead={markAsRead}
                       onDelete={deleteNotif}
                       onClick={() => handleNotifClick(notif)}
+                      t={t}
                     />
                   ))}
               </div>

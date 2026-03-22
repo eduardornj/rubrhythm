@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 export default function CreditsDashboard() {
+  const t = useTranslations('myaccount');
   const { data: session } = useSession();
   const [credits, setCredits] = useState(0);
   const [transactions, setTransactions] = useState([]);
@@ -71,7 +73,7 @@ export default function CreditsDashboard() {
       });
     } catch (error) {
       console.error('Error fetching credits data:', error);
-      setError('Failed to load credits data. Please try again.');
+      setError(t('creditsErrorTitle'));
     } finally {
       setLoading(false);
     }
@@ -141,7 +143,7 @@ export default function CreditsDashboard() {
     return (
       <div className="min-h-[60vh] flex flex-col justify-center items-center">
         <div className="w-12 h-12 rounded-full border-4 border-white/10 border-t-primary animate-spin mb-4" />
-        <p className="text-text-muted animate-pulse">Loading credits dashboard...</p>
+        <p className="text-text-muted animate-pulse">{t('creditsDashboardLoading')}</p>
       </div>
     );
   }
@@ -156,7 +158,7 @@ export default function CreditsDashboard() {
             </svg>
           </div>
           <div>
-            <h3 className="text-red-400 font-semibold text-lg">Error loading data</h3>
+            <h3 className="text-red-400 font-semibold text-lg">{t('creditsErrorTitle')}</h3>
             <p className="text-red-400/80 text-sm mt-1">{error}</p>
           </div>
         </div>
@@ -164,7 +166,7 @@ export default function CreditsDashboard() {
           onClick={fetchCreditsData}
           className="mt-6 px-5 py-2.5 bg-red-500/20 text-red-400 font-medium rounded-xl hover:bg-red-500/30 transition-colors border border-red-500/30"
         >
-          Try Again
+          {t('creditsErrorRetry')}
         </button>
       </div>
     );
@@ -176,10 +178,10 @@ export default function CreditsDashboard() {
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-6 border-b border-white/10">
         <div>
           <h1 className="text-3xl font-black text-white tracking-tight mb-2">
-            Credits Dashboard
+            {t('creditsDashboardTitle')}
           </h1>
           <p className="text-text-muted text-sm sm:text-base">
-            Manage your credits and track your spending
+            {t('creditsDashboardSubtitle')}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -190,7 +192,7 @@ export default function CreditsDashboard() {
             <svg className="w-5 h-5 opacity-70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            History
+            {t('creditsHistory')}
           </Link>
           <Link
             href="/myaccount/credits/buy"
@@ -199,7 +201,7 @@ export default function CreditsDashboard() {
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
             </svg>
-            Buy Credits
+            {t('creditsBuy')}
           </Link>
         </div>
       </div>
@@ -213,19 +215,19 @@ export default function CreditsDashboard() {
         </div>
 
         <div className="relative z-10">
-          <p className="text-text-muted text-sm font-medium tracking-wide uppercase mb-2">Available Balance</p>
+          <p className="text-text-muted text-sm font-medium tracking-wide uppercase mb-2">{t('creditsAvailableBalance')}</p>
           <div className="flex items-end gap-3 mb-6">
             <h2 className="text-5xl sm:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400">
               {credits}
             </h2>
-            <span className="text-xl sm:text-2xl text-text-muted font-medium mb-1.5">credits</span>
+            <span className="text-xl sm:text-2xl text-text-muted font-medium mb-1.5">{t('creditsUnit')}</span>
           </div>
 
           {stats.lastTransaction && (
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white/5 border border-white/5">
               <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
               <p className="text-sm text-text-muted">
-                Last activity: <span className="text-white font-medium">{formatDate(stats.lastTransaction.createdAt)}</span>
+                {t('creditsLastActivity')} <span className="text-white font-medium">{formatDate(stats.lastTransaction.createdAt)}</span>
               </p>
             </div>
           )}
@@ -237,7 +239,7 @@ export default function CreditsDashboard() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/[0.07] transition-colors group">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-text-muted text-sm font-medium mb-2">Total Purchased</p>
+              <p className="text-text-muted text-sm font-medium mb-2">{t('creditsTotalPurchased')}</p>
               <h3 className="text-3xl font-bold text-white group-hover:text-green-400 transition-colors">{stats.totalPurchased}</h3>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-text-muted group-hover:bg-green-500/10 group-hover:text-green-400 group-hover:border-green-500/20 transition-all">
@@ -251,7 +253,7 @@ export default function CreditsDashboard() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/[0.07] transition-colors group">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-text-muted text-sm font-medium mb-2">Total Spent</p>
+              <p className="text-text-muted text-sm font-medium mb-2">{t('creditsTotalSpent')}</p>
               <h3 className="text-3xl font-bold text-white group-hover:text-red-400 transition-colors">{stats.totalSpent}</h3>
             </div>
             <div className="w-12 h-12 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-text-muted group-hover:bg-red-500/10 group-hover:text-red-400 group-hover:border-red-500/20 transition-all">
@@ -265,7 +267,7 @@ export default function CreditsDashboard() {
         <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm hover:bg-white/[0.07] transition-colors group sm:col-span-2 lg:col-span-1">
           <div className="flex items-start justify-between">
             <div>
-              <p className="text-text-muted text-sm font-medium mb-2">This Month's Net</p>
+              <p className="text-text-muted text-sm font-medium mb-2">{t('creditsThisMonthNet')}</p>
               <h3 className={`text-3xl font-bold transition-colors ${stats.thisMonth > 0 ? 'text-green-400' : stats.thisMonth < 0 ? 'text-red-400' : 'text-white'
                 }`}>
                 {stats.thisMonth > 0 ? '+' : ''}{stats.thisMonth}
@@ -288,7 +290,7 @@ export default function CreditsDashboard() {
         {/* Quick Actions (Sidebar area) */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
-            <h3 className="text-lg font-bold text-white mb-5">Quick Actions</h3>
+            <h3 className="text-lg font-bold text-white mb-5">{t('creditsQuickActions')}</h3>
             <div className="flex flex-col gap-3">
               <Link
                 href="/myaccount/listings/bump-up"
@@ -300,9 +302,9 @@ export default function CreditsDashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 11l5-5m0 0l5 5m-5-5v12" />
                     </svg>
                   </div>
-                  <span className="font-semibold text-white">Bump Up</span>
+                  <span className="font-semibold text-white">{t('creditsBumpUpLabel')}</span>
                 </div>
-                <p className="text-xs text-text-muted leading-relaxed">Push your listings back to the top of the search results.</p>
+                <p className="text-xs text-text-muted leading-relaxed">{t('creditsBumpUpDesc')}</p>
               </Link>
 
               <Link
@@ -315,9 +317,9 @@ export default function CreditsDashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
                     </svg>
                   </div>
-                  <span className="font-semibold text-white">Highlight</span>
+                  <span className="font-semibold text-white">{t('creditsHighlightLabel')}</span>
                 </div>
-                <p className="text-xs text-text-muted leading-relaxed">Make your profile stand out with a distinct visual look.</p>
+                <p className="text-xs text-text-muted leading-relaxed">{t('creditsHighlightDesc')}</p>
               </Link>
 
               <Link
@@ -330,9 +332,9 @@ export default function CreditsDashboard() {
                       <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
                     </svg>
                   </div>
-                  <span className="font-semibold text-white">Feature</span>
+                  <span className="font-semibold text-white">{t('creditsFeatureLabel')}</span>
                 </div>
-                <p className="text-xs text-text-muted leading-relaxed">Pin your listing at the premium featured spots section.</p>
+                <p className="text-xs text-text-muted leading-relaxed">{t('creditsFeatureDesc')}</p>
               </Link>
 
               <Link
@@ -345,9 +347,9 @@ export default function CreditsDashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                     </svg>
                   </div>
-                  <span className="font-semibold text-white">Auto-Bump</span>
+                  <span className="font-semibold text-white">{t('creditsAutoBumpLabel')}</span>
                 </div>
-                <p className="text-xs text-text-muted leading-relaxed">Set up automatic daily bumps for your listings.</p>
+                <p className="text-xs text-text-muted leading-relaxed">{t('creditsAutoBumpDesc')}</p>
               </Link>
 
               <Link
@@ -360,9 +362,9 @@ export default function CreditsDashboard() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                     </svg>
                   </div>
-                  <span className="font-semibold text-white">Block List</span>
+                  <span className="font-semibold text-white">{t('creditsBlockListLabel')}</span>
                 </div>
-                <p className="text-xs text-text-muted leading-relaxed">Manage blocked phone numbers and emails.</p>
+                <p className="text-xs text-text-muted leading-relaxed">{t('creditsBlockListDesc')}</p>
               </Link>
             </div>
           </div>
@@ -375,36 +377,36 @@ export default function CreditsDashboard() {
                 <svg className="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                Pricing Info
+                {t('creditsPricingInfo')}
               </h3>
               <ul className="text-sm space-y-3">
                 <li className="flex justify-between items-center text-text-muted">
-                  <span>Create Listing</span>
-                  <span className="text-white font-medium">10 credits</span>
+                  <span>{t('creditsPriceCreateListing')}</span>
+                  <span className="text-white font-medium">{t('creditsPriceCreateListingVal')}</span>
                 </li>
                 <li className="flex justify-between items-center text-text-muted">
-                  <span>Bump Up</span>
-                  <span className="text-white font-medium">5 credits</span>
+                  <span>{t('creditsPriceBumpUp')}</span>
+                  <span className="text-white font-medium">{t('creditsPriceBumpUpVal')}</span>
                 </li>
                 <li className="flex justify-between items-center text-text-muted">
-                  <span>Available Now</span>
-                  <span className="text-white font-medium">3 credits <span className="text-text-muted/70 text-xs">(6h)</span></span>
+                  <span>{t('creditsPriceAvailableNow')}</span>
+                  <span className="text-white font-medium">{t('creditsPriceAvailableNowVal')} <span className="text-text-muted/70 text-xs">{t('creditsPriceAvailableNowTime')}</span></span>
                 </li>
                 <li className="flex justify-between items-center text-text-muted">
-                  <span>Highlight (3 days)</span>
-                  <span className="text-white font-medium">10 credits</span>
+                  <span>{t('creditsPriceHighlight')}</span>
+                  <span className="text-white font-medium">{t('creditsPriceHighlightVal')}</span>
                 </li>
                 <li className="flex justify-between items-center text-text-muted">
-                  <span>Feature (7 days)</span>
-                  <span className="text-white font-medium">20 credits</span>
+                  <span>{t('creditsPriceFeature')}</span>
+                  <span className="text-white font-medium">{t('creditsPriceFeatureVal')}</span>
                 </li>
                 <li className="flex justify-between items-center text-text-muted">
-                  <span>Auto-Bump (daily)</span>
-                  <span className="text-white font-medium">5 credits/day</span>
+                  <span>{t('creditsPriceAutoBump')}</span>
+                  <span className="text-white font-medium">{t('creditsPriceAutoBumpVal')}</span>
                 </li>
               </ul>
               <p className="text-xs text-text-muted/70 mt-4 border-t border-white/10 pt-4 leading-relaxed">
-                Credits never expire and can be combined to maximize your listing performance.
+                {t('creditsNeverExpire')}
               </p>
             </div>
           </div>
@@ -414,12 +416,12 @@ export default function CreditsDashboard() {
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white/5 border border-white/10 rounded-2xl p-6 backdrop-blur-sm min-h-[400px]">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-xl font-bold text-white">Recent Transactions</h3>
+              <h3 className="text-xl font-bold text-white">{t('creditsRecentTransactions')}</h3>
               <Link
                 href="/myaccount/credits/history"
                 className="text-sm font-medium text-primary hover:text-accent transition-colors flex items-center gap-1"
               >
-                View all
+                {t('creditsViewAll')}
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                 </svg>
@@ -433,13 +435,13 @@ export default function CreditsDashboard() {
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                   </svg>
                 </div>
-                <h4 className="text-lg font-semibold text-white mb-2">No transaction history</h4>
-                <p className="text-text-muted max-w-sm mb-6 text-sm">You haven't purchased or spent any credits yet. Your activity will appear here.</p>
+                <h4 className="text-lg font-semibold text-white mb-2">{t('creditsNoHistory')}</h4>
+                <p className="text-text-muted max-w-sm mb-6 text-sm">{t('creditsNoHistoryDesc')}</p>
                 <Link
                   href="/myaccount/credits/buy"
                   className="px-6 py-2.5 rounded-xl font-semibold bg-white/10 text-white hover:bg-white/20 transition-all border border-white/10"
                 >
-                  Buy your first pack
+                  {t('creditsBuyFirstPack')}
                 </Link>
               </div>
             ) : (
@@ -459,7 +461,7 @@ export default function CreditsDashboard() {
                         {transaction.type === 'purchase' ? '+' : '-'}{Math.abs(transaction.amount)}
                       </p>
                       <p className="text-xs text-text-muted mt-0.5">
-                        Balance: {transaction.balanceAfter}
+                        {t('creditsBalanceLabel')} {transaction.balanceAfter}
                       </p>
                     </div>
                   </div>

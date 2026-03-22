@@ -203,23 +203,23 @@ export async function PATCH(request) {
         if ((action === "approve" || action === "reject" || action === "reactivate" || action === "deactivate") && updatedListing.userId) {
             const notifMap = {
                 approve: {
-                    title: "✅ Seu anúncio foi aprovado!",
-                    body: `Ótimas notícias! Seu anúncio "${updatedListing.title || "sem título"}" foi aprovado e já está visível no diretório RubRhythm.`,
+                    title: "Your listing has been approved!",
+                    body: `Great news! Your listing "${updatedListing.title || "Untitled"}" has been approved and is now visible on RubRhythm.`,
                     type: "success",
                 },
                 reactivate: {
-                    title: "✅ Seu anúncio foi reativado!",
-                    body: `Seu anúncio "${updatedListing.title || "sem título"}" foi reativado e está visível novamente.`,
+                    title: "Your listing has been reactivated!",
+                    body: `Your listing "${updatedListing.title || "Untitled"}" has been reactivated and is visible again.`,
                     type: "success",
                 },
                 reject: {
-                    title: "⚠️ Seu anúncio precisa de ajustes",
-                    body: `Seu anúncio "${updatedListing.title || "sem título"}" foi rejeitado pela equipe de moderação. Revise as políticas da plataforma e reenvie.`,
+                    title: "Your listing needs adjustments",
+                    body: `Your listing "${updatedListing.title || "Untitled"}" was not approved. Please review the platform policies and resubmit.`,
                     type: "warning",
                 },
                 deactivate: {
-                    title: "⏸️ Seu anúncio foi pausado",
-                    body: `Seu anúncio "${updatedListing.title || "sem título"}" foi temporariamente desativado pelo administrador.`,
+                    title: "Your listing has been paused",
+                    body: `Your listing "${updatedListing.title || "Untitled"}" has been temporarily deactivated by the administrator.`,
                     type: "warning",
                 },
             };

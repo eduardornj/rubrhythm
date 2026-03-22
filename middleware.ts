@@ -10,6 +10,7 @@ function shouldSkipIntl(pathname: string): boolean {
   return (
     pathname.startsWith('/admin') ||
     pathname.startsWith('/api') ||
+    pathname.startsWith('/myaccount-api') ||
     pathname.startsWith('/_next') ||
     pathname.startsWith('/auth') ||
     pathname.includes('.') // static files

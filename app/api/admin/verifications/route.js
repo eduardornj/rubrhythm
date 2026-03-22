@@ -176,10 +176,10 @@ export async function PUT(request) {
         data: {
           id: crypto.randomUUID(),
           userId: verification.userId,
-          title: action === 'approve' ? 'Verificação Aprovada!' : 'Verificação Rejeitada',
+          title: action === 'approve' ? 'Verification Approved!' : 'Verification Rejected',
           body: action === 'approve'
-            ? 'Sua conta foi verificada com sucesso. Agora você pode acessar todos os recursos.'
-            : `Sua verificação foi rejeitada. Motivo: ${rejectionReason}`,
+            ? 'Your account has been verified. You now have access to all features and your Blue Badge is active.'
+            : `Your verification was rejected. Reason: ${rejectionReason}`,
           type: action === 'approve' ? 'success' : 'warning',
           createdAt: new Date()
         }
