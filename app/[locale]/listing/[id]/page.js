@@ -55,7 +55,7 @@ export default function ListingDetailPage() {
 
         if (session?.user?.id) {
           parallelRequests.push(
-            fetch(`/myaccount/api/favorites/check?listingId=${params.id}`)
+            fetch(`/myaccount-api/favorites/check?listingId=${params.id}`)
               .then(res => res.ok ? res.json() : null)
               .catch(() => null)
           );

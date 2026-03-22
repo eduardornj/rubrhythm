@@ -516,10 +516,10 @@ export default function MyAccountDashboard() {
       const [userRes, creditsRes, listingsRes, favRes, notifsRes, reviewsRes] = await Promise.allSettled([
         fetch(`/api/user/${session.user.id}`),
         fetch(`/api/credits?userId=${session.user.id}`),
-        fetch("/myaccount/api/listings"),
-        fetch("/myaccount/api/favorites"),
+        fetch("/myaccount-api/listings"),
+        fetch("/myaccount-api/favorites"),
         fetch("/api/notifications?limit=50"),
-        fetch("/myaccount/api/reviews"),
+        fetch("/myaccount-api/reviews"),
       ]);
 
       if (userRes.status === "fulfilled" && userRes.value.ok) {

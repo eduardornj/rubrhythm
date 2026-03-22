@@ -22,7 +22,7 @@ export default function MyAccountFavorites() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/myaccount/api/favorites');
+      const response = await fetch('/myaccount-api/favorites');
       if (!response.ok) {
         throw new Error('Failed to fetch favorites');
       }
@@ -39,7 +39,7 @@ export default function MyAccountFavorites() {
 
   const removeFavorite = async (listingId) => {
     try {
-      const response = await fetch('/myaccount/api/favorites', {
+      const response = await fetch('/myaccount-api/favorites', {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',

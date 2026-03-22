@@ -27,7 +27,7 @@ export default function MyListings() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('/myaccount/api/listings');
+      const response = await fetch('/myaccount-api/listings');
       if (!response.ok) {
         throw new Error('Failed to fetch listings');
       }
@@ -60,7 +60,7 @@ export default function MyListings() {
     }
 
     try {
-      const response = await fetch(`/myaccount/api/listings?id=${listingId}`, {
+      const response = await fetch(`/myaccount-api/listings?id=${listingId}`, {
         method: 'DELETE',
       });
 

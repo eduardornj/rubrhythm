@@ -121,7 +121,7 @@ function FeatureListings() {
     try {
       setLoading(true);
       const [listRes, credRes] = await Promise.all([
-        fetch("/myaccount/api/listings"),
+        fetch("/myaccount-api/listings"),
         fetch(`/api/credits?userId=${session.user.id}`),
       ]);
 

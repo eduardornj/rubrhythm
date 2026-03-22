@@ -48,7 +48,7 @@ export default function MyReviewsPage() {
   };
 
   useEffect(() => {
-    fetch("/myaccount/api/reviews")
+    fetch("/myaccount-api/reviews")
       .then((r) => r.json())
       .then((d) => setData(d))
       .catch(() => {})

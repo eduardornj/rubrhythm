@@ -127,7 +127,7 @@ export default function ServicesPage() {
   const fetchData = async () => {
     try {
       const [listingsRes, creditsRes] = await Promise.all([
-        fetch('/myaccount/api/listings'),
+        fetch('/myaccount-api/listings'),
         fetch(`/api/credits?userId=${session.user.id}`),
       ]);
 
