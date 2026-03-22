@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 
 const STARS = (n) => "★".repeat(n) + "☆".repeat(5 - n);
 
@@ -14,6 +15,7 @@ function StatBox({ label, value, sub, color = "text-white" }) {
 }
 
 export default function MyReviewsPage() {
+  const t = useTranslations('myaccount');
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
@@ -89,31 +91,31 @@ export default function MyReviewsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-xl font-black text-white">My Reviews</h1>
+        <h1 className="text-xl font-black text-white">{t('reviews_title')}</h1>
         <p className="text-white/40 text-sm mt-0.5">
-          See what clients are saying about your services
+          {t('reviews_subtitle')}
         </p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <StatBox
-          label="Average Rating"
+          label={t('reviews_averageRating')}
           value={stats.averageRating > 0 ? `${stats.averageRating}/5` : "--"}
-          sub={stats.approved > 0 ? `Based on ${stats.approved} approved` : "No approved reviews yet"}
+          sub={stats.approved > 0 ? t('reviews_basedOnApproved', { count: stats.approved }) : t('reviews_noApprovedYet')}
           color="text-yellow-400"
         />
-        <StatBox label="Total Reviews" value={stats.total} color="text-white" />
+        <StatBox label={t('reviews_totalReviews')} value={stats.total} color="text-white" />
         <StatBox
-          label="Approved"
+          label={t('reviews_approved')}
           value={stats.approved}
-          sub="Visible to clients"
+          sub={t('reviews_visibleToClients')}
           color="text-green-400"
         />
         <StatBox
-          label="Pending"
+          label={t('reviews_pending')}
           value={stats.pending}
-          sub="Awaiting admin approval"
+          sub={t('reviews_awaitingApproval')}
           color="text-yellow-400"
         />
       </div>
@@ -121,7 +123,7 @@ export default function MyReviewsPage() {
       {/* Rating Breakdown */}
       {stats.approved > 0 && (
         <div className="glass-card p-5">
-          <h3 className="text-white font-semibold text-sm mb-4">Rating Breakdown</h3>
+          <h3 className="text-white font-semibold text-sm mb-4">{t('reviews_ratingBreakdown')}</h3>
           <div className="space-y-2">
             {[5, 4, 3, 2, 1].map((star) => {
               const count = ratingCounts[star - 1];
@@ -129,7 +131,7 @@ export default function MyReviewsPage() {
               return (
                 <div key={star} className="flex items-center gap-3">
                   <span className="text-yellow-400 text-xs w-12 text-right font-mono">
-                    {star} {star === 1 ? "star" : "stars"}
+                    {star} {star === 1 ? t('reviews_star') : t('reviews_stars')}
                   </span>
                   <div className="flex-1 h-2 bg-white/5 rounded-full overflow-hidden">
                     <div
@@ -151,10 +153,10 @@ export default function MyReviewsPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex gap-1 bg-white/3 p-1 rounded-xl">
           {[
-            { key: "all", label: "All" },
-            { key: "approved", label: "Approved" },
-            { key: "pending", label: "Pending" },
-            { key: "rejected", label: "Rejected" },
+            { key: "all", label: t('reviews_filterAll') },
+            { key: "approved", label: t('reviews_filterApproved') },
+            { key: "pending", label: t('reviews_filterPending') },
+            { key: "rejected", label: t('reviews_filterRejected') },
           ].map((f) => (
             <button
               key={f.key}
@@ -170,7 +172,7 @@ export default function MyReviewsPage() {
           ))}
         </div>
         <p className="text-white/30 text-xs">
-          {filtered.length} review{filtered.length !== 1 ? "s" : ""}
+          {t('reviews_count', { count: filtered.length })}
         </p>
       </div>
 
@@ -182,8 +184,8 @@ export default function MyReviewsPage() {
           </div>
           <p className="text-white/40 text-sm">
             {stats.total === 0
-              ? "No reviews yet. Share your listing to get your first review!"
-              : `No ${filter} reviews.`}
+              ? t('reviews_noReviewsYet')
+              : t('reviews_noFilteredReviews', { filter })}
           </p>
         </div>
       ) : (
@@ -217,10 +219,10 @@ export default function MyReviewsPage() {
                       }`}
                     >
                       {r.status === "approved"
-                        ? "Visible"
+                        ? t('reviews_statusVisible')
                         : r.status === "pending"
-                        ? "Pending"
-                        : "Rejected"}
+                        ? t('reviews_statusPending')
+                        : t('reviews_statusRejected')}
                     </span>
                   </div>
 
@@ -234,12 +236,12 @@ export default function MyReviewsPage() {
                   {/* Meta */}
                   <div className="flex items-center gap-3 text-xs text-white/30 flex-wrap">
                     <span>
-                      By:{" "}
+                      {t('reviews_by')}{" "}
                       {r.isAnonymous
-                        ? "Anonymous"
-                        : r.user_review_reviewerIdTouser?.name || "Unknown"}
+                        ? t('reviews_anonymous')
+                        : r.user_review_reviewerIdTouser?.name || t('reviews_unknown')}
                     </span>
-                    {r.listing?.title && <span>On: {r.listing.title}</span>}
+                    {r.listing?.title && <span>{t('reviews_on')} {r.listing.title}</span>}
                     {r.createdAt && (
                       <span>
                         {new Date(r.createdAt).toLocaleDateString("en-US", {
@@ -254,7 +256,7 @@ export default function MyReviewsPage() {
                   {/* Provider Response */}
                   {r.providerResponse && (
                     <div className="mt-3 p-3 bg-white/3 border border-white/8 rounded-xl">
-                      <p className="text-[10px] font-bold text-primary mb-1">Your Response:</p>
+                      <p className="text-[10px] font-bold text-primary mb-1">{t('reviews_yourResponse')}</p>
                       <p className="text-white/60 text-xs leading-relaxed">{r.providerResponse}</p>
                     </div>
                   )}
@@ -266,7 +268,7 @@ export default function MyReviewsPage() {
                         <textarea
                           value={replyText}
                           onChange={(e) => setReplyText(e.target.value)}
-                          placeholder="Write your response to this review..."
+                          placeholder={t('reviews_replyPlaceholder')}
                           maxLength={1000}
                           className="w-full p-3 bg-white/5 border border-white/10 rounded-xl text-white text-sm placeholder-white/30 focus:outline-none focus:border-primary/50 resize-none"
                           rows={3}
@@ -277,13 +279,13 @@ export default function MyReviewsPage() {
                             disabled={replySending || !replyText.trim()}
                             className="px-4 py-1.5 bg-primary/20 text-primary text-xs font-bold rounded-lg border border-primary/30 hover:bg-primary/30 transition-all disabled:opacity-40"
                           >
-                            {replySending ? "Sending..." : "Submit Response"}
+                            {replySending ? t('reviews_sending') : t('reviews_submitResponse')}
                           </button>
                           <button
                             onClick={() => { setReplyingTo(null); setReplyText(""); }}
                             className="px-3 py-1.5 text-white/40 text-xs hover:text-white/60 transition-all"
                           >
-                            Cancel
+                            {t('cancel')}
                           </button>
                           <span className="text-white/20 text-[10px] ml-auto">{replyText.length}/1000</span>
                         </div>
@@ -293,7 +295,7 @@ export default function MyReviewsPage() {
                         onClick={() => setReplyingTo(r.id)}
                         className="mt-2 text-xs text-primary/60 hover:text-primary transition-all"
                       >
-                        Reply to this review
+                        {t('reviews_replyToReview')}
                       </button>
                     )
                   )}
@@ -308,7 +310,7 @@ export default function MyReviewsPage() {
       {listings.length > 1 && stats.total > 0 && (
         <div className="glass-card p-5">
           <h3 className="text-white font-semibold text-sm mb-4">
-            Reviews by Listing
+            {t('reviews_byListing')}
           </h3>
           <div className="space-y-2">
             {listings
@@ -334,7 +336,7 @@ export default function MyReviewsPage() {
                         : "--"}
                     </span>
                     <span className="text-white/30 text-xs">
-                      {l.totalReviews} review{l.totalReviews !== 1 ? "s" : ""}
+                      {t('reviews_count', { count: l.totalReviews })}
                     </span>
                   </div>
                 </div>
