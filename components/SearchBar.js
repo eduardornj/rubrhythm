@@ -4,11 +4,13 @@ import { useState, useEffect, useMemo } from "react";
 import dynamic from "next/dynamic";
 import locations from "../data/datalocations.js";
 import { MagnifyingGlassIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { useTranslations } from "next-intl";
 
 // Carrega o react-select dinamicamente, desativando SSR
 const Select = dynamic(() => import("react-select"), { ssr: false });
 
 export default function SearchBar({ currentState = "", currentCity = "" }) {
+  const t = useTranslations("home");
   const [selectedState, setSelectedState] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [keyword, setKeyword] = useState("");
@@ -214,14 +216,14 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
                 <div className="flex justify-between items-center mb-2">
                   <label htmlFor="sb-keyword" className="block text-sm font-semibold text-text">
                     <MagnifyingGlassIcon className="w-4 h-4 inline mr-2 text-primary" />
-                    What are you looking for?
+                    {t("whatLookingFor")}
                   </label>
                   <button
                     type="button"
                     onClick={handleUseLocation}
                     className="text-primary hover:text-primary-hover text-xs font-semibold flex items-center bg-primary/10 px-2 py-1 rounded-md transition-colors"
                   >
-                    <MapPinIcon className="w-3 h-3 mr-1" /> Use My Location
+                    <MapPinIcon className="w-3 h-3 mr-1" /> {t("useMyLocation")}
                   </button>
                 </div>
                 <input
@@ -229,7 +231,7 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
                   type="text"
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
-                  placeholder="Enter keywords (massage, spa, wellness...)"
+                  placeholder={t("searchPlaceholder")}
                   className="input-field"
                 />
               </div>
@@ -238,18 +240,18 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
               <div>
                 <p className="block text-sm font-semibold text-text mb-2">
                   <MapPinIcon className="w-4 h-4 inline mr-2 text-primary" />
-                  State
+                  {t("state")}
                 </p>
                 <Select
                   inputId="sb-state"
-                  aria-label="State"
+                  aria-label={t("state")}
                   options={stateOptions}
                   value={selectedState}
                   onChange={(option) => {
                     setSelectedState(option);
                     setSelectedCity(null); // Reset city when state changes
                   }}
-                  placeholder="Select state"
+                  placeholder={t("selectState")}
                   className="text-base"
                   classNamePrefix="select"
                   styles={customSelectStyles}
@@ -261,15 +263,15 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
               <div>
                 <p className="block text-sm font-semibold text-text mb-2 flex items-center">
                   <span className="w-4 h-4 mr-2">🏙️</span>
-                  City
+                  {t("city")}
                 </p>
                 <Select
                   inputId="sb-city"
-                  aria-label="City"
+                  aria-label={t("city")}
                   options={cityOptions}
                   value={selectedCity}
                   onChange={setSelectedCity}
-                  placeholder={selectedState ? "Select city" : "Choose state first"}
+                  placeholder={selectedState ? t("selectCity") : t("chooseStateFirst")}
                   className="text-base"
                   classNamePrefix="select"
                   isDisabled={!selectedState}
@@ -281,13 +283,13 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
 
             {/* Quick Filters */}
             <div className="mb-6 mt-6 border-t border-white/5 pt-6">
-              <p className="text-sm font-semibold text-text-muted mb-3 uppercase tracking-wider">Quick Filters</p>
+              <p className="text-sm font-semibold text-text-muted mb-3 uppercase tracking-wider">{t("quickFilters")}</p>
               <div className="flex flex-wrap gap-2">
                 {[
-                  { label: "Under $200", param: "priceRange", value: "0-100,100-200" },
-                  { label: "$200-400", param: "priceRange", value: "200-300,300-400" },
-                  { label: "Verified Only", param: "verified", value: "true" },
-                  { label: "Featured", param: "featured", value: "true" }
+                  { label: t("underPrice"), param: "priceRange", value: "0-100,100-200" },
+                  { label: t("midPrice"), param: "priceRange", value: "200-300,300-400" },
+                  { label: t("verifiedOnly"), param: "verified", value: "true" },
+                  { label: t("featured"), param: "featured", value: "true" }
                 ].map((filter) => (
                   <button
                     key={filter.label}
@@ -315,7 +317,7 @@ export default function SearchBar({ currentState = "", currentCity = "" }) {
                 className="btn-primary w-full md:w-auto md:px-12 py-4 flex items-center justify-center gap-2 text-lg"
               >
                 <MagnifyingGlassIcon className="w-6 h-6" />
-                Find Providers
+                {t("findProviders")}
               </button>
             </div>
           </div>
