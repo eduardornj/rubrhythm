@@ -140,6 +140,10 @@ export default function Header() {
           <div className="container mx-auto px-4">
             <div className="flex justify-between items-center text-xs lg:text-sm">
               <div className="flex items-center space-x-4">
+                <Link href="/" className="font-medium hover:text-white/80 transition-colors">
+                  {t('viewCities')}
+                </Link>
+                <span className="text-white/30">|</span>
                 <button
                   onClick={() => setIsFixedCityModalOpen(true)}
                   className="flex items-center hover:text-white/80 transition-colors"
