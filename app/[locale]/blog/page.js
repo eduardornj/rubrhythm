@@ -32,6 +32,33 @@ export const metadata = {
 
 const POSTS = [
   {
+    slug: "rubmd-alternative-verified-massage-directory",
+    title:
+      "RubMd Closed? Here's What Changed and Where to Find Verified Providers",
+    excerpt:
+      "RubMd is no longer available. Learn what happened and how to find ID-verified massage providers on a safe, compliant directory in 2026.",
+    date: "2026-03-21",
+    category: "Industry",
+  },
+  {
+    slug: "rubratings-closed-find-verified-providers",
+    title:
+      "RubRatings Is Down — How to Find Safe, Reviewed Massage Providers",
+    excerpt:
+      "RubRatings is experiencing issues. Discover how to find massage providers with real reviews and ID verification on a compliant platform.",
+    date: "2026-03-21",
+    category: "Industry",
+  },
+  {
+    slug: "safe-massage-directory-after-cityxguide",
+    title:
+      "Finding a Safe Massage Directory in 2026 — Lessons from CityXGuide",
+    excerpt:
+      "CityXGuide was seized by federal agencies. Learn the lessons and how to find a massage directory that prioritizes safety, verification, and compliance.",
+    date: "2026-03-21",
+    category: "Safety",
+  },
+  {
     slug: "how-to-find-legitimate-massage-provider",
     title: "How to Find a Legitimate Massage Provider in 2026",
     excerpt:
