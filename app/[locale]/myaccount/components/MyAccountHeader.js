@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import NotificationManager from "@/components/NotificationManager";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 export default function MyAccountHeader({ sidebarOpen, setSidebarOpen, userCredits, userName }) {
   const { data: session } = useSession();
@@ -31,6 +32,7 @@ export default function MyAccountHeader({ sidebarOpen, setSidebarOpen, userCredi
             {userCredits} credits
           </div>
         )}
+        <LanguageSwitcher />
         <NotificationManager />
         <button
           onClick={() => setSidebarOpen(true)}

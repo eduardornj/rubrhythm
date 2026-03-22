@@ -49,12 +49,12 @@ function ActionCard({ icon, title, description, href, highlight = false }) {
 }
 
 // Boost Service Card with CTA
-function BoostCard({ icon, title, subtitle, impact, cost, costLabel, href, gradient, popular = false }) {
+function BoostCard({ icon, title, subtitle, impact, cost, costLabel, href, gradient, popular = false, popularLabel, activateLabel }) {
   return (
     <Link href={href} className={`relative glass-card p-5 bg-gradient-to-br ${gradient} hover:scale-[1.02] transition-all block group overflow-hidden`}>
       {popular && (
         <div className="absolute -top-0.5 -right-0.5 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-black px-3 py-1 rounded-bl-xl rounded-tr-xl uppercase tracking-wider">
-          Most Popular
+          {popularLabel}
         </div>
       )}
       <div className="flex items-start gap-4">
@@ -76,7 +76,7 @@ function BoostCard({ icon, title, subtitle, impact, cost, costLabel, href, gradi
           <span className="text-white/40 text-xs ml-1">{costLabel}</span>
         </div>
         <span className="bg-white/10 group-hover:bg-white/20 text-white text-xs font-bold px-4 py-2 rounded-lg transition-colors">
-          Activate Now
+          {activateLabel}
         </span>
       </div>
     </Link>
@@ -185,11 +185,11 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
             <svg className="w-6 h-6 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
           </div>
           <div className="flex-1">
-            <p className="text-white font-bold">Get Verified — It&apos;s Free</p>
-            <p className="text-blue-300/70 text-sm">Verified providers get <span className="text-blue-300 font-semibold">3x more contact requests</span> and appear higher in search results.</p>
+            <p className="text-white font-bold">{t("getVerifiedFreeCard")}</p>
+            <p className="text-blue-300/70 text-sm">{t("getVerifiedCardDesc", { boost: t("getVerifiedCardBoost") })}</p>
           </div>
           <span className="bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl flex-shrink-0 shadow-lg shadow-blue-500/20">
-            Verify Now
+            {t("verifyNow")}
           </span>
         </Link>
       )}
@@ -205,64 +205,69 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <BoostCard
             icon={<svg className="w-6 h-6 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>}
-            title="Bump Up"
-            subtitle="Jump to the top of search results instantly"
-            impact="Up to 5x more profile views in 24 hours"
+            title={t("bumpUp")}
+            subtitle={t("bumpUpDesc")}
+            impact={t("bumpUpImpact")}
             cost="5"
-            costLabel="credits"
+            costLabel={t("creditsUnit")}
             href="/myaccount/listings/bump-up"
             gradient="from-violet-500/10 to-purple-500/5 border-violet-500/20"
+            activateLabel={t("activateNow")}
           />
           <BoostCard
             icon={<svg className="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>}
-            title="Highlight"
-            subtitle="Stand out with a glowing colored border"
-            impact="2x more clicks than standard listings"
+            title={t("highlight")}
+            subtitle={t("highlightDesc")}
+            impact={t("highlightImpact")}
             cost="10"
             costLabel="credits / 7 days"
             href="/myaccount/listings/highlight"
             gradient="from-yellow-500/10 to-amber-500/5 border-yellow-500/20"
+            activateLabel={t("activateNow")}
           />
           <BoostCard
             icon={<svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" /></svg>}
-            title="Feature Your Listing"
-            subtitle="Premium badge + priority in all searches"
-            impact="10x more visibility — top of every page"
+            title={t("featureListing")}
+            subtitle={t("featureListingDesc")}
+            impact={t("featureListingImpact")}
             cost="25"
             costLabel="credits / 30 days"
             href="/myaccount/listings/feature"
             gradient="from-amber-500/10 to-orange-500/5 border-amber-500/20"
             popular
+            popularLabel={t("mostPopular")}
+            activateLabel={t("activateNow")}
           />
           <BoostCard
             icon={<svg className="w-6 h-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>}
-            title="Available Now"
-            subtitle="Show clients you&apos;re ready right now"
-            impact="Pulsing green badge — urgent visibility boost"
+            title={t("availableNowBoost")}
+            subtitle={t("availableNowDesc")}
+            impact={t("availableNowImpact")}
             cost="Free"
             costLabel="2h active"
             href="/myaccount/listings"
             gradient="from-green-500/10 to-emerald-500/5 border-green-500/20"
+            activateLabel={t("activateNow")}
           />
         </div>
       </div>
 
       {/* Buy Credits CTA */}
       <div className="glass-card p-6 bg-gradient-to-br from-primary/10 via-background to-accent/10 border-primary/20 text-center">
-        <h3 className="text-white font-bold text-lg mb-2">Power Up Your Profile</h3>
+        <h3 className="text-white font-bold text-lg mb-2">{t("powerUpTitle")}</h3>
         <p className="text-text-muted text-sm mb-5 max-w-md mx-auto">
-          Credits are the fuel for your business. Buy once, use anytime. 1 credit = $1. Credits never expire.
+          {t("powerUpDesc")}
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3 mb-5">
           {[
-            { amount: 10, bonus: null },
-            { amount: 25, bonus: "+2 free" },
-            { amount: 50, bonus: "+5 free" },
-            { amount: 100, bonus: "+20 free" },
+            { amount: 10, creditsKey: "credits10", bonus: null },
+            { amount: 25, creditsKey: "credits25", bonus: "+2 free" },
+            { amount: 50, creditsKey: "credits50", bonus: "+5 free" },
+            { amount: 100, creditsKey: "credits100", bonus: "+20 free" },
           ].map((pkg) => (
             <div key={pkg.amount} className={`relative glass-card px-4 py-3 text-center ${pkg.bonus ? "border-primary/30" : "border-white/10"}`}>
               <p className="text-white font-black text-xl">${pkg.amount}</p>
-              <p className="text-text-muted text-xs">{pkg.amount} credits</p>
+              <p className="text-text-muted text-xs">{t(pkg.creditsKey)}</p>
               {pkg.bonus && (
                 <span className="absolute -top-2 -right-2 bg-green-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded-full">
                   {pkg.bonus}
@@ -272,7 +277,7 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
           ))}
         </div>
         <Link href="/myaccount/credits/buy" className="inline-block bg-gradient-to-r from-primary to-accent text-white font-bold text-sm px-8 py-3 rounded-xl shadow-lg shadow-primary/25 hover:shadow-primary/40 transition-all hover:scale-105">
-          Buy Credits Now
+          {t("buyCreditsCta")}
         </Link>
       </div>
 

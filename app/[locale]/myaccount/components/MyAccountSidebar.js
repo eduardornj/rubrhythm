@@ -1,11 +1,13 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter, usePathname } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useRouter, usePathname } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
 import { useState, useMemo } from "react";
+import { useTranslations } from "next-intl";
 import useSWR from "swr";
 import NotificationManager from "@/components/NotificationManager";
+import LanguageSwitcher from "@/components/LanguageSwitcher";
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -33,6 +35,7 @@ const Icon = ({ path, className = "w-5 h-5" }) => (
 export default function MyAccountSidebar({ sidebarOpen, setSidebarOpen, currentPath, userCredits }) {
   const { data: session } = useSession();
   const router = useRouter();
+  const t = useTranslations('dashboard');
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
   const isProvider = session?.user?.role === "provider";
@@ -52,66 +55,66 @@ export default function MyAccountSidebar({ sidebarOpen, setSidebarOpen, currentP
 
   // Menu items vary by role
   const providerMenu = [
-    { id: "dashboard", label: "Dashboard", href: "/myaccount", icon: Icons.dashboard },
+    { id: "dashboard", label: t("dashboardLabel"), href: "/myaccount", icon: Icons.dashboard },
     {
-      id: "listings", label: "My Listings", href: "/myaccount/listings", icon: Icons.listing,
+      id: "listings", label: t("myListingsAction"), href: "/myaccount/listings", icon: Icons.listing,
       submenu: [
-        { label: "All Listings", href: "/myaccount/listings" },
-        { label: "🟢 Available Now", href: "/myaccount/listings/available-now" },
-        { label: "⚡ Bump Up", href: "/myaccount/listings/bump-up" },
-        { label: "✨ Highlight", href: "/myaccount/listings/highlight" },
-        { label: "⭐ Feature", href: "/myaccount/listings/feature" },
+        { label: t("allListings"), href: "/myaccount/listings" },
+        { label: `🟢 ${t("availableNowMenu")}`, href: "/myaccount/listings/available-now" },
+        { label: `⚡ ${t("bumpUpMenu")}`, href: "/myaccount/listings/bump-up" },
+        { label: `✨ ${t("highlightMenu")}`, href: "/myaccount/listings/highlight" },
+        { label: `⭐ ${t("featureMenu")}`, href: "/myaccount/listings/feature" },
       ]
     },
     {
-      id: "credits", label: "Credits", href: "/myaccount/credits", icon: Icons.credits,
+      id: "credits", label: t("creditsAction"), href: "/myaccount/credits", icon: Icons.credits,
       submenu: [
-        { label: "My Credits", href: "/myaccount/credits" },
-        { label: "Buy Credits", href: "/myaccount/credits/buy" },
-        { label: "History", href: "/myaccount/credits/history" },
+        { label: t("myCreditsMenu"), href: "/myaccount/credits" },
+        { label: t("buyCreditsMenu"), href: "/myaccount/credits/buy" },
+        { label: t("historyMenu"), href: "/myaccount/credits/history" },
       ]
     },
-    { id: "services", label: "Boost Services", href: "/myaccount/services", icon: Icons.boost },
-    { id: "verified", label: "Get Verified", href: "/myaccount/verification", icon: Icons.verified },
-    { id: "referral", label: "Refer Friends", href: "/myaccount/referral", icon: Icons.gift },
-    { id: "chat", label: "Messages", href: "/myaccount/chat", icon: Icons.chat },
-    { id: "notifications", label: "Notifications", href: "/myaccount/notifications", icon: Icons.bell },
-    { id: "blocklist", label: "Block List", href: "/myaccount/blocklist", icon: Icons.block },
+    { id: "services", label: t("boostServicesMenu"), href: "/myaccount/services", icon: Icons.boost },
+    { id: "verified", label: t("getVerifiedMenu"), href: "/myaccount/verification", icon: Icons.verified },
+    { id: "referral", label: t("referFriendsMenu"), href: "/myaccount/referral", icon: Icons.gift },
+    { id: "chat", label: t("messagesAction"), href: "/myaccount/chat", icon: Icons.chat },
+    { id: "notifications", label: t("notificationsMenu"), href: "/myaccount/notifications", icon: Icons.bell },
+    { id: "blocklist", label: t("blockListMenu"), href: "/myaccount/blocklist", icon: Icons.block },
   ];
 
   const clientMenu = [
-    { id: "dashboard", label: "Dashboard", href: "/myaccount", icon: Icons.dashboard },
-    { id: "favorites", label: "Saved Profiles", href: "/myaccount/favorites", icon: Icons.heart },
-    { id: "chat", label: "My Chats", href: "/myaccount/chat", icon: Icons.chat },
-    { id: "notifications", label: "Notifications", href: "/myaccount/notifications", icon: Icons.bell },
+    { id: "dashboard", label: t("dashboardLabel"), href: "/myaccount", icon: Icons.dashboard },
+    { id: "favorites", label: t("savedProfilesMenu"), href: "/myaccount/favorites", icon: Icons.heart },
+    { id: "chat", label: t("myChatsMenu"), href: "/myaccount/chat", icon: Icons.chat },
+    { id: "notifications", label: t("notificationsMenu"), href: "/myaccount/notifications", icon: Icons.bell },
   ];
 
   const adminMenu = [
-    { id: "dashboard", label: "Dashboard", href: "/myaccount", icon: Icons.dashboard },
-    { id: "admin-panel", label: "🔑 Portal Admin", href: "/admin", icon: Icons.boost },
+    { id: "dashboard", label: t("dashboardLabel"), href: "/myaccount", icon: Icons.dashboard },
+    { id: "admin-panel", label: `🔑 ${t("portalAdmin")}`, href: "/admin", icon: Icons.boost },
     {
-      id: "listings", label: "My Listings", href: "/myaccount/listings", icon: Icons.listing,
+      id: "listings", label: t("myListingsAction"), href: "/myaccount/listings", icon: Icons.listing,
       submenu: [
-        { label: "All Listings", href: "/myaccount/listings" },
-        { label: "🟢 Available Now", href: "/myaccount/listings/available-now" },
-        { label: "⚡ Bump Up", href: "/myaccount/listings/bump-up" },
-        { label: "✨ Highlight", href: "/myaccount/listings/highlight" },
-        { label: "⭐ Feature", href: "/myaccount/listings/feature" },
+        { label: t("allListings"), href: "/myaccount/listings" },
+        { label: `🟢 ${t("availableNowMenu")}`, href: "/myaccount/listings/available-now" },
+        { label: `⚡ ${t("bumpUpMenu")}`, href: "/myaccount/listings/bump-up" },
+        { label: `✨ ${t("highlightMenu")}`, href: "/myaccount/listings/highlight" },
+        { label: `⭐ ${t("featureMenu")}`, href: "/myaccount/listings/feature" },
       ]
     },
     {
-      id: "credits", label: "Credits", href: "/myaccount/credits", icon: Icons.credits,
+      id: "credits", label: t("creditsAction"), href: "/myaccount/credits", icon: Icons.credits,
       submenu: [
-        { label: "My Credits", href: "/myaccount/credits" },
-        { label: "Buy Credits", href: "/myaccount/credits/buy" },
-        { label: "History", href: "/myaccount/credits/history" },
+        { label: t("myCreditsMenu"), href: "/myaccount/credits" },
+        { label: t("buyCreditsMenu"), href: "/myaccount/credits/buy" },
+        { label: t("historyMenu"), href: "/myaccount/credits/history" },
       ]
     },
-    { id: "services", label: "Boost Services", href: "/myaccount/services", icon: Icons.boost },
-    { id: "favorites", label: "Saved Profiles", href: "/myaccount/favorites", icon: Icons.heart },
-    { id: "chat", label: "Messages", href: "/myaccount/chat", icon: Icons.chat },
-    { id: "notifications", label: "Notifications", href: "/myaccount/notifications", icon: Icons.bell },
-    { id: "blocklist", label: "Block List", href: "/myaccount/blocklist", icon: Icons.block },
+    { id: "services", label: t("boostServicesMenu"), href: "/myaccount/services", icon: Icons.boost },
+    { id: "favorites", label: t("savedProfilesMenu"), href: "/myaccount/favorites", icon: Icons.heart },
+    { id: "chat", label: t("messagesAction"), href: "/myaccount/chat", icon: Icons.chat },
+    { id: "notifications", label: t("notificationsMenu"), href: "/myaccount/notifications", icon: Icons.bell },
+    { id: "blocklist", label: t("blockListMenu"), href: "/myaccount/blocklist", icon: Icons.block },
   ];
 
   const isAdmin = session?.user?.role === "admin";
@@ -120,16 +123,16 @@ export default function MyAccountSidebar({ sidebarOpen, setSidebarOpen, currentP
   // Bottom nav items for mobile (max 5)
   const bottomNavItems = isProvider
     ? [
-      { label: "Home", href: "/myaccount", icon: Icons.dashboard },
-      { label: "Listings", href: "/myaccount/listings", icon: Icons.listing },
-      { label: "Services", href: "/myaccount/services", icon: Icons.boost },
-      { label: "Credits", href: "/myaccount/credits", icon: Icons.credits },
-      { label: "Verified", href: "/myaccount/verification", icon: Icons.verified },
+      { label: t("homeNav"), href: "/myaccount", icon: Icons.dashboard },
+      { label: t("listingsNav"), href: "/myaccount/listings", icon: Icons.listing },
+      { label: t("servicesNav"), href: "/myaccount/services", icon: Icons.boost },
+      { label: t("creditsNav"), href: "/myaccount/credits", icon: Icons.credits },
+      { label: t("verifiedNav"), href: "/myaccount/verification", icon: Icons.verified },
     ]
     : [
-      { label: "Home", href: "/myaccount", icon: Icons.dashboard },
-      { label: "Saved", href: "/myaccount/favorites", icon: Icons.heart },
-      { label: "Chats", href: "/myaccount/chat", icon: Icons.chat },
+      { label: t("homeNav"), href: "/myaccount", icon: Icons.dashboard },
+      { label: t("savedNav"), href: "/myaccount/favorites", icon: Icons.heart },
+      { label: t("chatsNav"), href: "/myaccount/chat", icon: Icons.chat },
     ];
 
   const handleLogout = () => {
@@ -250,17 +253,17 @@ export default function MyAccountSidebar({ sidebarOpen, setSidebarOpen, currentP
               <div className="bg-gradient-to-r from-primary/10 to-accent/5 border border-primary/20 rounded-xl p-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-xs text-text-muted">Available Credits</p>
+                    <p className="text-xs text-text-muted">{t("availableCreditsLabel")}</p>
                     <p className="text-xl font-black text-white mt-0.5">
                       {typeof userCredits === "number" ? userCredits.toFixed(0) : "0"}
-                      <span className="text-xs text-text-muted font-normal ml-1">credits</span>
+                      <span className="text-xs text-text-muted font-normal ml-1">{t("creditsUnit")}</span>
                     </p>
                   </div>
                   <Link
                     href="/myaccount/credits/buy"
                     className="bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-primary-hover transition-colors shadow-sm shadow-primary/20"
                   >
-                    + Buy
+                    {t("buyShort")}
                   </Link>
                 </div>
               </div>
@@ -275,8 +278,11 @@ export default function MyAccountSidebar({ sidebarOpen, setSidebarOpen, currentP
               ))}
             </nav>
 
-            {/* Footer Items directly below */}
+            {/* Language + Footer Items */}
             <div className="mt-4 pt-4 border-t border-white/8 space-y-2 mb-4">
+              <div className="px-3 py-2">
+                <LanguageSwitcher />
+              </div>
               <Link
                 href="/"
                 className="flex items-center gap-3 px-3 py-2.5 text-text-muted hover:text-white hover:bg-white/5 rounded-xl transition-all text-sm"
@@ -284,14 +290,14 @@ export default function MyAccountSidebar({ sidebarOpen, setSidebarOpen, currentP
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={1.8} viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
                 </svg>
-                <span className="font-medium">Back to Site</span>
+                <span className="font-medium">{t("backToSite")}</span>
               </Link>
               <button
                 onClick={() => setShowLogoutConfirm(true)}
                 className="flex items-center gap-3 w-full px-3 py-2.5 text-text-muted hover:text-red-400 hover:bg-red-500/5 rounded-xl transition-all text-sm"
               >
                 <Icon path={Icons.logout} />
-                <span className="font-medium">Sign Out</span>
+                <span className="font-medium">{t("signOutBtn")}</span>
               </button>
             </div>
           </div>
@@ -332,20 +338,20 @@ export default function MyAccountSidebar({ sidebarOpen, setSidebarOpen, currentP
       {showLogoutConfirm && (
         <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[60] flex items-center justify-center p-4">
           <div className="glass-card p-6 max-w-sm w-full">
-            <h3 className="text-lg font-bold text-white mb-2">Sign out?</h3>
-            <p className="text-text-muted text-sm mb-6">You will be redirected to the homepage.</p>
+            <h3 className="text-lg font-bold text-white mb-2">{t("signOutConfirm")}</h3>
+            <p className="text-text-muted text-sm mb-6">{t("signOutDesc")}</p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowLogoutConfirm(false)}
                 className="flex-1 btn-secondary"
               >
-                Cancel
+                {t("cancelBtn")}
               </button>
               <button
                 onClick={handleLogout}
                 className="flex-1 bg-red-500/20 border border-red-500/30 text-red-400 font-semibold py-2.5 px-4 rounded-xl hover:bg-red-500/30 transition-colors"
               >
-                Sign Out
+                {t("signOutBtn")}
               </button>
             </div>
           </div>
