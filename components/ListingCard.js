@@ -2,17 +2,19 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { useSession } from "next-auth/react";
 import { MessageCircle } from "lucide-react";
 import useFilterStore from "@/store/useFilterStore";
 import FavoriteButton from "@/app/components/FavoriteButton";
 import AnonymousChat from "@/app/components/AnonymousChat";
+import { useTranslations } from "next-intl";
 import { getFirstListingImage } from "@/lib/image-utils";
 import ImageLightbox from "@/components/ImageLightbox";
 import { detectFacePosition } from "@/lib/face-focus";
 
 export default function ListingCard({ listing, state, city, isFavorited: initialIsFavorited, priority = false }) {
+  const t = useTranslations("listing");
   const { data: session } = useSession();
   const { onlyVerified } = useFilterStore();
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -187,7 +189,7 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
         </Link>
 
         <p className="text-text-muted text-xs line-clamp-2 mb-2 flex-grow leading-relaxed">
-          {listing.description || "No description available."}
+          {listing.description || t("noDescription")}
         </p>
 
         {/* Rating display */}
@@ -208,7 +210,7 @@ export default function ListingCard({ listing, state, city, isFavorited: initial
             href={href}
             className="btn-primary px-3 py-2 text-xs font-semibold flex-1 text-center rounded-xl"
           >
-            View Profile →
+            {t("viewProfile")}
           </Link>
           <button
             onClick={() => setIsChatOpen(true)}
