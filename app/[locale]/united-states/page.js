@@ -1,38 +1,41 @@
 import MainLayout from "@components/MainLayout";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import locations from "@/data/datalocations.js";
+import { getTranslations } from "next-intl/server";
 
-export const metadata = {
-    title: "Body Rubs & Massage Providers by State | RubRhythm",
-    description:
-        "Find top-rated body rub and massage providers near you. Browse by state and city to discover verified providers across the United States.",
-};
+export async function generateMetadata({ params }) {
+    const { locale } = await params;
+    const t = await getTranslations({ locale, namespace: "states" });
+    return {
+        title: t("title"),
+        description: t("subtitle"),
+    };
+}
 
-export default function UnitedStatesPage() {
+export default async function UnitedStatesPage() {
+    const t = await getTranslations("states");
+
     return (
         <MainLayout>
             <div className="container mx-auto px-4 py-8">
-                {/* Breadcrumb */}
                 <nav className="flex items-center text-sm text-text-muted mb-6 space-x-2">
-                    <Link href="/" className="hover:text-primary transition-colors">Home</Link>
+                    <Link href="/" className="hover:text-primary transition-colors">{t("home")}</Link>
                     <span>/</span>
-                    <span className="text-white">United States</span>
+                    <span className="text-white">{t("unitedStates")}</span>
                 </nav>
 
                 <div className="mb-10">
                     <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white mb-3">
-                        All States
+                        {t("title")}
                     </h1>
                     <p className="text-text-muted max-w-2xl">
-                        Browse verified massage and body rub providers across all 50 states. Select a state to explore cities and providers.
+                        {t("subtitle")}
                     </p>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                     {locations.map((location) => {
-                        const stateSlug = location.state
-                            .toLowerCase()
-                            .replace(/\s+/g, "-");
+                        const stateSlug = location.state.toLowerCase().replace(/\s+/g, "-");
                         return (
                             <Link
                                 key={location.state}
@@ -43,7 +46,7 @@ export default function UnitedStatesPage() {
                                     {location.state}
                                 </h2>
                                 <p className="text-xs text-text-muted mt-1">
-                                    {location.cities.length} {location.cities.length === 1 ? 'city' : 'cities'}
+                                    {location.cities.length} {location.cities.length === 1 ? t("city") : t("cities")}
                                 </p>
                             </Link>
                         );
@@ -55,7 +58,7 @@ export default function UnitedStatesPage() {
                         <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                         </svg>
-                        Back to Home
+                        {t("backHome")}
                     </Link>
                 </div>
             </div>

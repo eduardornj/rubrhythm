@@ -186,6 +186,19 @@
     "currentlyActive": "Currently {count} provider(s) active in {city}.",
     "viewProfile": "View Profile"
   },
+  "states": {
+    "title": "All States",
+    "subtitle": "Browse verified massage and body rub providers across all 50 states. Select a state to explore cities and providers.",
+    "home": "Home",
+    "unitedStates": "United States",
+    "city": "city",
+    "cities": "cities",
+    "backHome": "Back to Home",
+    "stateTitle": "Cities in {state}",
+    "stateSubtitle": "Select a city to view verified providers in {state}.",
+    "providers": "providers",
+    "viewProviders": "View providers"
+  },
   "search": {
     "title": "Search Results",
     "titleIn": "Search Results in {location}",

@@ -186,6 +186,19 @@
     "currentlyActive": "Actualmente {count} proveedor(es) activo(s) en {city}.",
     "viewProfile": "Ver Perfil"
   },
+  "states": {
+    "title": "Todos los Estados",
+    "subtitle": "Busque proveedores verificados de masajes en los 50 estados. Seleccione un estado para explorar ciudades y proveedores.",
+    "home": "Inicio",
+    "unitedStates": "Estados Unidos",
+    "city": "ciudad",
+    "cities": "ciudades",
+    "backHome": "Volver al Inicio",
+    "stateTitle": "Ciudades en {state}",
+    "stateSubtitle": "Seleccione una ciudad para ver proveedores verificados en {state}.",
+    "providers": "proveedores",
+    "viewProviders": "Ver proveedores"
+  },
   "search": {
     "title": "Resultados de Búsqueda",
     "titleIn": "Resultados de Búsqueda en {location}",
