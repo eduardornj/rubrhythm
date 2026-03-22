@@ -42,11 +42,20 @@ function isProtectedPath(cleanPathname: string): boolean {
 
 // API paths that need auth
 function isProtectedApiPath(pathname: string): boolean {
+  // /api/listing/* is PUBLIC (anyone can view listings)
+  // Only protect write operations
+  if (pathname.startsWith('/api/listing/view')) return false
+  if (pathname.startsWith('/api/listing') && !pathname.includes('/api/listings')) return false
+  if (pathname.startsWith('/api/listings/similar')) return false
+  if (pathname.startsWith('/api/listings/recent')) return false
+  if (pathname.startsWith('/api/listings') && pathname.includes('featured=true')) return false
+  if (pathname.startsWith('/api/cities')) return false
+  if (pathname.startsWith('/api/reviews') && !pathname.includes('POST')) return false
+
   return (
     pathname.startsWith('/api/chat') ||
     pathname.startsWith('/api/messages') ||
     pathname.startsWith('/api/favorites') ||
-    pathname.startsWith('/api/listing') ||
     pathname.startsWith('/api/user') ||
     pathname.startsWith('/api/notifications') ||
     pathname.startsWith('/api/credits')
