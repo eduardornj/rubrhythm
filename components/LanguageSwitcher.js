@@ -28,7 +28,7 @@ export default function LanguageSwitcher() {
   return (
     <button
       onClick={() => handleSwitch(otherLocale)}
-      className="flex items-center space-x-1.5 text-xs font-medium text-text hover:text-white bg-surface/60 border border-white/10 px-2.5 py-1.5 rounded-lg hover:bg-surface hover:border-white/20 transition-all duration-200"
+      className="flex items-center space-x-1.5 text-xs font-bold text-white hover:text-white/80 bg-white/20 border border-white/30 px-2.5 py-1 rounded-full hover:bg-white/30 transition-all duration-200"
       aria-label={`Switch to ${otherLocale === "en" ? "English" : "Spanish"}`}
     >
       <span>{LOCALE_FLAGS[otherLocale]}</span>
