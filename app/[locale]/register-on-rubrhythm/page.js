@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
+import { useTranslations } from "next-intl";
 import MainLayout from "@components/MainLayout";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
+import { useRouter, Link } from "@/i18n/navigation";
+import { useSearchParams } from "next/navigation";
 import { analytics } from "@/lib/analytics";
 
 const RoleCard = ({ role, selected, onSelect, icon, title, description, perks }) => (
@@ -69,6 +70,7 @@ function RegisterOnRubrhythm() {
   const [termsAccepted, setTermsAccepted] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
+  const t = useTranslations('register');
 
   useEffect(() => {
     const ref = searchParams.get("ref");
@@ -117,7 +119,7 @@ function RegisterOnRubrhythm() {
 
       analytics.signUp(role, !!referralCode);
       const bonus = role === "provider" ? "$50" : "$5";
-      setSuccess(`Account created! You received ${bonus} in free credits to get started. Redirecting to login...`);
+      setSuccess(t('successMessage', { bonus }));
       setTimeout(() => router.push("/login"), 3500);
     } catch {
       setError("An unexpected error occurred. Please try again.");
@@ -139,8 +141,8 @@ function RegisterOnRubrhythm() {
               <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-2xl mb-4 shadow-lg shadow-primary/20">
                 <span className="text-white text-2xl">💆</span>
               </div>
-              <h1 className="text-2xl font-black text-white mb-1">Join RubRhythm</h1>
-              <p className="text-text-muted text-sm">Create your account to get started</p>
+              <h1 className="text-2xl font-black text-white mb-1">{t('title')}</h1>
+              <p className="text-text-muted text-sm">{t('subtitle')}</p>
             </div>
 
             {referralCode && (
@@ -167,7 +169,7 @@ function RegisterOnRubrhythm() {
               <div>
                 <p className="text-white font-semibold text-sm mb-3">
                   <span className="inline-flex items-center justify-center w-5 h-5 bg-primary text-white rounded-full text-xs font-black mr-2">1</span>
-                  I am a...
+                  {t('step1')}
                 </p>
                 <div className="space-y-3">
                   <RoleCard
@@ -175,12 +177,13 @@ function RegisterOnRubrhythm() {
                     selected={role === "provider"}
                     onSelect={setRole}
                     icon="💆"
-                    title="Massage Provider"
-                    description="I offer massage and body rub services"
+                    title={t('providerTitle')}
+                    description={t('providerDesc')}
                     perks={[
-                      "Create listings in any city",
-                      "Get verified with a Blue Badge",
-                      "Buy credits to boost visibility",
+                      t('providerPerk1'),
+                      t('providerPerk2'),
+                      t('providerPerk3'),
+                      t('providerPerk4'),
                     ]}
                   />
                   <RoleCard
@@ -188,12 +191,13 @@ function RegisterOnRubrhythm() {
                     selected={role === "user"}
                     onSelect={setRole}
                     icon="🔍"
-                    title="Client"
-                    description="I'm looking for massage services"
+                    title={t('clientTitle')}
+                    description={t('clientDesc')}
                     perks={[
-                      "Browse verified providers",
-                      "Save favorite profiles",
-                      "Chat anonymously",
+                      t('clientPerk1'),
+                      t('clientPerk2'),
+                      t('clientPerk3'),
+                      t('clientPerk4'),
                     ]}
                   />
                 </div>
@@ -233,7 +237,7 @@ function RegisterOnRubrhythm() {
               <div>
                 <p className="text-white font-semibold text-sm mb-3">
                   <span className="inline-flex items-center justify-center w-5 h-5 bg-primary text-white rounded-full text-xs font-black mr-2">2</span>
-                  Your details
+                  {t('step2')}
                 </p>
                 <div className="space-y-3">
                   <input
@@ -241,7 +245,7 @@ function RegisterOnRubrhythm() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all"
-                    placeholder="Full name"
+                    placeholder={t('fullNamePlaceholder')}
                     autoComplete="name"
                     required
                   />
@@ -250,7 +254,7 @@ function RegisterOnRubrhythm() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all"
-                    placeholder="your@email.com"
+                    placeholder={t('emailPlaceholder')}
                     autoComplete="email"
                     required
                   />
@@ -260,7 +264,7 @@ function RegisterOnRubrhythm() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full p-3.5 pr-12 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 focus:bg-white/8 transition-all"
-                      placeholder="Create a password"
+                      placeholder={t('passwordPlaceholder')}
                       autoComplete="new-password"
                       required
                       minLength={8}
@@ -270,7 +274,7 @@ function RegisterOnRubrhythm() {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors text-sm"
                     >
-                      {showPassword ? "Hide" : "Show"}
+                      {showPassword ? t('hidePassword') : t('showPassword')}
                     </button>
                   </div>
                 </div>
@@ -280,7 +284,7 @@ function RegisterOnRubrhythm() {
               <div>
                 <p className="text-white font-semibold text-sm mb-3">
                   <span className="inline-flex items-center justify-center w-5 h-5 bg-primary text-white rounded-full text-xs font-black mr-2">3</span>
-                  Quick check
+                  {t('step3')}
                 </p>
                 <div className="flex items-center gap-3">
                   <span className="text-white/60 text-sm font-mono">
@@ -323,10 +327,10 @@ function RegisterOnRubrhythm() {
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Creating account...
+                    {t('creating')}
                   </span>
                 ) : (
-                  "Create Account →"
+                  <>{t('createAccount')} &rarr;</>
                 )}
               </button>
 
@@ -335,9 +339,9 @@ function RegisterOnRubrhythm() {
             {/* Footer */}
             <div className="mt-6 text-center">
               <p className="text-text-muted text-sm">
-                Already have an account?{" "}
+                {t('alreadyHaveAccount')}{" "}
                 <Link href="/login" className="text-primary hover:text-accent transition-colors font-semibold">
-                  Sign in
+                  {t('signIn')}
                 </Link>
               </p>
             </div>

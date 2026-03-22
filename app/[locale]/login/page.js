@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import MainLayout from "@components/MainLayout";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter, Link } from "@/i18n/navigation";
 import { analytics } from "@/lib/analytics";
 
 export default function Login() {
@@ -14,6 +14,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
+  const t = useTranslations('login');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,7 +28,7 @@ export default function Login() {
     });
 
     if (result?.error) {
-      setError("Invalid email or password. Please try again.");
+      setError(t('invalidCredentials'));
       setIsLoading(false);
     } else {
       analytics.login();
@@ -46,8 +47,8 @@ export default function Login() {
               <div className="inline-flex items-center justify-center w-14 h-14 bg-gradient-to-br from-primary to-accent rounded-2xl mb-4 shadow-lg shadow-primary/20">
                 <span className="text-white text-2xl">💆</span>
               </div>
-              <h1 className="text-2xl font-black text-white mb-1">Welcome back</h1>
-              <p className="text-text-muted text-sm">Sign in to your RubRhythm account</p>
+              <h1 className="text-2xl font-black text-white mb-1">{t('title')}</h1>
+              <p className="text-text-muted text-sm">{t('subtitle')}</p>
             </div>
 
             {/* Form */}
@@ -59,13 +60,13 @@ export default function Login() {
               )}
 
               <div className="space-y-1.5">
-                <label className="text-white/80 text-sm font-medium">Email</label>
+                <label className="text-white/80 text-sm font-medium">{t('email')}</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full p-3.5 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-all"
-                  placeholder="your@email.com"
+                  placeholder={t('emailPlaceholder')}
                   required
                   autoComplete="email"
                 />
@@ -73,9 +74,9 @@ export default function Login() {
 
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-white/80 text-sm font-medium">Password</label>
+                  <label className="text-white/80 text-sm font-medium">{t('password')}</label>
                   <Link href="/forgot-password" className="text-primary hover:text-accent text-xs transition-colors">
-                    Forgot password?
+                    {t('forgotPassword')}
                   </Link>
                 </div>
                 <div className="relative">
@@ -84,7 +85,7 @@ export default function Login() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     className="w-full p-3.5 pr-12 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/30 focus:outline-none focus:border-primary/50 transition-all"
-                    placeholder="Enter your password"
+                    placeholder={t('passwordPlaceholder')}
                     required
                     autoComplete="current-password"
                   />
@@ -93,7 +94,7 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     className="absolute right-4 top-1/2 -translate-y-1/2 text-text-muted hover:text-white transition-colors text-xs font-medium"
                   >
-                    {showPassword ? "Hide" : "Show"}
+                    {showPassword ? t('hidePassword') : t('showPassword')}
                   </button>
                 </div>
               </div>
@@ -106,19 +107,19 @@ export default function Login() {
                 {isLoading ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Signing in...
+                    {t('signingIn')}
                   </span>
                 ) : (
-                  "Sign In →"
+                  <>{t('signIn')} &rarr;</>
                 )}
               </button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-text-muted text-sm">
-                Don&apos;t have an account?{" "}
+                {t('noAccount')}{" "}
                 <Link href="/register-on-rubrhythm" className="text-primary hover:text-accent transition-colors font-semibold">
-                  Create account
+                  {t('createAccount')}
                 </Link>
               </p>
             </div>
