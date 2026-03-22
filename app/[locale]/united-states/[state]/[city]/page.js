@@ -1,11 +1,12 @@
 // app/united-states/[state]/[city]/page.js
 import MainLayout from "@components/MainLayout";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import prisma from "@lib/prisma.js";
 import ListingCard from "@components/ListingCard";
 import { auth } from "@/auth";
 import SearchBar from "@/components/SearchBar";
 import { safeJsonParse } from "@/lib/json-utils";
+import { getTranslations } from "next-intl/server";
 
 import locations from "@/data/datalocations";
 import cityContent from "@/data/cityContent";
@@ -243,6 +244,7 @@ export async function generateMetadata({ params: paramsPromise }) {
 export default async function CityPage({ params: paramsPromise }) {
   const params = await paramsPromise;
   const { state, city } = params;
+  const t = await getTranslations("city");
 
   const session = await auth();
   const userId = session?.user?.id;
@@ -283,9 +285,9 @@ export default async function CityPage({ params: paramsPromise }) {
 
         {/* Breadcrumbs */}
         <nav className="flex items-center gap-1.5 text-xs text-white/30 mb-6 flex-wrap">
-          <Link href="/" className="hover:text-white/60 transition-colors">Home</Link>
+          <Link href="/" className="hover:text-white/60 transition-colors">{t("breadcrumbHome")}</Link>
           <span>/</span>
-          <Link href="/united-states" className="hover:text-white/60 transition-colors">United States</Link>
+          <Link href="/united-states" className="hover:text-white/60 transition-colors">{t("breadcrumbUS")}</Link>
           <span>/</span>
           <Link href={`/united-states/${state}`} className="hover:text-white/60 transition-colors">{formattedState}</Link>
           <span>/</span>
@@ -296,15 +298,15 @@ export default async function CityPage({ params: paramsPromise }) {
         <div className="mb-8">
           <div className="flex items-start justify-between gap-4 flex-wrap">
             <div>
-              <h1 className="text-3xl font-black text-white mb-2">{formattedCity} Body Rubs & Massage</h1>
+              <h1 className="text-3xl font-black text-white mb-2">{t("title", { city: formattedCity })}</h1>
               <p className="text-text-muted text-sm">
-                Verified providers in {formattedCity}, {formattedState}
+                {t("subtitle", { city: formattedCity, state: formattedState })}
               </p>
             </div>
             {listings.length > 0 && (
               <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-xl px-4 py-2 flex-shrink-0">
                 <span className="text-2xl font-black text-white">{listings.length}</span>
-                <span className="text-xs text-text-muted leading-tight">Providers<br/>Available</span>
+                <span className="text-xs text-text-muted leading-tight whitespace-pre-line">{t("providersAvailable")}</span>
               </div>
             )}
           </div>
@@ -317,13 +319,13 @@ export default async function CityPage({ params: paramsPromise }) {
               {foundingRemaining > 0 ? '⭐' : '💆'}
             </div>
             <div>
-              <p className="text-white font-semibold text-sm">Are you a massage provider in {formattedCity}?</p>
+              <p className="text-white font-semibold text-sm">{t("areYouProvider", { city: formattedCity })}</p>
               {foundingRemaining > 0 ? (
                 <p className="text-amber-400/80 text-xs mt-0.5 font-medium">
-                  Only {foundingRemaining} Founding Provider spot{foundingRemaining === 1 ? '' : 's'} left in {formattedCity} — free for 3 months
+                  {t("foundingSpots", { count: foundingRemaining, city: formattedCity })} — {t("foundingFree")}
                 </p>
               ) : (
-                <p className="text-white/50 text-xs mt-0.5">Create your free profile and start getting clients today</p>
+                <p className="text-white/50 text-xs mt-0.5">{t("createProfile")}</p>
               )}
             </div>
           </div>
@@ -331,7 +333,7 @@ export default async function CityPage({ params: paramsPromise }) {
             href="/register-on-rubrhythm"
             className={`flex-shrink-0 px-5 py-2.5 text-sm font-bold rounded-xl transition-colors whitespace-nowrap ${foundingRemaining > 0 ? 'bg-amber-500 hover:bg-amber-400 text-black' : 'bg-primary hover:bg-primary/90 text-white'}`}
           >
-            {foundingRemaining > 0 ? 'Claim Your Spot' : 'List for Free'}
+            {foundingRemaining > 0 ? t("claimSpot") : t("listFree")}
           </Link>
         </div>
 
@@ -339,8 +341,8 @@ export default async function CityPage({ params: paramsPromise }) {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {listings.length === 0 ? (
             <div className="col-span-4 text-center py-16">
-              <p className="text-white/40 text-lg">No providers yet in {formattedCity}.</p>
-              <p className="text-white/20 text-sm mt-2">Be the first — list your services for free.</p>
+              <p className="text-white/40 text-lg">{t("noProviders", { city: formattedCity })}</p>
+              <p className="text-white/20 text-sm mt-2">{t("beFirst")}</p>
             </div>
           ) : (
             listings.map((listing, idx) => (
@@ -359,7 +361,7 @@ export default async function CityPage({ params: paramsPromise }) {
         {/* Featured Section */}
         {featuredListings.length > 0 && (
           <div className="mt-16">
-            <h2 className="text-xl font-bold text-white mb-6">Featured Providers in {formattedCity}</h2>
+            <h2 className="text-xl font-bold text-white mb-6">{t("featuredProviders", { city: formattedCity })}</h2>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               {featuredListings.map((listing) => (
                 <ListingCard
@@ -376,16 +378,15 @@ export default async function CityPage({ params: paramsPromise }) {
 
         {/* SEO Content Block */}
         <div className="mt-8 glass-card p-6 prose prose-invert max-w-none">
-          <h2 className="text-lg font-bold text-white mb-3">Body Rubs & Massage in {formattedCity}, {formattedState}</h2>
+          <h2 className="text-lg font-bold text-white mb-3">{t("seoTitle", { city: formattedCity, state: formattedState })}</h2>
           {cityContent[formattedCity]?.content ? (
             cityContent[formattedCity].content.split('\n\n').map((paragraph, i) => (
               <p key={i} className="text-white/50 text-sm leading-relaxed mb-3">{paragraph}</p>
             ))
           ) : (
             <p className="text-white/50 text-sm leading-relaxed">
-              RubRhythm connects you with verified body rub and massage providers in {formattedCity}, {formattedState}.
-              Browse provider profiles, view photos, read reviews, and connect directly — all in one place.
-              {listings.length > 0 && ` Currently ${listings.length} provider${listings.length > 1 ? 's' : ''} active in ${formattedCity}.`}
+              {t("seoDefault", { city: formattedCity, state: formattedState })}
+              {listings.length > 0 && ` ${t("currentlyActive", { count: listings.length, city: formattedCity })}`}
             </p>
           )}
         </div>

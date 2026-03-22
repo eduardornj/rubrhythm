@@ -158,6 +158,26 @@
     "privacyPolicy": "Política de Privacidad",
     "successMessage": "¡Cuenta creada! Recibió {bonus} en créditos gratis para comenzar. Redirigiendo al inicio de sesión..."
   },
+  "city": {
+    "breadcrumbHome": "Inicio",
+    "breadcrumbUS": "Estados Unidos",
+    "title": "Masajes y Body Rub en {city}",
+    "subtitle": "Proveedores verificados en {city}, {state}",
+    "providersAvailable": "Proveedores\nDisponibles",
+    "areYouProvider": "¿Es usted proveedor de masajes en {city}?",
+    "foundingSpots": "Solo quedan {count} lugar(es) de Proveedor Fundador en {city}",
+    "foundingFree": "gratis por 3 meses",
+    "createProfile": "Cree su perfil gratuito y comience a recibir clientes hoy",
+    "claimSpot": "Reserve su Lugar",
+    "listFree": "Publicar Gratis",
+    "noProviders": "Aún no hay proveedores en {city}.",
+    "beFirst": "Sea el primero — publique sus servicios gratis.",
+    "featuredProviders": "Proveedores Destacados en {city}",
+    "seoTitle": "Masajes y Body Rub en {city}, {state}",
+    "seoDefault": "RubRhythm lo conecta con proveedores verificados de masajes y body rub en {city}, {state}. Vea perfiles, fotos, reseñas y conéctese directamente, todo en un solo lugar.",
+    "currentlyActive": "Actualmente {count} proveedor(es) activo(s) en {city}.",
+    "viewProfile": "Ver Perfil"
+  },
   "common": {
     "loading": "Cargando...",
     "error": "Ocurrió un error",

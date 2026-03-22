@@ -158,6 +158,26 @@
     "privacyPolicy": "Privacy Policy",
     "successMessage": "Account created! You received {bonus} in free credits to get started. Redirecting to login..."
   },
+  "city": {
+    "breadcrumbHome": "Home",
+    "breadcrumbUS": "United States",
+    "title": "{city} Body Rubs & Massage",
+    "subtitle": "Verified providers in {city}, {state}",
+    "providersAvailable": "Providers\nAvailable",
+    "areYouProvider": "Are you a massage provider in {city}?",
+    "foundingSpots": "Only {count} Founding Provider spot(s) left in {city}",
+    "foundingFree": "free for 3 months",
+    "createProfile": "Create your free profile and start getting clients today",
+    "claimSpot": "Claim Your Spot",
+    "listFree": "List for Free",
+    "noProviders": "No providers yet in {city}.",
+    "beFirst": "Be the first — list your services for free.",
+    "featuredProviders": "Featured Providers in {city}",
+    "seoTitle": "Body Rubs & Massage in {city}, {state}",
+    "seoDefault": "RubRhythm connects you with verified body rub and massage providers in {city}, {state}. Browse provider profiles, view photos, read reviews, and connect directly — all in one place.",
+    "currentlyActive": "Currently {count} provider(s) active in {city}.",
+    "viewProfile": "View Profile"
+  },
   "common": {
     "loading": "Loading...",
     "error": "An error occurred",
