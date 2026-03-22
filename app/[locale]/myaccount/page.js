@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { useSession } from "next-auth/react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
+import { useTranslations } from "next-intl";
 
 // Stat Card component
 function StatCard({ icon, label, value, sub, href, color = "primary" }) {
@@ -84,6 +85,7 @@ function BoostCard({ icon, title, subtitle, impact, cost, costLabel, href, gradi
 
 // Provider Dashboard View
 function ProviderDashboard({ session, stats, userData, alerts }) {
+  const t = useTranslations('dashboard');
   const isVerified = userData?.verified;
   return (
     <div className="space-y-8">
@@ -96,12 +98,12 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h1 className="text-xl font-bold text-white truncate">
-                Welcome, {session?.user?.name?.split(" ")[0]}!
+                {t("welcomeProvider", { name: session?.user?.name?.split(" ")[0] || "" })}
               </h1>
               {isVerified ? (
                 <span className="flex items-center gap-1 bg-blue-500/15 border border-blue-500/30 text-blue-400 text-xs font-bold px-2 py-0.5 rounded-full">
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-.723 3.066 3.066 0 013.976 0 3.066 3.066 0 001.745.723 3.066 3.066 0 012.812 2.812c.051.643.304 1.254.723 1.745a3.066 3.066 0 010 3.976 3.066 3.066 0 00-.723 1.745 3.066 3.066 0 01-2.812 2.812 3.066 3.066 0 00-1.745.723 3.066 3.066 0 01-3.976 0 3.066 3.066 0 00-1.745-.723 3.066 3.066 0 01-2.812-2.812 3.066 3.066 0 00-.723-1.745 3.066 3.066 0 010-3.976 3.066 3.066 0 00.723-1.745 3.066 3.066 0 012.812-2.812zm7.44 5.252a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
-                  Verified
+                  {t("verified")}
                 </span>
               ) : (
                 <Link
@@ -109,11 +111,11 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
                   className="flex items-center gap-1 bg-yellow-500/15 border border-yellow-500/30 text-yellow-400 text-xs font-semibold px-2 py-0.5 rounded-full hover:bg-yellow-500/25 transition-colors animate-pulse"
                 >
                   <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" /></svg>
-                  Get Verified — Free
+                  {t("getVerifiedFree")}
                 </Link>
               )}
             </div>
-            <p className="text-text-muted text-sm">Provider Account · {session?.user?.email}</p>
+            <p className="text-text-muted text-sm">{t("providerAccount")} · {session?.user?.email}</p>
             <AlertBanner {...alerts} />
           </div>
         </div>
@@ -126,34 +128,34 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
             <span className="text-2xl">🎁</span>
           </div>
           <div className="flex-1">
-            <p className="text-white font-bold text-lg">You have ${stats.creditsBalance} in free credits!</p>
-            <p className="text-green-300/70 text-sm">Your welcome bonus is ready. Create your first listing for just 10 credits and start connecting with clients today.</p>
+            <p className="text-white font-bold text-lg">{t("welcomeBonusTitle", { amount: stats.creditsBalance })}</p>
+            <p className="text-green-300/70 text-sm">{t("welcomeBonusProvider")}</p>
           </div>
           <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl flex-shrink-0 shadow-lg shadow-green-500/20">
-            Create Listing
+            {t("createListing")}
           </span>
         </Link>
       )}
 
       {/* Stats Grid */}
       <div>
-        <h2 className="text-white font-semibold mb-4">Your Performance</h2>
+        <h2 className="text-white font-semibold mb-4">{t("yourPerformance")}</h2>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <StatCard icon="📋" label="My Listings" value={stats.totalListings} sub={`${stats.activeListings} live & approved`} href="/myaccount/listings" color="primary" />
+          <StatCard icon="📋" label={t("myListings")} value={stats.totalListings} sub={t("liveApproved", { count: stats.activeListings })} href="/myaccount/listings" color="primary" />
           <StatCard
             icon="💰"
-            label="Credit Balance"
+            label={t("creditBalance")}
             value={stats.creditsBalance}
-            sub={stats.creditsBalance < 5 ? "Low balance!" : "Ready to boost"}
+            sub={stats.creditsBalance < 5 ? t("lowBalance") : t("readyToBoost")}
             href="/myaccount/credits"
             color={stats.creditsBalance < 5 ? "yellow" : "accent"}
           />
-          <StatCard icon="⭐" label="Reviews" value={stats.totalReviews || 0} sub={stats.averageRating > 0 ? `${stats.averageRating}/5 average` : "Ask clients for reviews"} href="/myaccount/reviews" color="yellow" />
+          <StatCard icon="⭐" label={t("reviews")} value={stats.totalReviews || 0} sub={stats.averageRating > 0 ? t("averageRating", { rating: stats.averageRating }) : t("askForReviews")} href="/myaccount/reviews" color="yellow" />
           <StatCard
             icon="👁️"
-            label="Profile Views"
+            label={t("profileViews")}
             value={stats.totalViews || 0}
-            sub="Total views across all listings"
+            sub={t("totalViews")}
             href="/myaccount/listings"
             color="green"
           />
@@ -167,11 +169,11 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
             <svg className="w-6 h-6 text-amber-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
           </div>
           <div className="flex-1">
-            <p className="text-white font-bold">Your credit balance is low</p>
-            <p className="text-amber-300/70 text-sm">Top up now to keep your listings visible. Credits never expire.</p>
+            <p className="text-white font-bold">{t("lowCreditsTitle")}</p>
+            <p className="text-amber-300/70 text-sm">{t("lowCreditsDesc")}</p>
           </div>
           <span className="bg-gradient-to-r from-amber-500 to-orange-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl flex-shrink-0 shadow-lg shadow-amber-500/20">
-            Buy Credits
+            {t("buyCredits")}
           </span>
         </Link>
       )}
@@ -195,9 +197,9 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
       {/* Boost Services — Main Revenue CTAs */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-white font-semibold">Boost Your Visibility</h2>
+          <h2 className="text-white font-semibold">{t("boostVisibility")}</h2>
           <Link href="/myaccount/credits" className="text-primary text-xs font-semibold hover:text-primary/80 transition-colors">
-            {stats.creditsBalance} credits available →
+            {t("creditsDesc", { amount: stats.creditsBalance })}
           </Link>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -276,12 +278,12 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
 
       {/* Quick Actions */}
       <div>
-        <h2 className="text-white font-semibold mb-4">Manage</h2>
+        <h2 className="text-white font-semibold mb-4">{t("manageAccount")}</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <ActionCard icon="➕" title="Create New Listing" description="Post your profile in a new city" href="/myaccount/listings/add-listing" highlight />
-          <ActionCard icon="📋" title="My Listings" description={`${stats.totalListings} listings · ${stats.activeListings} approved`} href="/myaccount/listings" />
-          <ActionCard icon="⭐" title="My Reviews" description={`${stats.totalReviews} reviews · ${stats.averageRating > 0 ? stats.averageRating + "/5 avg" : "Ask clients for reviews"}`} href="/myaccount/reviews" />
-          <ActionCard icon="🎁" title="Refer & Earn" description="Get 10 free credits per referral" href="/myaccount/referral" />
+          <ActionCard icon="➕" title={t("createListing")} description={t("myListingsDesc", { count: stats.totalListings, active: stats.activeListings })} href="/myaccount/listings/add-listing" highlight />
+          <ActionCard icon="📋" title={t("myListingsAction")} description={t("myListingsDesc", { count: stats.totalListings, active: stats.activeListings })} href="/myaccount/listings" />
+          <ActionCard icon="⭐" title={t("reviews")} description={stats.averageRating > 0 ? t("averageRating", { rating: stats.averageRating }) : t("askForReviews")} href="/myaccount/reviews" />
+          <ActionCard icon="🎁" title={t("referralAction")} description={t("referralDesc")} href="/myaccount/referral" />
         </div>
       </div>
     </div>
@@ -290,6 +292,7 @@ function ProviderDashboard({ session, stats, userData, alerts }) {
 
 // Client Dashboard View
 function ClientDashboard({ session, stats, alerts }) {
+  const t = useTranslations('dashboard');
   return (
     <div className="space-y-8">
       {/* Welcome Banner */}
@@ -299,7 +302,7 @@ function ClientDashboard({ session, stats, alerts }) {
             <span className="text-white font-black text-xl">{session?.user?.name?.charAt(0)?.toUpperCase() || "C"}</span>
           </div>
           <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-white">Hello, {session?.user?.name?.split(" ")[0]}!</h1>
+            <h1 className="text-xl font-bold text-white">{t("welcomeClient", { name: session?.user?.name?.split(" ")[0] || "" })}</h1>
             <p className="text-text-muted text-sm">{session?.user?.email}</p>
             <AlertBanner {...alerts} />
           </div>
@@ -313,21 +316,21 @@ function ClientDashboard({ session, stats, alerts }) {
             <span className="text-2xl">🎁</span>
           </div>
           <div className="flex-1">
-            <p className="text-white font-bold">You have ${stats?.creditsBalance || 0} in free credits!</p>
-            <p className="text-green-300/70 text-sm">Use them to message verified providers. Start browsing now.</p>
+            <p className="text-white font-bold">{t("welcomeBonusTitle", { amount: stats?.creditsBalance || 0 })}</p>
+            <p className="text-green-300/70 text-sm">{t("welcomeBonusClient")}</p>
           </div>
           <span className="bg-gradient-to-r from-green-500 to-emerald-500 text-white text-sm font-bold px-5 py-2.5 rounded-xl flex-shrink-0 shadow-lg shadow-green-500/20">
-            Browse Providers
+            {t("browseProviders")}
           </span>
         </Link>
       )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon="❤️" label="Favorites" value={stats?.totalFavorites || 0} sub="Saved profiles" href="/myaccount/favorites" color="accent" />
-        <StatCard icon="💬" label="Messages" value="Inbox" sub="Chat with providers" href="/myaccount/chat" color="primary" />
-        <StatCard icon="⭐" label="Credits" value={stats?.creditsBalance || 0} sub="For prepaid messages" href="/myaccount/credits" color="yellow" />
-        <StatCard icon="⚙️" label="Settings" value="Profile" sub="Manage account" href="/myaccount/settings" color="green" />
+        <StatCard icon="❤️" label={t("favoritesAction")} value={stats?.totalFavorites || 0} sub={t("favoritesDesc")} href="/myaccount/favorites" color="accent" />
+        <StatCard icon="💬" label={t("messagesAction")} value="Inbox" sub={t("messagesDesc")} href="/myaccount/chat" color="primary" />
+        <StatCard icon="⭐" label={t("creditsAction")} value={stats?.creditsBalance || 0} sub={t("creditsDesc", { amount: stats?.creditsBalance || 0 })} href="/myaccount/credits" color="yellow" />
+        <StatCard icon="⚙️" label={t("settingsAction")} value="Profile" sub={t("settingsDesc")} href="/myaccount/settings" color="green" />
       </div>
     </div>
   );
