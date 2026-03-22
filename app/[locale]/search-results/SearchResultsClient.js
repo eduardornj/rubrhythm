@@ -6,17 +6,13 @@ import ListingCard from "@components/ListingCard";
 import AdvancedSearchFilters from "@components/AdvancedSearchFilters";
 import { MagnifyingGlassIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import { analytics } from "@/lib/analytics";
+import { useTranslations } from "next-intl";
 
-const SORT_OPTIONS = [
-  { value: "relevance", label: "Most Relevant" },
-  { value: "rating", label: "Highest Rated" },
-  { value: "newest", label: "Newest First" },
-  { value: "price_low", label: "Price: Low to High" },
-  { value: "price_high", label: "Price: High to Low" },
-  { value: "featured", label: "Featured First" }
-];
+const SORT_OPTIONS_KEYS = ["mostRelevant", "highestRated", "newestFirst", "priceLowHigh", "priceHighLow", "featuredFirst"];
+const SORT_VALUES = ["relevance", "rating", "newest", "price_low", "price_high", "featured"];
 
 export default function SearchResultsClient({ initialListings, favoriteIds, keyword, state, city }) {
+  const t = useTranslations("search");
   const router = useRouter();
   const searchParams = useSearchParams();
   const [filteredListings, setFilteredListings] = useState(initialListings);
@@ -262,22 +258,21 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
       <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-text mb-2">
-            Search Results
-            {state && city ? ` in ${city}, ${state}` : state ? ` in ${state}` : ""}
+            {state && city ? t("titleIn", { location: `${city}, ${state}` }) : state ? t("titleIn", { location: state }) : t("title")}
           </h1>
           {keyword && (
             <p className="text-gray-400">
-              Showing results for: <span className="text-primary font-medium">"{keyword}"</span>
+              {t("showingResults")} <span className="text-primary font-medium">"{keyword}"</span>
             </p>
           )}
           <p className="text-sm text-gray-500 mt-1">
-            {sortedListings.length} of {initialListings.length} listings found
+            {t("listingsFound", { count: sortedListings.length, total: initialListings.length })}
           </p>
         </div>
 
         {/* Sort Options */}
         <div className="flex items-center space-x-4">
-          <label htmlFor="sr-sortby" className="text-sm text-text-muted">Sort by:</label>
+          <label htmlFor="sr-sortby" className="text-sm text-text-muted">{t("sortBy")}</label>
           <select
             id="sr-sortby"
             name="sortby"
@@ -285,9 +280,9 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
             onChange={(e) => handleSortChange(e.target.value)}
             className="input-field py-2 pr-8 appearance-none bg-surface"
           >
-            {SORT_OPTIONS.map(option => (
-              <option key={option.value} value={option.value}>
-                {option.label}
+            {SORT_VALUES.map((val, i) => (
+              <option key={val} value={val}>
+                {t(SORT_OPTIONS_KEYS[i])}
               </option>
             ))}
           </select>
@@ -305,7 +300,7 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
               }`}
           >
             {filters.availableNow && <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>}
-            <span>Available Now</span>
+            <span>{t("availableNow")}</span>
           </button>
 
           <button
@@ -316,7 +311,7 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
               }`}
           >
             {filters.verified && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span>}
-            <span>Only Verified</span>
+            <span>{t("onlyVerified")}</span>
           </button>
 
           <button
@@ -326,7 +321,7 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
               : 'bg-surface border-white/10 text-text-muted hover:text-white hover:border-white/20'
               }`}
           >
-            <span>⭐ Top Rated</span>
+            <span>⭐ {t("topRated")}</span>
           </button>
 
           <button
@@ -336,7 +331,7 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
               : 'bg-surface border-white/10 text-text-muted hover:text-white hover:border-white/20'
               }`}
           >
-            <span>↓ Lowest Price</span>
+            <span>↓ {t("lowestPrice")}</span>
           </button>
 
           <button
@@ -346,7 +341,7 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
               : 'bg-surface border-white/10 text-text-muted hover:text-white hover:border-white/20'
               }`}
           >
-            <span>✨ Featured</span>
+            <span>✨ {t("featuredChip")}</span>
           </button>
         </div>
       </div>
@@ -361,9 +356,9 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
       {paginatedListings.length === 0 ? (
         <div className="text-center py-12 glass border border-white/5 rounded-2xl">
           <MagnifyingGlassIcon className="w-16 h-16 text-primary mx-auto mb-4 opacity-50" />
-          <h3 className="text-xl font-semibold text-white mb-2">No results found</h3>
+          <h3 className="text-xl font-semibold text-white mb-2">{t("noResults")}</h3>
           <p className="text-text-muted mb-6 max-w-md mx-auto">
-            Try adjusting your search criteria or clearing filters to find what you're looking for.
+            {t("noResultsDesc")}
           </p>
           <button
             onClick={() => {
@@ -372,7 +367,7 @@ export default function SearchResultsClient({ initialListings, favoriteIds, keyw
             }}
             className="btn-primary"
           >
-            Clear All Filters
+            {t("clearFilters")}
           </button>
         </div>
       ) : (
