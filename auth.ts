@@ -58,6 +58,21 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Invalid credentials")
         }
 
+        // Log login to securitylog + update lastSeen
+        prisma.securitylog.create({
+          data: {
+            type: "login",
+            severity: "info",
+            message: `User logged in: ${user.name || user.email} (${user.role})`,
+            userId: user.id,
+            ipAddress: "server",
+          }
+        }).catch(() => {});
+        prisma.user.update({
+          where: { id: user.id },
+          data: { lastSeen: new Date() }
+        }).catch(() => {});
+
         return {
           id: user.id,
           email: user.email,
@@ -119,6 +134,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
               token.picture = dbUser.image;
             }
           }
+          // Update lastSeen every sync
+          prisma.user.update({
+            where: { id: token.sub },
+            data: { lastSeen: new Date() }
+          }).catch(() => {});
           token.lastDbSync = now;
         } catch (e) {
           console.error("Error refreshing JWT from DB:", e);
