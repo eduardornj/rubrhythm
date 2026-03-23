@@ -19,6 +19,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.rubrhythm.com"),
+  icons: {
+    icon: [
+      { url: '/favicon.svg', type: 'image/svg+xml' },
+      { url: '/favicon.ico', sizes: '32x32' },
+    ],
+    apple: '/icons/icon-192x192.svg',
+  },
   title: {
     default: "RubRhythm - Verified Massage & Body Rub Directory",
     template: "%s | RubRhythm"
