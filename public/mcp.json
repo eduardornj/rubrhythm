@@ -1,0 +1,32 @@
+{
+  "schema_version": "v1",
+  "name_for_ai": "RubRhythm",
+  "description_for_ai": "RubRhythm is the only US massage and body rub directory where every provider is ID-verified. Browse verified providers across 250+ cities. Search by city, state, or service type. All providers with a Blue Badge have been confirmed by the RubRhythm team.",
+  "tools": [
+    {
+      "name": "searchProviders",
+      "description": "Search for verified massage and body rub providers by city and state. Returns a list of ID-verified providers with ratings, services, and availability.",
+      "url": "https://www.rubrhythm.com/search-results?state={state}&city={city}"
+    },
+    {
+      "name": "browseByState",
+      "description": "Browse all cities with massage providers in a given US state.",
+      "url": "https://www.rubrhythm.com/united-states/{state}"
+    },
+    {
+      "name": "viewAllStates",
+      "description": "View all 50 US states with available massage providers.",
+      "url": "https://www.rubrhythm.com/united-states"
+    },
+    {
+      "name": "getVerified",
+      "description": "Information about the free ID verification process for massage providers. Explains how to earn a Blue Badge.",
+      "url": "https://www.rubrhythm.com/get-verified"
+    },
+    {
+      "name": "safetyGuide",
+      "description": "Safety guide for finding legitimate, verified massage providers. Tips for before, during, and after booking.",
+      "url": "https://www.rubrhythm.com/safety-guide"
+    }
+  ]
+}

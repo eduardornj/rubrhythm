@@ -5,6 +5,7 @@ import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Bell, X, Check, Trash2 } from 'lucide-react';
+import { useTranslations } from 'next-intl';
 
 interface Notification {
   id: string;
@@ -17,6 +18,7 @@ interface Notification {
 }
 
 const NotificationManager: React.FC<{ align?: 'left' | 'right' }> = ({ align = 'right' }) => {
+  const t = useTranslations('notifications');
   const { data: session } = useSession();
   const router = useRouter();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -199,7 +201,7 @@ const NotificationManager: React.FC<{ align?: 'left' | 'right' }> = ({ align = '
               <svg className="w-4 h-4 text-accent" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z" />
               </svg>
-              Notifications
+              {t('title')}
             </h3>
             <div className="flex items-center space-x-2">
               {unreadCount > 0 && (
@@ -207,13 +209,13 @@ const NotificationManager: React.FC<{ align?: 'left' | 'right' }> = ({ align = '
                   onClick={markAllAsRead}
                   className="text-xs font-medium text-accent hover:text-accent-hover transition-colors px-2 py-1 hover:bg-white/5 rounded"
                 >
-                  Mark all read
+                  {t('markAllRead')}
                 </button>
               )}
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-text-muted hover:text-white p-1 hover:bg-white/10 rounded-full transition-colors"
-                aria-label="Close notifications"
+                aria-label={t('close')}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -232,7 +234,7 @@ const NotificationManager: React.FC<{ align?: 'left' | 'right' }> = ({ align = '
                 <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center mb-3">
                   <Bell className="w-5 h-5 text-gray-500" />
                 </div>
-                <p className="text-sm">You have no new notifications.</p>
+                <p className="text-sm">{t('noNotifications')}</p>
               </div>
             ) : (
               notifications.map((notification) => {

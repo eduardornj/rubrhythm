@@ -1,4 +1,10 @@
 {
+  "notifications": {
+    "title": "Notifications",
+    "markAllRead": "Mark all read",
+    "close": "Close notifications",
+    "noNotifications": "You have no new notifications."
+  },
   "meta": {
     "siteTitle": "RubRhythm - Verified Massage & Body Rub Directory",
     "siteDescription": "The only US massage directory where every provider is ID-verified. Professional. Verified. Safe."

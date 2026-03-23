@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 // ── Constants ────────────────────────────────────────────────────────────────
 
@@ -159,9 +160,12 @@ function ImageModal({ src, onClose }) {
         >
           ✕
         </button>
-        <img
+        <Image
           src={src}
           alt="Imagem ampliada"
+          width={800}
+          height={600}
+          unoptimized
           className="w-full h-full object-contain rounded-xl border border-border"
         />
       </div>
@@ -253,9 +257,12 @@ function TabAnuncios({ listings, onImageClick }) {
               {/* Thumbnail */}
               <div className="shrink-0">
                 {l.firstImage ? (
-                  <img
+                  <Image
                     src={l.firstImage}
                     alt={l.title}
+                    width={96}
+                    height={96}
+                    unoptimized
                     className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl object-cover cursor-pointer hover:opacity-80 transition-opacity border border-border"
                     onClick={() => onImageClick(l.firstImage)}
                   />
@@ -378,10 +385,13 @@ function TabAnuncios({ listings, onImageClick }) {
                 <p className="text-[11px] font-semibold mb-1.5 uppercase tracking-wider text-zinc-600">Todas as imagens</p>
                 <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
                   {l.images.map((img, i) => (
-                    <img
+                    <Image
                       key={i}
                       src={img}
                       alt={`Imagem ${i + 1}`}
+                      width={64}
+                      height={64}
+                      unoptimized
                       className="w-16 h-16 rounded-lg object-cover cursor-pointer hover:opacity-80 transition-opacity shrink-0 border border-border"
                       onClick={() => onImageClick(img)}
                     />
@@ -482,9 +492,12 @@ function TabVerificacao({ verifications, onImageClick }) {
               <div>
                 <p className="text-[11px] font-semibold mb-1.5 uppercase tracking-wider text-zinc-600">Selfie</p>
                 {v.selfiePath ? (
-                  <img
+                  <Image
                     src={v.selfiePath}
                     alt="Selfie"
+                    width={144}
+                    height={144}
+                    unoptimized
                     className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl object-cover cursor-pointer hover:opacity-80 transition-opacity border border-border"
                     onClick={() => onImageClick(v.selfiePath)}
                   />
@@ -499,9 +512,12 @@ function TabVerificacao({ verifications, onImageClick }) {
               <div>
                 <p className="text-[11px] font-semibold mb-1.5 uppercase tracking-wider text-zinc-600">Documento</p>
                 {v.documentPath ? (
-                  <img
+                  <Image
                     src={v.documentPath}
                     alt="Documento"
+                    width={144}
+                    height={144}
+                    unoptimized
                     className="w-28 h-28 sm:w-36 sm:h-36 rounded-xl object-cover cursor-pointer hover:opacity-80 transition-opacity border border-border"
                     onClick={() => onImageClick(v.documentPath)}
                   />
@@ -994,9 +1010,12 @@ export default function AdminUserDetailPage() {
           <div className="flex flex-col sm:flex-row sm:items-start gap-4">
             {/* Avatar */}
             {user.image ? (
-              <img
+              <Image
                 src={user.image}
                 alt={user.name}
+                width={64}
+                height={64}
+                unoptimized
                 className="w-16 h-16 rounded-full object-cover shrink-0 border-2 border-primary/40 shadow-lg shadow-primary/20"
               />
             ) : (

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 
 // ── Constants ────────────────────────────────────────────────
 
@@ -95,12 +96,13 @@ function Thumbnail({ images, title }) {
     const src = images?.[0];
     if (src) {
         return (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
+            <Image
                 src={src}
                 alt={title || "Anuncio"}
+                width={80}
+                height={80}
+                unoptimized
                 className="rounded-lg object-cover shrink-0 border border-border"
-                style={{ width: 80, height: 80 }}
             />
         );
     }
@@ -195,13 +197,14 @@ function ImageGallery({ images }) {
     return (
         <div className="flex gap-2 flex-wrap">
             {images.map((src, i) => (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
+                <Image
                     key={i}
                     src={src}
                     alt={`Foto ${i + 1}`}
+                    width={120}
+                    height={120}
+                    unoptimized
                     className="rounded-lg object-cover border border-border"
-                    style={{ width: 120, height: 120 }}
                 />
             ))}
         </div>

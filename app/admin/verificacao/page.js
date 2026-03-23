@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import Image from "next/image";
 
 // ── Constants ────────────────────────────────────────────────
 
@@ -124,10 +125,12 @@ function ImageModal({ src, alt, onClose }) {
             >
                 X
             </button>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
                 src={src}
                 alt={alt || "Documento"}
+                width={800}
+                height={600}
+                unoptimized
                 className="max-w-full max-h-[90vh] object-contain rounded-lg"
                 onClick={(e) => e.stopPropagation()}
             />
@@ -278,10 +281,12 @@ function VerificationCard({ verification, onAction, actionLoading }) {
                                     className="w-full rounded-lg overflow-hidden transition-opacity duration-150 hover:opacity-80 cursor-zoom-in border border-border"
                                     aria-label="Ampliar documento de identidade"
                                 >
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
+                                    <Image
                                         src={idDoc.url}
                                         alt="Documento de Identidade"
+                                        width={600}
+                                        height={400}
+                                        unoptimized
                                         className="w-full max-h-64 object-contain rounded-lg bg-black/30"
                                     />
                                 </button>
@@ -306,10 +311,12 @@ function VerificationCard({ verification, onAction, actionLoading }) {
                                     className="w-full rounded-lg overflow-hidden transition-opacity duration-150 hover:opacity-80 cursor-zoom-in border border-border"
                                     aria-label="Ampliar selfie com documento"
                                 >
-                                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                                    <img
+                                    <Image
                                         src={selfieDoc.url}
                                         alt="Selfie com Documento"
+                                        width={600}
+                                        height={400}
+                                        unoptimized
                                         className="w-full max-h-64 object-contain rounded-lg bg-black/30"
                                     />
                                 </button>

@@ -1,4 +1,10 @@
 {
+  "notifications": {
+    "title": "Notificaciones",
+    "markAllRead": "Marcar todo leído",
+    "close": "Cerrar notificaciones",
+    "noNotifications": "No tienes notificaciones nuevas."
+  },
   "meta": {
     "siteTitle": "RubRhythm - Directorio de Masajes Verificados",
     "siteDescription": "El único directorio de masajes en EE.UU. donde todos los proveedores pasan por verificación de identidad. Profesional. Verificado. Seguro."

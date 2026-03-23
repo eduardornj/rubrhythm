@@ -78,6 +78,24 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <link rel="apple-touch-icon" href="/icons/icon-192x192.svg" />
         <meta name="msapplication-TileColor" content="#ff6b6b" />
         <meta name="msapplication-TileImage" content="/icons/icon-192x192.svg" />
+        {/* WebMCP — AI agent tool discovery */}
+        <link rel="mcp-manifest" href="/mcp.json" type="application/json" />
+        {/* Hreflang — multilingual SEO */}
+        <link rel="alternate" hrefLang="en" href="https://www.rubrhythm.com/" />
+        <link rel="alternate" hrefLang="es" href="https://www.rubrhythm.com/es/" />
+        <link rel="alternate" hrefLang="x-default" href="https://www.rubrhythm.com/" />
+        {/* Speculation Rules — prefetch for near-instant navigation */}
+        <script type="speculationrules" dangerouslySetInnerHTML={{ __html: JSON.stringify({
+          prerender: [
+            { where: { href_matches: "/about" } },
+            { where: { href_matches: "/get-verified" } },
+            { where: { href_matches: "/contact" } },
+          ],
+          prefetch: [
+            { where: { selector_matches: "a[href^='/united-states']" }, eagerness: "moderate" },
+            { where: { selector_matches: "a[href^='/search-results']" }, eagerness: "moderate" },
+          ]
+        }) }} />
         {/* Preconnect to GA4 (reduces latency) */}
         <link rel="preconnect" href="https://www.googletagmanager.com" />
         <link rel="preconnect" href="https://www.google-analytics.com" />
