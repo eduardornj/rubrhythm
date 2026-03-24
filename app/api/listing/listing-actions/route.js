@@ -55,18 +55,17 @@ export async function POST(request) {
       }
     }
 
-    // Check user credit balance
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { credits: true }
-    });
-
-    if (!user || user.credits < cost) {
-      return NextResponse.json({ error: "Insufficient credits. Please add more credits to your account." }, { status: 400 });
-    }
-
-    // Deduct credits atomically
+    // Deduct credits atomically (balance check inside transaction to prevent TOCTOU race)
     await prisma.$transaction(async (tx) => {
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { credits: true }
+      });
+
+      if (!user || user.credits < cost) {
+        throw new Error("INSUFFICIENT_CREDITS");
+      }
+
       const updatedUser = await tx.user.update({
         where: { id: userId },
         data: { credits: { decrement: cost } },
@@ -117,6 +116,9 @@ export async function POST(request) {
 
     return NextResponse.json({ message: "Action completed successfully", cost });
   } catch (error) {
+    if (error.message === "INSUFFICIENT_CREDITS") {
+      return NextResponse.json({ error: "Insufficient credits. Please add more credits to your account." }, { status: 400 });
+    }
     console.error("Error processing action:", error);
     return NextResponse.json({ error: "Failed to process action" }, { status: 500 });
   }

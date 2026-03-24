@@ -99,6 +99,13 @@ export async function POST(request) {
       );
     }
 
+    if (description.length > 1000 || (terms && terms.length > 2000)) {
+      return NextResponse.json(
+        { message: 'Description or terms too long' },
+        { status: 400 }
+      );
+    }
+
     // Verify provider exists
     const provider = await prisma.user.findUnique({
       where: { id: providerId }
@@ -229,18 +236,16 @@ export async function PATCH(request) {
             { status: 403 }
           );
         }
-        // SECURITY: Reserve credits from client at fund time
-        const funder = await prisma.user.findUnique({
-          where: { id: escrow.clientId },
-          select: { credits: true }
-        });
-        if (!funder || funder.credits < escrow.amount) {
-          return NextResponse.json(
-            { message: 'Insufficient credits to fund this escrow.' },
-            { status: 400 }
-          );
-        }
+        // SECURITY: Balance check + deduction inside transaction to prevent TOCTOU race
+        try {
         await prisma.$transaction(async (tx) => {
+          const funder = await tx.user.findUnique({
+            where: { id: escrow.clientId },
+            select: { credits: true }
+          });
+          if (!funder || funder.credits < escrow.amount) {
+            throw new Error("INSUFFICIENT_CREDITS");
+          }
           const updated = await tx.user.update({
             where: { id: escrow.clientId },
             data: { credits: { decrement: escrow.amount } }
@@ -261,6 +266,15 @@ export async function PATCH(request) {
             }
           });
         });
+        } catch (fundError) {
+          if (fundError.message === "INSUFFICIENT_CREDITS") {
+            return NextResponse.json(
+              { message: 'Insufficient credits to fund this escrow.' },
+              { status: 400 }
+            );
+          }
+          throw fundError;
+        }
         newStatus = 'funded';
         updateData.fundedAt = new Date();
         break;
@@ -359,9 +373,9 @@ export async function PATCH(request) {
         );
     }
 
-    // Update escrow
+    // Update escrow with optimistic lock: only update if status hasn't changed since we read it
     const updatedEscrow = await prisma.escrow.update({
-      where: { id: escrowId },
+      where: { id: escrowId, status: escrow.status },
       data: {
         status: newStatus,
         ...updateData

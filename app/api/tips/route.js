@@ -89,21 +89,19 @@ export async function POST(request) {
 
     const tipAmount = parseFloat(amount);
 
-    // SECURITY: Check sender has enough credits before allowing tip
-    const sender = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { credits: true }
-    });
-
-    if (!sender || sender.credits < tipAmount) {
-      return NextResponse.json(
-        { message: 'Insufficient credits to send this tip.' },
-        { status: 400 }
-      );
-    }
-
-    // Atomic transaction: deduct sender, credit receiver, create tip + logs
+    // Atomic transaction: check balance + deduct sender, credit receiver, create tip + logs
+    // Balance check INSIDE transaction to prevent TOCTOU race condition
     const result = await prisma.$transaction(async (tx) => {
+      // Check sender credits atomically inside transaction
+      const sender = await tx.user.findUnique({
+        where: { id: session.user.id },
+        select: { credits: true }
+      });
+
+      if (!sender || sender.credits < tipAmount) {
+        throw new Error("INSUFFICIENT_CREDITS");
+      }
+
       // Deduct from sender
       const updatedSender = await tx.user.update({
         where: { id: session.user.id },
@@ -178,6 +176,12 @@ export async function POST(request) {
       message: 'Tip sent successfully!'
     });
   } catch (error) {
+    if (error.message === "INSUFFICIENT_CREDITS") {
+      return NextResponse.json(
+        { message: 'Insufficient credits to send this tip.' },
+        { status: 400 }
+      );
+    }
     console.error('Error sending tip:', error);
     return NextResponse.json(
       { message: 'Internal server error' },

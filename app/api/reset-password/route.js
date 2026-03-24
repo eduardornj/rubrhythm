@@ -1,9 +1,19 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import prisma from "@/lib/prisma";
+import { rateLimit } from "@/lib/rate-limit";
+
+const limiter = rateLimit({ interval: 60_000 * 15, limit: 5 }); // 5 attempts per 15 min
 
 export async function POST(request) {
   try {
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const ip = forwardedFor ? forwardedFor.split(",").pop().trim() : "unknown";
+    const { success } = limiter.check(ip);
+    if (!success) {
+      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+    }
+
     const { token, email, password } = await request.json();
 
     if (!token || !email || !password || password.length < 8) {

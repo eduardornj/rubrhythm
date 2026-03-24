@@ -51,21 +51,19 @@ export async function POST(request) {
       );
     }
 
-    // Check if user has enough credits
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { credits: true }
-    });
-
-    if (!user || user.credits < amount) {
-      return NextResponse.json(
-        { success: false, error: "Insufficient credits. Please purchase more credits." },
-        { status: 400 }
-      );
-    }
-
     // Deduct credits from user balance and add chat credits atomically
+    // Balance check INSIDE transaction to prevent TOCTOU race condition
     const result = await prisma.$transaction(async (tx) => {
+      // Check balance atomically inside transaction
+      const user = await tx.user.findUnique({
+        where: { id: session.user.id },
+        select: { credits: true }
+      });
+
+      if (!user || user.credits < amount) {
+        throw new Error("INSUFFICIENT_CREDITS");
+      }
+
       // Deduct from user credits
       const updatedUser = await tx.user.update({
         where: { id: session.user.id },
@@ -130,6 +128,12 @@ export async function POST(request) {
     });
 
   } catch (error) {
+    if (error.message === "INSUFFICIENT_CREDITS") {
+      return NextResponse.json(
+        { success: false, error: "Insufficient credits. Please purchase more credits." },
+        { status: 400 }
+      );
+    }
     console.error("Error processing payment:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },

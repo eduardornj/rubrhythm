@@ -10,6 +10,10 @@ export async function POST(req) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    if (reason.length > 500 || (details && details.length > 2000)) {
+      return NextResponse.json({ error: "Input too long" }, { status: 400 });
+    }
+
     // Use existing fraudreport model — no schema migration needed
     await prisma.fraudreport.create({
       data: {

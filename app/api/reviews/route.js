@@ -66,6 +66,10 @@ export async function POST(request) {
     return NextResponse.json({ error: "Rating must be between 1 and 5" }, { status: 400 });
   }
 
+  if (comment && comment.length > 2000) {
+    return NextResponse.json({ error: "Comment must be under 2000 characters" }, { status: 400 });
+  }
+
   try {
     // Verificar se o usuário já fez review para este listing
     const existingReview = await prisma.review.findFirst({

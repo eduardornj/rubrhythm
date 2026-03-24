@@ -22,7 +22,8 @@ function checkRateLimit(ip) {
 
 export async function POST(request) {
   try {
-    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown";
+    const forwardedFor = request.headers.get("x-forwarded-for");
+    const ip = forwardedFor ? forwardedFor.split(",").pop().trim() : "unknown";
     if (!checkRateLimit(ip)) {
       return NextResponse.json({ error: "Too many requests. Try again in an hour." }, { status: 429 });
     }

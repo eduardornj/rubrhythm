@@ -7,7 +7,8 @@ const limiter = rateLimit({ interval: 60_000, limit: 20 }); // 20 per minute (ch
 
 export async function POST(request) {
   try {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',').pop().trim() : 'unknown';
     const { success } = limiter.check(ip);
     if (!success) {
       return NextResponse.json({ success: false, error: 'Too many requests. Please try again later.' }, { status: 429 });
@@ -46,24 +47,19 @@ export async function POST(request) {
       );
     }
 
-    // Get user's current credit balance from single source of truth
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-      select: { credits: true }
-    });
-
-    const currentBalance = user?.credits || 0;
-
-    // Check if user has sufficient credits
-    if (currentBalance < amount) {
-      return NextResponse.json(
-        { success: false, error: "Insufficient credits" },
-        { status: 400 }
-      );
-    }
-
-    // Perform transaction to debit credits and create transaction record
+    // Perform transaction to check balance AND debit atomically (prevents TOCTOU race condition)
     const result = await prisma.$transaction(async (tx) => {
+      // Check balance inside transaction for atomicity
+      const user = await tx.user.findUnique({
+        where: { id: userId },
+        select: { credits: true }
+      });
+
+      const currentBalance = user?.credits || 0;
+      if (currentBalance < amount) {
+        throw new Error("INSUFFICIENT_CREDITS");
+      }
+
       // Deduct from single source of truth (user.credits)
       const updatedUser = await tx.user.update({
         where: { id: userId },
@@ -99,6 +95,12 @@ export async function POST(request) {
     });
 
   } catch (error) {
+    if (error.message === "INSUFFICIENT_CREDITS") {
+      return NextResponse.json(
+        { success: false, error: "Insufficient credits" },
+        { status: 400 }
+      );
+    }
     console.error("Error spending credits:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },

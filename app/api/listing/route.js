@@ -52,6 +52,14 @@ export async function POST(request) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
   }
 
+  // Input length validation
+  if (title.length > 200) {
+    return NextResponse.json({ error: "Title must be under 200 characters" }, { status: 400 });
+  }
+  if (description.length > 5000) {
+    return NextResponse.json({ error: "Description must be under 5000 characters" }, { status: 400 });
+  }
+
   if (/\bverified\b/i.test(title)) {
     return NextResponse.json({ error: 'The word "Verified" is not allowed in your title.' }, { status: 400 });
   }
@@ -68,25 +76,21 @@ export async function POST(request) {
   const LISTING_CREATION_COST = 10.0; // $10 para criar anúncio
 
   try {
-    // Verify user credits from single source of truth
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { credits: true }
-    });
-
-    const currentBalance = user?.credits || 0;
-
-    if (currentBalance < LISTING_CREATION_COST) {
-      return NextResponse.json({
-        error: "Insufficient credits to create listing",
-        required: LISTING_CREATION_COST,
-        available: currentBalance,
-        needToPurchase: LISTING_CREATION_COST - currentBalance
-      }, { status: 402 }); // 402 Payment Required
-    }
-
     // Criar anúncio e debitar créditos em uma transação
+    // Balance check INSIDE transaction to prevent TOCTOU race condition
     const result = await prisma.$transaction(async (tx) => {
+      // Verify user credits atomically inside transaction
+      const user = await tx.user.findUnique({
+        where: { id: session.user.id },
+        select: { credits: true }
+      });
+
+      const currentBalance = user?.credits || 0;
+
+      if (currentBalance < LISTING_CREATION_COST) {
+        throw new Error(`INSUFFICIENT_CREDITS:${currentBalance}`);
+      }
+
       // Deduct from single source of truth (user.credits)
       const updatedUser = await tx.user.update({
         where: { id: session.user.id },
@@ -155,10 +159,18 @@ export async function POST(request) {
       listing: result,
       message: "Listing created successfully",
       chargedAmount: LISTING_CREATION_COST,
-      newBalance: currentBalance - LISTING_CREATION_COST
     }, { status: 201 });
 
   } catch (error) {
+    if (error.message?.startsWith("INSUFFICIENT_CREDITS")) {
+      const available = parseFloat(error.message.split(":")[1]) || 0;
+      return NextResponse.json({
+        error: "Insufficient credits to create listing",
+        required: LISTING_CREATION_COST,
+        available,
+        needToPurchase: LISTING_CREATION_COST - available
+      }, { status: 402 });
+    }
     console.error("Error creating listing:", error);
     return NextResponse.json({ error: "Failed to create listing" }, { status: 500 });
   }
@@ -208,6 +220,14 @@ export async function PUT(request) {
 
   if (!title || !description || !phoneArea || !phoneNumber || !country || !state || !city || !serviceLocation) {
     return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+  }
+
+  // Input length validation
+  if (title.length > 200) {
+    return NextResponse.json({ error: "Title must be under 200 characters" }, { status: 400 });
+  }
+  if (description.length > 5000) {
+    return NextResponse.json({ error: "Description must be under 5000 characters" }, { status: 400 });
   }
 
   if (/\bverified\b/i.test(title)) {

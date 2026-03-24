@@ -12,7 +12,8 @@ const MAX_FILES = 5;
 
 export async function POST(request) {
   try {
-    const ip = request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown';
+    const forwardedFor = request.headers.get('x-forwarded-for');
+    const ip = forwardedFor ? forwardedFor.split(',').pop().trim() : 'unknown';
     const { success } = limiter.check(ip);
     if (!success) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });

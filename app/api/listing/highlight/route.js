@@ -31,30 +31,23 @@ export async function POST(request) {
       return NextResponse.json({ error: "Some listings were not found or unauthorized" }, { status: 404 });
     }
 
-    // Verify user credits from the single source of truth (user table)
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { credits: true }
-    });
-
-    const currentBalance = user?.credits || 0;
-
-    if (currentBalance < totalCost) {
-      return NextResponse.json({
-        error: "Insufficient credits for highlight",
-        required: totalCost,
-        available: currentBalance,
-        needToPurchase: totalCost - currentBalance,
-        redirectToPayment: true
-      }, { status: 402 }); // 402 Payment Required
-    }
-
     // Calculate highlight end date
     const highlightEndDate = new Date();
     highlightEndDate.setDate(highlightEndDate.getDate() + highlightDays);
 
-    // Process highlight and deduct credits in a transaction
+    // Process highlight and deduct credits in a transaction (balance check inside to prevent TOCTOU race)
     const result = await prisma.$transaction(async (tx) => {
+      // Verify credits atomically inside transaction
+      const user = await tx.user.findUnique({
+        where: { id: session.user.id },
+        select: { credits: true }
+      });
+
+      const currentBalance = user?.credits || 0;
+      if (currentBalance < totalCost) {
+        throw new Error(`INSUFFICIENT_CREDITS:${currentBalance}`);
+      }
+
       // Deduct from single source of truth (user.credits)
       const updatedUser = await tx.user.update({
         where: { id: session.user.id },
@@ -104,6 +97,16 @@ export async function POST(request) {
     }, { status: 200 });
 
   } catch (error) {
+    if (error.message?.startsWith("INSUFFICIENT_CREDITS")) {
+      const available = parseFloat(error.message.split(":")[1]) || 0;
+      return NextResponse.json({
+        error: "Insufficient credits for highlight",
+        required: totalCost,
+        available,
+        needToPurchase: totalCost - available,
+        redirectToPayment: true
+      }, { status: 402 });
+    }
     console.error("Error highlighting listing:", error);
     return NextResponse.json({ error: "Failed to highlight listing" }, { status: 500 });
   }

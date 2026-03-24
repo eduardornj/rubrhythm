@@ -85,30 +85,19 @@ export async function POST(request) {
     // Check if user has sufficient credits (5 dollars per message)
     const requiredAmount = 5.0;
 
-    // Get user's credit balance
-    let creditBalance = await prisma.creditbalance.findUnique({
-      where: { userId: senderId }
-    });
-
-    if (!creditBalance) {
-      creditBalance = await prisma.creditbalance.create({
-        data: {
-          id: `cb_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          userId: senderId,
-          balance: 0.0
-        }
-      });
-    }
-
-    if (creditBalance.balance < requiredAmount) {
-      return NextResponse.json(
-        { success: false, error: "Insufficient credits. Please add more credits to continue chatting." },
-        { status: 400 }
-      );
-    }
-
     // Create message, debit credits, and update chat in a single transaction
+    // Balance check is INSIDE transaction to prevent TOCTOU race condition
     const result = await prisma.$transaction(async (tx) => {
+      // Check balance atomically inside transaction
+      const user = await tx.user.findUnique({
+        where: { id: senderId },
+        select: { credits: true }
+      });
+
+      if (!user || (user.credits || 0) < requiredAmount) {
+        throw new Error("INSUFFICIENT_CREDITS");
+      }
+
       // Deduct from single source of truth (user.credits)
       const updatedUser = await tx.user.update({
         where: { id: senderId },
@@ -196,6 +185,12 @@ export async function POST(request) {
     });
 
   } catch (error) {
+    if (error.message === "INSUFFICIENT_CREDITS") {
+      return NextResponse.json(
+        { success: false, error: "Insufficient credits. Please add more credits to continue chatting." },
+        { status: 400 }
+      );
+    }
     console.error("Error sending message:", error);
     return NextResponse.json(
       { success: false, error: "Internal server error" },

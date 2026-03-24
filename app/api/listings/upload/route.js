@@ -127,9 +127,7 @@ export async function POST(request) {
   } catch (error) {
     console.error('Erro no upload de fotos do listing:', error);
     return NextResponse.json({
-      error: 'Erro interno do servidor',
-      message: error.message,
-      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      error: 'Erro interno do servidor'
     }, { status: 500 });
   }
 }

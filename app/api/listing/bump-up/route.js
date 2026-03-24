@@ -33,26 +33,19 @@ export async function POST(request) {
       return NextResponse.json({ error: "Some listings were not found or are not authorized" }, { status: 404 });
     }
 
-    // Verify user credits from the single source of truth (user table)
-    const user = await prisma.user.findUnique({
-      where: { id: session.user.id },
-      select: { credits: true }
-    });
-
-    const currentBalance = user?.credits || 0;
-
-    if (currentBalance < totalCost) {
-      return NextResponse.json({
-        error: "Insufficient credits for bump up",
-        required: totalCost,
-        available: currentBalance,
-        needToPurchase: totalCost - currentBalance,
-        redirectToPayment: true
-      }, { status: 402 }); // 402 Payment Required
-    }
-
-    // Process bump up in a transaction
+    // Process bump up in a transaction (balance check inside to prevent TOCTOU race)
     const result = await prisma.$transaction(async (tx) => {
+      // Verify credits atomically inside transaction
+      const user = await tx.user.findUnique({
+        where: { id: session.user.id },
+        select: { credits: true }
+      });
+
+      const currentBalance = user?.credits || 0;
+      if (currentBalance < totalCost) {
+        throw new Error(`INSUFFICIENT_CREDITS:${currentBalance}`);
+      }
+
       // Deduct from single source of truth (user.credits)
       const updatedUser = await tx.user.update({
         where: { id: session.user.id },
@@ -99,6 +92,16 @@ export async function POST(request) {
     });
 
   } catch (error) {
+    if (error.message?.startsWith("INSUFFICIENT_CREDITS")) {
+      const available = parseFloat(error.message.split(":")[1]) || 0;
+      return NextResponse.json({
+        error: "Insufficient credits for bump up",
+        required: totalCost,
+        available,
+        needToPurchase: totalCost - available,
+        redirectToPayment: true
+      }, { status: 402 });
+    }
     console.error("Bump up error:", error);
     return NextResponse.json(
       { error: "Failed to bump up listing" },

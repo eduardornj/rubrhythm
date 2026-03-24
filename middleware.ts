@@ -71,6 +71,17 @@ export default auth(async (req: any) => {
     return NextResponse.next()
   }
 
+  // ---- Admin API routes require admin role (defense-in-depth) ----
+  if (pathname.startsWith('/api/admin')) {
+    if (!req.auth) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+    if (req.auth.user?.role !== 'admin') {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    return NextResponse.next()
+  }
+
   if (isProtectedApiPath(pathname)) {
     if (!req.auth) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
