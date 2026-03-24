@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import NotificationManager from "@/components/NotificationManager";
 import LanguageSwitcher from "@/components/LanguageSwitcher";
@@ -16,7 +17,7 @@ export default function MyAccountHeader({ sidebarOpen, setSidebarOpen, userCredi
       <div className="flex items-center gap-3">
         {session?.user?.image ? (
           <div className="w-8 h-8 rounded-lg overflow-hidden flex-shrink-0 border border-white/10 shadow-lg shadow-primary/20 relative">
-            <img src={session.user.image} alt={displayName} className="w-full h-full object-cover" />
+            <Image src={session.user.image} alt={displayName} width={32} height={32} unoptimized className="w-full h-full object-cover" />
           </div>
         ) : (
           <div className="w-8 h-8 bg-gradient-to-br from-primary to-accent rounded-lg flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">

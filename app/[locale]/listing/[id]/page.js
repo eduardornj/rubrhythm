@@ -212,9 +212,12 @@ export default function ListingDetailPage() {
                             : 'border-slate-600 hover:border-primary/50'
                             }`}
                         >
-                          <img
+                          <Image
                             src={image}
                             alt={`${listing.title} ${index + 1}`}
+                            width={48}
+                            height={48}
+                            unoptimized
                             className="w-full h-full object-cover"
                           />
                         </button>

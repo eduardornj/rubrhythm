@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { detectFacePosition } from "@/lib/face-focus";
 
@@ -36,7 +37,7 @@ export default function MiniCard({ listing, state, city }) {
       className={`group glass-card p-0 overflow-hidden transition-all duration-300 block border ${cardBorder}`}
     >
       <div className="relative w-full h-full aspect-[3/4] overflow-hidden">
-        <img src={img ? imgSrc(img) : PLACEHOLDER} alt={listing.title} loading="lazy" className="absolute inset-0 w-full h-full object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-500" onLoad={(e) => detectFacePosition(e.target)} onError={(e) => { e.target.src = PLACEHOLDER; }} />
+        <Image src={img ? imgSrc(img) : PLACEHOLDER} alt={listing.title} fill unoptimized className="object-cover object-[center_30%] group-hover:scale-105 transition-transform duration-500" onLoad={(e) => detectFacePosition(e.target)} onError={(e) => { e.target.src = PLACEHOLDER; }} />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
         {/* Available Now badge */}

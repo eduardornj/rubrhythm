@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 
 export default function PhotoGallery({ images, initialPhotoIndex = 0, listingTitle }) {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(initialPhotoIndex);
@@ -91,9 +92,12 @@ export default function PhotoGallery({ images, initialPhotoIndex = 0, listingTit
   return (
     <div className="mb-8">
       <div className="relative bg-black rounded-2xl overflow-hidden shadow-2xl" id="photo-gallery">
-        <img
+        <Image
           src={images[currentPhotoIndex]}
           alt={listingTitle}
+          width={1200}
+          height={600}
+          unoptimized
           className={`w-full h-[500px] lg:h-[600px] object-cover transition-opacity duration-300 ${
             isLoading ? 'opacity-50' : 'opacity-100'
           }`}
@@ -150,10 +154,12 @@ export default function PhotoGallery({ images, initialPhotoIndex = 0, listingTit
                 idx === currentPhotoIndex ? 'ring-2 ring-accent' : 'hover:opacity-80'
               }`}
             >
-              <img
+              <Image
                 src={img}
                 alt={`Photo ${idx + 1}`}
-                className="w-full h-full object-cover"
+                fill
+                unoptimized
+                className="object-cover"
               />
             </button>
           ))}

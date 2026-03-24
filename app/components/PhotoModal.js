@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import Image from 'next/image';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Navigation, Pagination, Zoom, Keyboard, Mousewheel, EffectFade, Thumbs, FreeMode } from 'swiper/modules';
 
@@ -152,9 +153,12 @@ const PhotoModal = ({ images, isOpen, onClose, initialIndex = 0, listingTitle })
           {processedImages.map((image, index) => (
             <SwiperSlide key={index} className="photo-modal-slide">
               <div className="swiper-zoom-container">
-                <img
+                <Image
                   src={image.src}
                   alt={image.alt}
+                  width={1200}
+                  height={800}
+                  unoptimized
                   className="photo-modal-image"
                   loading={index === initialIndex ? 'eager' : 'lazy'}
                   onLoad={() => {
@@ -197,9 +201,12 @@ const PhotoModal = ({ images, isOpen, onClose, initialIndex = 0, listingTitle })
           >
             {processedImages.map((image, index) => (
               <SwiperSlide key={index} className="photo-modal-thumb">
-                <img
+                <Image
                   src={image.src}
                   alt={image.alt}
+                  width={80}
+                  height={80}
+                  unoptimized
                   className={`photo-modal-thumb-image ${index === currentIndex ? 'active' : ''}`}
                   loading="lazy"
                 />

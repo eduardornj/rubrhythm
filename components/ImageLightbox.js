@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useCallback } from "react";
+import Image from "next/image";
 
 export default function ImageLightbox({ src, alt, isOpen, onClose }) {
   const handleKeyDown = useCallback((e) => {
@@ -37,9 +38,12 @@ export default function ImageLightbox({ src, alt, isOpen, onClose }) {
       </button>
 
       {/* Full image — object-contain to show entire photo */}
-      <img
+      <Image
         src={src}
         alt={alt || "Full image"}
+        width={800}
+        height={600}
+        unoptimized
         className="max-w-[95vw] max-h-[95vh] object-contain rounded-lg shadow-2xl cursor-default"
         onClick={(e) => e.stopPropagation()}
       />

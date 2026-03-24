@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { Link } from "@/i18n/navigation";
 import { useRouter, usePathname } from "@/i18n/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -214,7 +215,7 @@ export default function MyAccountSidebar({ sidebarOpen, setSidebarOpen, currentP
             <div className="flex items-center gap-3">
               {session?.user?.image ? (
                 <div className="w-9 h-9 rounded-xl overflow-hidden flex-shrink-0 border border-white/10 shadow-lg shadow-primary/20 relative">
-                  <img src={session.user.image} alt={session.user.name || "User"} className="w-full h-full object-cover" />
+                  <Image src={session.user.image} alt={session.user.name || "User"} width={36} height={36} unoptimized className="w-full h-full object-cover" />
                 </div>
               ) : (
                 <div className="w-9 h-9 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center shadow-lg shadow-primary/20 flex-shrink-0">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import useSWR, { mutate } from "swr";
@@ -162,7 +163,7 @@ export default function ProviderChatDashboard() {
                       <Ghost className="w-5 h-5 text-white/40" />
                     </div>
                   ) : conv.otherUser?.image ? (
-                    <img src={conv.otherUser.image} alt="User" className="w-10 h-10 rounded-full object-cover border border-white/10" />
+                    <Image src={conv.otherUser.image} alt="User" width={40} height={40} unoptimized className="w-10 h-10 rounded-full object-cover border border-white/10" />
                   ) : (
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-white/10 to-white/5 border border-white/10 flex items-center justify-center">
                       <User className="w-5 h-5 text-white/40" />

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef } from "react";
+import Image from "next/image";
 import MainLayout from "@components/MainLayout";
 import Link from "next/link";
 import { analytics } from "@/lib/analytics";
@@ -36,7 +37,7 @@ function PhotoUpload({ id, label, hint, file, onFile }) {
             >
                 {preview ? (
                     <div className="relative">
-                        <img src={preview} alt="Preview" className="w-full h-40 object-cover" />
+                        <Image src={preview} alt="Preview" width={400} height={160} unoptimized className="w-full h-40 object-cover" />
                         <div className="absolute bottom-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded-lg">✓ Selected</div>
                     </div>
                 ) : (

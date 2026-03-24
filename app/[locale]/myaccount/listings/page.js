@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import { useSession } from "next-auth/react";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -353,10 +354,12 @@ export default function MyListings() {
                   {/* Image Area */}
                   <div className="w-full sm:w-56 h-56 sm:h-full flex-shrink-0 relative overflow-hidden bg-black/50 border-r border-white/5">
                     {imageUrl ? (
-                      <img
+                      <Image
                         src={imageUrl}
                         alt={listing.title || 'Listing image'}
-                        className="absolute inset-0 w-full h-full object-cover object-[center_30%] group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700 ease-out"
+                        fill
+                        unoptimized
+                        className="object-cover object-[center_30%] group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700 ease-out"
                         onLoad={(e) => detectFacePosition(e.target)}
                         onError={(e) => {
                           e.target.style.display = 'none';

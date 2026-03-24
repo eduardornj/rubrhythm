@@ -292,10 +292,12 @@ export default function ListingProfilePage({ params: paramsPromise, searchParams
                 className="relative aspect-[4/5] lg:aspect-[3/4] cursor-pointer group overflow-hidden"
                 onClick={() => { setModalImageIndex(selectedPhoto); setIsModalOpen(true); }}
               >
-                <img
+                <Image
                   src={imgSrc(images[selectedPhoto] ?? images[0])}
                   alt={listing.title}
-                  className="absolute inset-0 w-full h-full object-cover object-[center_30%] transition-transform duration-500 group-hover:scale-[1.02]"
+                  fill
+                  unoptimized
+                  className="object-cover object-[center_30%] transition-transform duration-500 group-hover:scale-[1.02]"
                   onLoad={(e) => detectFacePosition(e.target)}
                 />
                 {/* Gradient overlay */}

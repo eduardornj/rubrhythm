@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
+import Image from "next/image";
 import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
@@ -13,11 +14,12 @@ const EXPIRE_SECONDS = 20 * 60; // 20 min countdown
 function QRCode({ value, size = 200 }) {
   const src = `https://api.qrserver.com/v1/create-qr-code/?size=${size}x${size}&data=${encodeURIComponent(value)}&bgcolor=18181b&color=f4f4f5&margin=10`;
   return (
-    <img
+    <Image
       src={src}
       alt="Bitcoin QR Code"
       width={size}
       height={size}
+      unoptimized
       className="rounded-xl border border-white/10"
     />
   );

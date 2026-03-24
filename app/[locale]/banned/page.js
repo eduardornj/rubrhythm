@@ -3,6 +3,7 @@
 import { useSession, signOut } from 'next-auth/react';
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { Link } from "@/i18n/navigation";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { AlertTriangle, Shield, Mail, MessageCircle, Phone, Clock } from "lucide-react";
@@ -148,9 +149,9 @@ export default function BannedPage() {
               <p className="text-gray-700 mb-3">
                 Todos os usuários devem seguir nossos termos de uso para manter um ambiente seguro e respeitoso.
               </p>
-              <a href="/info/terms" className="text-blue-600 hover:text-blue-800 font-semibold">
+              <Link href="/info/terms" className="text-blue-600 hover:text-blue-800 font-semibold">
                 Ler Termos Completos →
-              </a>
+              </Link>
             </div>
             
             <div className="border-l-4 border-green-500 bg-green-50 p-6 rounded-r-lg">
@@ -158,9 +159,9 @@ export default function BannedPage() {
               <p className="text-gray-700 mb-3">
                 Nossas diretrizes garantem que todos os usuários tenham uma experiência positiva e segura.
               </p>
-              <a href="/info/law-and-legal" className="text-green-600 hover:text-green-800 font-semibold">
+              <Link href="/info/law-and-legal" className="text-green-600 hover:text-green-800 font-semibold">
                 Ver Diretrizes →
-              </a>
+              </Link>
             </div>
           </div>
         </div>
