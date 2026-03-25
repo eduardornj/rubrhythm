@@ -246,6 +246,7 @@ model listing {
   phoneArea        String?
   phoneNumber      String?
   phoneBlocked     Boolean        @default(false)
+  isMock           Boolean        @default(false)
   country          String         @default("United States")
   state            String
   city             String
