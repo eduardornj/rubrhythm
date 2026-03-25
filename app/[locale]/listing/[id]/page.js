@@ -12,6 +12,7 @@ const PhotoModal = dynamic(() => import("@/app/components/PhotoModal"), { ssr: f
 import ListingCard from "@components/ListingCard";
 import { processListingImages } from "@/lib/image-utils";
 import { analytics } from "@/lib/analytics";
+import PhoneUnlock from "@components/PhoneUnlock";
 
 function safeJsonParse(str, fallback = []) {
   try {
@@ -303,7 +304,17 @@ export default function ListingDetailPage() {
               {listing.phoneArea && listing.phoneNumber && (
                 <div className="mb-4">
                   <h4 className="text-sm font-medium text-gray-400 mb-1">Telefone</h4>
-                  <a href={`tel:${listing.phoneArea}${listing.phoneNumber}`} onClick={() => analytics.phoneClick(listing.id, listing.city)} className="text-white font-mono hover:text-primary transition-colors">({listing.phoneArea}) {listing.phoneNumber}</a>
+                  {listing.phoneBlocked ? (
+                    <PhoneUnlock
+                      area={listing.phoneArea}
+                      number={listing.phoneNumber}
+                      listingId={listing.id}
+                      city={listing.city}
+                      onAnalytics={() => analytics.phoneClick(listing.id, listing.city)}
+                    />
+                  ) : (
+                    <a href={`tel:${listing.phoneArea}${listing.phoneNumber}`} onClick={() => analytics.phoneClick(listing.id, listing.city)} className="text-white font-mono hover:text-primary transition-colors">({listing.phoneArea}) {listing.phoneNumber}</a>
+                  )}
                 </div>
               )}
 
