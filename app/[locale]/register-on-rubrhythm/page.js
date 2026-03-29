@@ -106,7 +106,14 @@ function RegisterOnRubrhythm() {
       const response = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password, role, ...(referralCode && { referralCode }) }),
+        body: JSON.stringify({
+          name, email, password, role,
+          ...(referralCode && { referralCode }),
+          referrer: document.referrer || null,
+          utm_source: new URLSearchParams(window.location.search).get('utm_source'),
+          utm_medium: new URLSearchParams(window.location.search).get('utm_medium'),
+          utm_campaign: new URLSearchParams(window.location.search).get('utm_campaign'),
+        }),
       });
 
       const data = await response.json();

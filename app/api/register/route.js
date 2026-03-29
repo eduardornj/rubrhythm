@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 import { sendWelcomeEmail, sendReferralBonusEmail } from '@/lib/email';
 import { rateLimit } from '@/lib/rate-limit';
 import { alertNewUser } from '@/lib/telegram';
+import { logActivity, getClientIP } from '@/lib/activity';
 
 const limiter = rateLimit({ interval: 60_000 * 15, limit: 5 }); // 5 registrations per 15 min
 
@@ -18,7 +19,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Too many requests. Please try again later.' }, { status: 429 });
     }
 
-    const { name, email, password, role, referralCode } = await request.json();
+    const body = await request.json();
+    const { name, email, password, role, referralCode, utm_source, utm_medium, utm_campaign, referrer: pageReferrer } = body;
 
     if (!name || !email || !password || !role) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -140,6 +142,19 @@ export async function POST(request) {
         },
       });
     }
+
+    // Activity log: register event with source info
+    logActivity(newUserId, 'register', {
+      metadata: {
+        role,
+        utm_source: utm_source || null,
+        utm_medium: utm_medium || null,
+        utm_campaign: utm_campaign || null,
+        referrer: pageReferrer || null,
+        referralCode: referralCode || null,
+      },
+      request,
+    });
 
     // Send welcome email + Telegram alert (non-blocking)
     sendWelcomeEmail(email, name, role).catch(() => {});

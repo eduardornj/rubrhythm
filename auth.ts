@@ -3,7 +3,9 @@ import Credentials from "next-auth/providers/credentials"
 import { PrismaAdapter } from "@auth/prisma-adapter"
 import prisma from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import crypto from "crypto"
 import type { User } from "next-auth"
+import { logActivity } from "@/lib/activity"
 
 interface ExtendedUser extends User {
   verified?: boolean;
@@ -39,7 +41,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      async authorize(credentials): Promise<ExtendedUser | null> {
+      async authorize(credentials, req): Promise<ExtendedUser | null> {
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Please enter your email and password")
         }
@@ -58,20 +60,32 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Invalid credentials")
         }
 
+        // Extract real IP from request headers
+        const forwarded = req?.headers?.get?.('x-forwarded-for')
+        const clientIP = forwarded ? forwarded.split(',')[0].trim() : 'unknown'
+
         // Log login to securitylog + update lastSeen
         prisma.securitylog.create({
           data: {
+            id: crypto.randomUUID(),
             type: "login",
             severity: "info",
             message: `User logged in: ${user.name || user.email} (${user.role})`,
             userId: user.id,
-            ipAddress: "server",
+            ipAddress: clientIP,
           }
         }).catch(() => {});
-        prisma.user.update({
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (prisma.user.update as any)({
           where: { id: user.id },
           data: { lastSeen: new Date() }
         }).catch(() => {});
+
+        // Activity log: login
+        logActivity(user.id, 'login', {
+          metadata: { role: user.role },
+          request: req,
+        })
 
         return {
           id: user.id,
@@ -135,7 +149,8 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             }
           }
           // Update lastSeen every sync
-          prisma.user.update({
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (prisma.user.update as any)({
             where: { id: token.sub },
             data: { lastSeen: new Date() }
           }).catch(() => {});

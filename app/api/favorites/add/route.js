@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import prisma from "@lib/prisma.js";
 import { auth } from "@/auth";
 import { rateLimit } from "@/lib/rate-limit";
+import { logActivity } from "@/lib/activity";
 
 const favLimiter = rateLimit({ interval: 60_000, limit: 30 });
 
@@ -55,10 +56,15 @@ export async function POST(request) {
       }
     });
 
-    return NextResponse.json({ 
-      success: true, 
+    logActivity(session.user.id, 'favorite_add', {
+      target: listingId,
+      request,
+    });
+
+    return NextResponse.json({
+      success: true,
       message: "Added to favorites",
-      favorite 
+      favorite
     }, { status: 201 });
   } catch (error) {
     console.error("Error adding favorite:", error);

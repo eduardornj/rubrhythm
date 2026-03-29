@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { rateLimit } from "@/lib/rate-limit";
 import { scanContent } from "@/lib/contentFilter";
 import { alertNewListing } from "@/lib/telegram";
+import { logActivity } from "@/lib/activity";
 
 const listingLimiter = rateLimit({ interval: 300_000, limit: 5 });
 
@@ -152,7 +153,12 @@ export async function POST(request) {
       return listing;
     });
 
-    // Telegram alert (non-blocking)
+    // Activity log + Telegram alert (non-blocking)
+    logActivity(session.user.id, 'listing_create', {
+      target: result.id,
+      metadata: { title, city, state },
+      request,
+    });
     alertNewListing(title, city, state, session.user.name || session.user.email);
 
     return NextResponse.json({

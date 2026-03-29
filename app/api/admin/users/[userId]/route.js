@@ -180,6 +180,14 @@ export async function GET(request, { params }) {
             select: { id: true, type: true, severity: true, message: true, ipAddress: true, createdAt: true },
         }).catch(() => []);
 
+        // Activity logs for this user (last 100 actions)
+        const activityLogs = await prisma.activitylog.findMany({
+            where: { userId },
+            orderBy: { createdAt: "desc" },
+            take: 100,
+            select: { id: true, action: true, path: true, target: true, metadata: true, ipAddress: true, userAgent: true, createdAt: true },
+        }).catch(() => []);
+
         // Process listings to extract all data
         const processedListings = listings.map((l) => {
             const images = Array.isArray(l.images) ? l.images : [];
@@ -224,6 +232,7 @@ export async function GET(request, { params }) {
                 tipsReceived: tipsReceived.map((t) => ({ ...t, amount: toNum(t.amount) })),
                 escrows: escrows.map((e) => ({ ...e, amount: toNum(e.amount) })),
                 securityLogs,
+                activityLogs,
                 blockedContacts,
                 stats: {
                     totalListings: listings.length,

@@ -399,6 +399,24 @@ model securitylog {
   @@index([userId], map: "SecurityLog_userId_fkey")
 }
 
+model activitylog {
+  id        String   @id @default(uuid())
+  userId    String
+  action    String   // page_view, listing_view, search, listing_start, listing_create, phone_unlock, favorite_add, chat_start, credits_buy, verification_submit, login, register
+  path      String?  // page path e.g. /en/listing/abc123
+  target    String?  // target ID e.g. listing ID, search query
+  metadata  Json?    // extra: city, state, device, referrer, utm, etc.
+  ipAddress String?
+  userAgent String?  @db.Text
+  createdAt DateTime @default(now())
+  user      user     @relation(fields: [userId], references: [id], onDelete: Cascade, map: "ActivityLog_userId_fkey")
+
+  @@index([userId], map: "ActivityLog_userId_idx")
+  @@index([action], map: "ActivityLog_action_idx")
+  @@index([createdAt], map: "ActivityLog_createdAt_idx")
+  @@index([userId, createdAt], map: "ActivityLog_user_time_idx")
+}
+
 model session {
   id           String   @id
   sessionToken String   @unique(map: "Session_sessionToken_key")
@@ -478,6 +496,7 @@ model user {
   referralCode                                 String?               @unique
   referredBy                                   String?
   account                                      account[]
+  activitylog                                  activitylog[]
   blockedcontact                               blockedcontact[]
   adminnotification                            adminnotification[]
   campaign                                     campaign[]

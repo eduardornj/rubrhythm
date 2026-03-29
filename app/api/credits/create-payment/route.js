@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { logActivity } from "@/lib/activity";
 
 const PACKAGES = {
   starter: { credits: 20, priceUSD: 20, label: "Starter" },
@@ -72,6 +73,12 @@ export async function POST(request) {
         paymentMethod: "BITCOIN_NOWPAYMENTS",
       },
     }).catch(() => { /* ignore duplicate */ });
+
+    logActivity(session.user.id, 'credits_buy', {
+      target: packageId,
+      metadata: { credits: pkg.credits, priceUSD: pkg.priceUSD, label: pkg.label },
+      request,
+    });
 
     return NextResponse.json({
       success: true,

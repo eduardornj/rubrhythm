@@ -8,6 +8,7 @@ import Image from "next/image";
 // ── Constants ────────────────────────────────────────────────────────────────
 
 const TABS = [
+  { key: "atividade", label: "Atividade", emoji: "\u{1F4CA}" },
   { key: "anuncios", label: "Anuncios", emoji: "\u{1F4CB}" },
   { key: "transacoes", label: "Transacoes", emoji: "\u{1F4B0}" },
   { key: "verificacao", label: "Verificacao", emoji: "\u{1FA99}" },
@@ -232,6 +233,102 @@ function ErrorState({ message, onRetry }) {
       <button onClick={onRetry} className="btn-primary text-sm">
         Tentar novamente
       </button>
+    </div>
+  );
+}
+
+// ── TAB: Atividade ─────────────────────────────────────────────────────────
+
+const ACTION_LABELS = {
+  page_view: { icon: "👁", label: "Visitou pagina", color: "text-zinc-400" },
+  listing_view: { icon: "📋", label: "Viu anuncio", color: "text-sky-400" },
+  search: { icon: "🔍", label: "Pesquisou", color: "text-violet-400" },
+  listing_start: { icon: "📝", label: "Comecou criar anuncio", color: "text-yellow-400" },
+  listing_create: { icon: "✅", label: "Criou anuncio", color: "text-green-400" },
+  listing_edit: { icon: "✏️", label: "Editou anuncio", color: "text-blue-400" },
+  phone_unlock: { icon: "📞", label: "Desbloqueou telefone", color: "text-green-400" },
+  whatsapp_click: { icon: "💬", label: "Clicou WhatsApp", color: "text-green-400" },
+  telegram_click: { icon: "✈️", label: "Clicou Telegram", color: "text-sky-400" },
+  favorite_add: { icon: "❤️", label: "Favoritou", color: "text-primary" },
+  favorite_remove: { icon: "💔", label: "Desfavoritou", color: "text-zinc-500" },
+  chat_start: { icon: "💬", label: "Iniciou chat", color: "text-violet-400" },
+  message_send: { icon: "📨", label: "Enviou mensagem", color: "text-sky-400" },
+  credits_buy: { icon: "💰", label: "Comprou creditos", color: "text-yellow-400" },
+  verification_submit: { icon: "🪪", label: "Enviou verificacao", color: "text-violet-400" },
+  login: { icon: "🔑", label: "Login", color: "text-zinc-400" },
+  register: { icon: "🆕", label: "Cadastro", color: "text-green-400" },
+  profile_edit: { icon: "👤", label: "Editou perfil", color: "text-blue-400" },
+  report_submit: { icon: "🚨", label: "Enviou report", color: "text-red-400" },
+};
+
+function TabAtividade({ activities }) {
+  if (!activities?.length) return <EmptyState message="Nenhuma atividade registrada ainda." />;
+
+  // Group by date
+  const grouped = {};
+  activities.forEach((a) => {
+    const day = new Date(a.createdAt).toLocaleDateString("pt-BR", { weekday: "short", day: "2-digit", month: "2-digit" });
+    if (!grouped[day]) grouped[day] = [];
+    grouped[day].push(a);
+  });
+
+  return (
+    <div className="space-y-6">
+      {/* Summary bar */}
+      <div className="flex flex-wrap gap-2">
+        {(() => {
+          const counts = {};
+          activities.forEach((a) => { counts[a.action] = (counts[a.action] || 0) + 1; });
+          return Object.entries(counts)
+            .sort((a, b) => b[1] - a[1])
+            .map(([action, count]) => {
+              const info = ACTION_LABELS[action] || { icon: "•", label: action, color: "text-zinc-400" };
+              return (
+                <span key={action} className="px-2.5 py-1 rounded-full text-[11px] font-medium border border-border bg-white/[0.04] text-text-muted">
+                  {info.icon} {info.label}: <span className="font-bold text-white">{count}</span>
+                </span>
+              );
+            });
+        })()}
+      </div>
+
+      {/* Timeline */}
+      {Object.entries(grouped).map(([day, items]) => (
+        <div key={day}>
+          <div className="text-xs font-semibold text-zinc-500 uppercase tracking-wider mb-2 pl-1">{day}</div>
+          <div className="space-y-1">
+            {items.map((a) => {
+              const info = ACTION_LABELS[a.action] || { icon: "•", label: a.action, color: "text-zinc-400" };
+              const time = new Date(a.createdAt).toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+              const meta = typeof a.metadata === "object" && a.metadata ? a.metadata : {};
+
+              let detail = a.path || "";
+              if (a.target) detail = a.target;
+              if (meta.title) detail = meta.title;
+              if (meta.city) detail += ` (${meta.city}${meta.state ? ", " + meta.state : ""})`;
+              if (meta.utm_source) detail += ` via ${meta.utm_source}`;
+              if (meta.referrer) detail += ` ref: ${meta.referrer}`;
+              if (meta.credits) detail = `${meta.label || ""} $${meta.priceUSD || meta.credits}`;
+
+              return (
+                <div key={a.id} className="flex items-start gap-3 px-3 py-2 rounded-lg hover:bg-white/[0.03] transition-colors group">
+                  <span className="text-[11px] text-zinc-600 font-mono w-12 shrink-0 pt-0.5">{time}</span>
+                  <span className="text-sm shrink-0">{info.icon}</span>
+                  <div className="min-w-0 flex-1">
+                    <span className={`text-sm font-medium ${info.color}`}>{info.label}</span>
+                    {detail && (
+                      <span className="text-xs text-zinc-500 ml-2 truncate">{truncate(detail, 80)}</span>
+                    )}
+                  </div>
+                  {a.ipAddress && (
+                    <span className="text-[10px] text-zinc-700 font-mono opacity-0 group-hover:opacity-100 transition-opacity">{a.ipAddress}</span>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ))}
     </div>
   );
 }
@@ -832,7 +929,7 @@ export default function AdminUserDetailPage() {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [activeTab, setActiveTab] = useState("anuncios");
+  const [activeTab, setActiveTab] = useState("atividade");
   const [selectedImage, setSelectedImage] = useState(null);
   const [actionLoading, setActionLoading] = useState(null);
   const [editing, setEditing] = useState(false);
@@ -959,7 +1056,7 @@ export default function AdminUserDetailPage() {
   if (error) return <ErrorState message={error} onRetry={fetchData} />;
   if (!data) return <ErrorState message="Dados nao encontrados" onRetry={fetchData} />;
 
-  const { user, listings, transactions, verifications, reviewsGiven, reviewsReceived, reportsReceived, tipsReceived, escrows, securityLogs, stats } = data;
+  const { user, listings, transactions, verifications, reviewsGiven, reviewsReceived, reportsReceived, tipsReceived, escrows, securityLogs, activityLogs, stats } = data;
 
   const STAT_CARDS = [
     { emoji: "\u{1F4CB}", label: "Anuncios ativos", value: stats.activeListings },
@@ -978,6 +1075,7 @@ export default function AdminUserDetailPage() {
 
   const renderActiveTab = () => {
     switch (activeTab) {
+      case "atividade": return <TabAtividade activities={activityLogs || []} />;
       case "anuncios": return <TabAnuncios listings={listings} onImageClick={setSelectedImage} />;
       case "transacoes": return <TabTransacoes transactions={transactions} />;
       case "verificacao": return <TabVerificacao verifications={verifications} onImageClick={setSelectedImage} />;

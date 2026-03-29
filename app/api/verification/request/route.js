@@ -3,6 +3,7 @@ import { auth } from '@/auth';
 import prisma from '@/lib/prisma';
 import crypto from 'crypto';
 import { uploadToBlob, generateBlobPath } from '@/lib/blob-storage';
+import { logActivity } from '@/lib/activity';
 
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'application/pdf'];
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
@@ -85,6 +86,11 @@ export async function POST(request) {
         status: 'pending',
         createdAt: new Date()
       }
+    });
+
+    logActivity(userId, 'verification_submit', {
+      target: verificationRequest.id,
+      request,
     });
 
     return NextResponse.json({

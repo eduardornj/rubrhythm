@@ -1,6 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import ClientFloatingBar from "../components/ClientFloatingBar";
 import SessionWrapper from "../components/SessionWrapper";
+import ActivityTracker from "../components/ActivityTracker";
 import PWAManager from "../components/PWAManager";
 import { getLocale } from "next-intl/server";
 import "./tailwind.css";
@@ -113,6 +114,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <div className="absolute top-0 w-full h-1 bg-gradient-to-r from-primary via-accent to-secondary z-50"></div>
         <PWAManager>
           <SessionWrapper>
+            <ActivityTracker />
             <div className="flex-grow max-w-[85ch] md:max-w-none mx-auto w-full pb-14">
 {children}
               <ClientFloatingBar />

@@ -1,12 +1,23 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { v4 as uuidv4 } from "uuid";
+import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity";
 
 const ONE_HOUR_MS = 60 * 60 * 1000;
 
 export async function POST(request) {
   try {
     const { listingId } = await request.json();
+
+    // Log listing view for logged-in users
+    const session = await auth();
+    if (session?.user?.id) {
+      logActivity(session.user.id, 'listing_view', {
+        target: listingId,
+        request,
+      });
+    }
 
     if (!listingId) {
       return NextResponse.json({ success: false, error: "Missing listingId" }, { status: 400 });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import prisma from "@/lib/prisma";
 import { auth } from "@/auth";
+import { logActivity } from "@/lib/activity";
 
 export async function POST(request) {
   try {
@@ -83,6 +84,12 @@ export async function POST(request) {
         include: {
           messages: true
         }
+      });
+
+      logActivity(clientId, 'chat_start', {
+        target: providerId,
+        metadata: { listingId },
+        request,
       });
     }
 
