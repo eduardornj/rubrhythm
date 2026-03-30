@@ -5,6 +5,38 @@ import { routing } from './i18n/routing'
 
 const intlMiddleware = createIntlMiddleware(routing)
 
+// ── Bot blocker + rate limiter ──────────────────────────────────────────────
+
+const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|BLEXBot|DataForSeoBot|serpstatbot|Bytespider|GPTBot|CCBot|ClaudeBot|anthropic-ai|Scrapy|python-requests|Go-http-client|Java\/|curl\/|wget\//i
+
+// In-memory rate limit: IP -> { count, resetAt }
+const ipHits = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT = 60        // max requests per window
+const RATE_WINDOW = 60_000   // 1 minute
+
+// Cleanup stale entries every 5 min
+setInterval(() => {
+  const now = Date.now()
+  for (const [ip, data] of ipHits) {
+    if (now > data.resetAt) ipHits.delete(ip)
+  }
+}, 5 * 60_000)
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const entry = ipHits.get(ip)
+  if (!entry || now > entry.resetAt) {
+    ipHits.set(ip, { count: 1, resetAt: now + RATE_WINDOW })
+    return false
+  }
+  entry.count++
+  return entry.count > RATE_LIMIT
+}
+
+function blockResponse() {
+  return new NextResponse('Too Many Requests', { status: 429, headers: { 'Retry-After': '60' } })
+}
+
 // Paths that should skip i18n locale routing entirely
 function shouldSkipIntl(pathname: string): boolean {
   return (
@@ -65,6 +97,23 @@ function isProtectedApiPath(pathname: string): boolean {
 
 export default auth(async (req: any) => {
   const { pathname } = req.nextUrl
+  const ua = req.headers.get('user-agent') || ''
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
+
+  // ---- Block aggressive scrapers (not Google/Bing) ----
+  if (BLOCKED_BOTS.test(ua)) {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
+
+  // ---- Block empty user-agent (headless scrapers) ----
+  if (!ua || ua.length < 10) {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
+
+  // ---- Rate limit per IP (60 req/min) ----
+  if (isRateLimited(ip)) {
+    return blockResponse()
+  }
 
   // ---- API auth checks (no i18n needed) ----
   if (pathname.startsWith('/api/auth')) {

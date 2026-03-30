@@ -42,6 +42,32 @@ const nextConfig = {
   },
   async headers() {
     return [
+      // Cache city/state pages for 1 hour (saves CPU from bot crawls)
+      {
+        source: '/:locale/united-states/:state/:city',
+        headers: [
+          { key: 'Cache-Control', value: 's-maxage=3600, stale-while-revalidate=7200' },
+        ],
+      },
+      {
+        source: '/:locale/united-states/:state',
+        headers: [
+          { key: 'Cache-Control', value: 's-maxage=3600, stale-while-revalidate=7200' },
+        ],
+      },
+      {
+        source: '/:locale/united-states',
+        headers: [
+          { key: 'Cache-Control', value: 's-maxage=3600, stale-while-revalidate=7200' },
+        ],
+      },
+      // Cache listing pages for 10 minutes
+      {
+        source: '/:locale/united-states/:state/:city/massagists/:slug',
+        headers: [
+          { key: 'Cache-Control', value: 's-maxage=600, stale-while-revalidate=1200' },
+        ],
+      },
       {
         source: '/(.*)',
         headers: [
