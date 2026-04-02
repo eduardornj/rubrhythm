@@ -243,16 +243,16 @@ export default function ModernImageUpload({
             </div>
 
             <div>
-              <p className="text-2xl font-black text-white mb-2 tracking-tight">
-                {dragActive ? 'Drop files to upload!' : 'Drag & Drop your photos'}
+              <p className="text-xl sm:text-2xl font-black text-white mb-2 tracking-tight">
+                {dragActive ? 'Drop files to upload!' : 'Tap to add photos'}
               </p>
               <p className="text-white/50 text-sm font-medium">
-                or <span className="text-primary font-bold hover:text-accent transition-colors">click to browse</span>
+                Take a photo or choose from gallery
               </p>
               <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-xs font-bold text-white/50 uppercase tracking-widest">
                 {images.length > 0
-                  ? <><span className="text-primary">{images.length}/{maxImages}</span> photos attached</>
-                  : <>Max {maxImages} files • JPEG, PNG, WEBP • Max 5MB</>
+                  ? <><span className="text-primary">{images.length}/{maxImages}</span> photos added</>
+                  : <>Up to {maxImages} photos • 10MB max</>
                 }
               </div>
             </div>
