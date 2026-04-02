@@ -212,7 +212,7 @@ export default function ModernImageUpload({
           ref={fileInputRef}
           type="file"
           multiple
-          accept="image/jpeg,image/jpg,image/png,image/webp"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/heic,image/heif,.heic,.heif"
           onChange={handleChange}
           className="hidden"
         />

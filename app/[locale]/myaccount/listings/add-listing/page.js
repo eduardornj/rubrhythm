@@ -357,20 +357,39 @@ function AddListing() {
             </p>
           </div>
           {!listingId && (
-            <div className="hidden sm:inline-flex items-center gap-3 px-6 py-4 rounded-2xl bg-white/5 border border-white/10 shrink-0 backdrop-blur-md">
+            <div className="inline-flex items-center gap-3 px-4 sm:px-6 py-3 sm:py-4 rounded-2xl bg-white/5 border border-white/10 shrink-0 backdrop-blur-md">
               <div>
-                <span className="text-white/40 text-xs font-bold uppercase tracking-wider block text-right">{t('balance')}</span>
-                <span className="text-2xl font-black text-yellow-400 font-mono tracking-tight">{balance} credits</span>
+                <span className="text-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider block text-right">{t('balance')}</span>
+                <span className="text-xl sm:text-2xl font-black text-yellow-400 font-mono tracking-tight">{balance} credits</span>
               </div>
-              <div className="h-10 w-px bg-white/10 mx-2" />
+              <div className="h-8 sm:h-10 w-px bg-white/10 mx-1 sm:mx-2" />
               <div>
-                <span className="text-white/40 text-xs font-bold uppercase tracking-wider block">{t('cost')}</span>
-                <span className="text-lg font-black text-red-400 font-mono tracking-tight">-{LISTING_FEE} credits</span>
+                <span className="text-white/40 text-[10px] sm:text-xs font-bold uppercase tracking-wider block">{t('cost')}</span>
+                <span className="text-base sm:text-lg font-black text-red-400 font-mono tracking-tight">-{LISTING_FEE} credits</span>
               </div>
             </div>
           )}
         </div>
       </div>
+
+      {/* Credit warning banner - shown BEFORE form if insufficient */}
+      {!listingId && balance < LISTING_FEE && (
+        <div className="bg-yellow-500/10 border border-yellow-500/40 text-yellow-300 px-5 py-4 rounded-2xl font-medium flex items-center gap-3">
+          <span className="text-2xl shrink-0">💰</span>
+          <div>
+            <p className="font-bold text-sm">You need {LISTING_FEE} credits to publish. You have {balance}.</p>
+            <Link href="/myaccount/credits/buy" className="text-yellow-400 underline text-xs font-semibold hover:text-yellow-300">Buy credits now →</Link>
+          </div>
+        </div>
+      )}
+
+      {/* Credit OK banner */}
+      {!listingId && balance >= LISTING_FEE && (
+        <div className="bg-green-500/10 border border-green-500/30 text-green-400 px-5 py-3 rounded-2xl text-sm flex items-center gap-3">
+          <span className="text-lg shrink-0">✅</span>
+          <p>You have <strong>{balance} credits</strong>. Publishing costs {LISTING_FEE} credits.</p>
+        </div>
+      )}
 
       {error && (
         <div className="bg-red-500/10 border border-red-500/50 text-red-500 px-6 py-4 rounded-2xl font-medium animate-shake flex items-center gap-3">
