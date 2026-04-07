@@ -7,7 +7,12 @@ const intlMiddleware = createIntlMiddleware(routing)
 
 // ── Bot blocker + rate limiter ──────────────────────────────────────────────
 
-const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|BLEXBot|DataForSeoBot|serpstatbot|Bytespider|GPTBot|CCBot|ClaudeBot|anthropic-ai|Scrapy|python-requests|Go-http-client|Java\/|curl\/|wget\//i
+// SEO/GEO scrapers and abusive clients we block. AI crawlers (GPTBot, CCBot,
+// ClaudeBot, anthropic-ai, OAI-SearchBot, Claude-SearchBot, PerplexityBot,
+// Google-Extended) are intentionally NOT blocked, robots.txt + llms.txt invite
+// them and that's the GEO strategy. Bytespider stays blocked because it isn't
+// on the robots.txt allowlist.
+const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|BLEXBot|DataForSeoBot|serpstatbot|Bytespider|Scrapy|python-requests|Go-http-client|Java\/|curl\/|wget\//i
 
 // In-memory rate limit: IP -> { count, resetAt }
 const ipHits = new Map<string, { count: number; resetAt: number }>()
