@@ -1,4 +1,5 @@
 // app/united-states/[state]/[city]/page.js
+import { cache } from "react";
 import MainLayout from "@components/MainLayout";
 import { Link } from "@/i18n/navigation";
 import prisma from "@lib/prisma.js";
@@ -53,7 +54,9 @@ async function getCityData(state, city) {
   return { name: normalizedCity };
 }
 
-async function getListings(state, city) {
+// React `cache` dedupes calls within a single request:
+// generateMetadata + CityPage both call this, but Prisma only runs once.
+const getListings = cache(async (state, city) => {
   const formattedState = state
     .split("-")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
@@ -120,7 +123,7 @@ async function getListings(state, city) {
       availability
     };
   });
-}
+});
 
 const TIER1_CITIES = ["New York", "Los Angeles", "Las Vegas", "Miami"];
 const TIER2_CITIES = ["Chicago", "Houston", "Atlanta", "Phoenix", "Dallas", "San Francisco", "Orlando", "Denver", "San Diego", "Seattle", "Philadelphia", "Tampa"];
@@ -230,7 +233,10 @@ export async function generateMetadata({ params: paramsPromise }) {
   const { state, city } = params;
   const formattedCity = city.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
   const formattedState = state.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  const count = await prisma.listing.count({ where: { state: formattedState, city: formattedCity, isActive: true, isApproved: true } });
+
+  // Reuses the same Prisma query as CityPage thanks to React `cache`.
+  const listings = await getListings(state, city);
+  const count = listings.length;
 
   return {
     title: `Body Rubs & Massage in ${formattedCity}, ${formattedState}`,
