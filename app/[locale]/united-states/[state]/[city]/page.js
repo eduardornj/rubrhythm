@@ -11,21 +11,25 @@ import { getTranslations } from "next-intl/server";
 import locations from "@/data/datalocations";
 import cityContent from "@/data/cityContent";
 
+// Only pre-render cities that actually have active listings.
+// Other cities are still reachable via dynamicParams = true and will be
+// generated on-demand and cached for 24h (see `revalidate` below).
 export async function generateStaticParams() {
-  const paths = [];
-
-  locations.forEach((location) => {
-    const stateSlug = location.state.toLowerCase().replace(/\s+/g, "-");
-    location.cities.forEach((city) => {
-      const citySlug = city.name.toLowerCase().replace(/\s+/g, "-");
-      paths.push({
-        state: stateSlug,
-        city: citySlug,
-      });
+  try {
+    const rows = await prisma.listing.findMany({
+      where: { isActive: true, isApproved: true },
+      select: { state: true, city: true },
+      distinct: ["state", "city"],
     });
-  });
 
-  return paths;
+    return rows.map((r) => ({
+      state: r.state.toLowerCase().replace(/\s+/g, "-"),
+      city: r.city.toLowerCase().replace(/\s+/g, "-"),
+    }));
+  } catch (err) {
+    console.error("[city/generateStaticParams] failed:", err);
+    return [];
+  }
 }
 
 async function getCityData(state, city) {
@@ -219,7 +223,7 @@ async function getFeaturedListings(state, city, excludeId = null) {
 }
 
 export const dynamicParams = true;
-export const revalidate = 60; // revalidate every 60 seconds
+export const revalidate = 86400; // 24h, was 60s — see CPU incident 06/abr/2026
 
 export async function generateMetadata({ params: paramsPromise }) {
   const params = await paramsPromise;
