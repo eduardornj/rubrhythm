@@ -5,7 +5,7 @@ import { routing } from './i18n/routing'
 
 const intlMiddleware = createIntlMiddleware(routing)
 
-// ── Bot blocker + rate limiter ──────────────────────────────────────────────
+// ── Bot blocker ────────────────────────────────────────────────────────────
 
 // SEO/GEO scrapers and abusive clients we block. AI crawlers (GPTBot, CCBot,
 // ClaudeBot, anthropic-ai, OAI-SearchBot, Claude-SearchBot, PerplexityBot,
@@ -14,33 +14,12 @@ const intlMiddleware = createIntlMiddleware(routing)
 // on the robots.txt allowlist.
 const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|BLEXBot|DataForSeoBot|serpstatbot|Bytespider|Scrapy|python-requests|Go-http-client|Java\/|curl\/|wget\//i
 
-// In-memory rate limit: IP -> { count, resetAt }
-const ipHits = new Map<string, { count: number; resetAt: number }>()
-const RATE_LIMIT = 60        // max requests per window
-const RATE_WINDOW = 60_000   // 1 minute
-
-// Cleanup stale entries every 5 min
-setInterval(() => {
-  const now = Date.now()
-  for (const [ip, data] of ipHits) {
-    if (now > data.resetAt) ipHits.delete(ip)
-  }
-}, 5 * 60_000)
-
-function isRateLimited(ip: string): boolean {
-  const now = Date.now()
-  const entry = ipHits.get(ip)
-  if (!entry || now > entry.resetAt) {
-    ipHits.set(ip, { count: 1, resetAt: now + RATE_WINDOW })
-    return false
-  }
-  entry.count++
-  return entry.count > RATE_LIMIT
-}
-
-function blockResponse() {
-  return new NextResponse('Too Many Requests', { status: 429, headers: { 'Retry-After': '60' } })
-}
+// NOTE: previous in-memory `Map` based per-IP rate limit was removed. It did
+// nothing useful in serverless: each cold start, each region and each
+// concurrent instance had its own Map, and `setInterval` does not run reliably
+// in lambda. It only gave a false sense of security. Vercel's built-in DDoS
+// protection covers the basic case. If/when real per-IP limiting is needed,
+// wire Upstash Redis or Vercel KV here, not an in-process Map.
 
 // Paths that should skip i18n locale routing entirely
 function shouldSkipIntl(pathname: string): boolean {
@@ -103,22 +82,17 @@ function isProtectedApiPath(pathname: string): boolean {
 export default auth(async (req: any) => {
   const { pathname } = req.nextUrl
   const ua = req.headers.get('user-agent') || ''
-  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown'
 
-  // ---- Block aggressive scrapers (not Google/Bing) ----
+  // ---- Block aggressive scrapers (not Google/Bing/AI crawlers) ----
   if (BLOCKED_BOTS.test(ua)) {
     return new NextResponse('Forbidden', { status: 403 })
   }
 
-  // ---- Block empty user-agent (headless scrapers) ----
-  if (!ua || ua.length < 10) {
-    return new NextResponse('Forbidden', { status: 403 })
-  }
-
-  // ---- Rate limit per IP (60 req/min) ----
-  if (isRateLimited(ip)) {
-    return blockResponse()
-  }
+  // NOTE: empty/short user-agent check was removed. It blocked legitimate link
+  // unfurlers (WhatsApp, iMessage, Slack, Discord) which often send short or
+  // missing UAs, killing rich link previews when the site is shared. The
+  // BLOCKED_BOTS regex above already catches the actually-malicious cases
+  // (curl, wget, python-requests, Go-http-client, Java).
 
   // ---- API auth checks (no i18n needed) ----
   if (pathname.startsWith('/api/auth')) {
