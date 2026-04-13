@@ -14,13 +14,6 @@ const intlMiddleware = createIntlMiddleware(routing)
 // on the robots.txt allowlist.
 const BLOCKED_BOTS = /AhrefsBot|SemrushBot|MJ12bot|DotBot|PetalBot|BLEXBot|DataForSeoBot|serpstatbot|Bytespider|Scrapy|python-requests|Go-http-client|Java\/|curl\/|wget\//i
 
-// NOTE: previous in-memory `Map` based per-IP rate limit was removed. It did
-// nothing useful in serverless: each cold start, each region and each
-// concurrent instance had its own Map, and `setInterval` does not run reliably
-// in lambda. It only gave a false sense of security. Vercel's built-in DDoS
-// protection covers the basic case. If/when real per-IP limiting is needed,
-// wire Upstash Redis or Vercel KV here, not an in-process Map.
-
 // Paths that should skip i18n locale routing entirely
 function shouldSkipIntl(pathname: string): boolean {
   return (
@@ -79,20 +72,9 @@ function isProtectedApiPath(pathname: string): boolean {
   )
 }
 
-export default auth(async (req: any) => {
+// Auth-wrapped handler for requests that pass bot check
+const authMiddleware = auth(async (req: any) => {
   const { pathname } = req.nextUrl
-  const ua = req.headers.get('user-agent') || ''
-
-  // ---- Block aggressive scrapers (not Google/Bing/AI crawlers) ----
-  if (BLOCKED_BOTS.test(ua)) {
-    return new NextResponse('Forbidden', { status: 403 })
-  }
-
-  // NOTE: empty/short user-agent check was removed. It blocked legitimate link
-  // unfurlers (WhatsApp, iMessage, Slack, Discord) which often send short or
-  // missing UAs, killing rich link previews when the site is shared. The
-  // BLOCKED_BOTS regex above already catches the actually-malicious cases
-  // (curl, wget, python-requests, Go-http-client, Java).
 
   // ---- API auth checks (no i18n needed) ----
   if (pathname.startsWith('/api/auth')) {
@@ -158,6 +140,19 @@ export default auth(async (req: any) => {
 
   return intlResponse
 })
+
+// Main middleware: block bots BEFORE auth() to save CPU on session lookups
+export async function middleware(req: NextRequest) {
+  const ua = req.headers.get('user-agent') || ''
+
+  // Block scrapers immediately — no auth(), no i18n, no DB hit
+  if (BLOCKED_BOTS.test(ua)) {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
+
+  // Legitimate request — run auth + i18n
+  return (authMiddleware as any)(req, {} as any)
+}
 
 export const config = {
   matcher: [

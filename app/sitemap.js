@@ -1,5 +1,8 @@
 import prisma from "@/lib/prisma";
 
+// Cache sitemap for 12 hours — bots request this constantly, no need to hit DB every time
+export const revalidate = 43200;
+
 export default async function sitemap() {
   const baseUrl = "https://rubrhythm.com";
 

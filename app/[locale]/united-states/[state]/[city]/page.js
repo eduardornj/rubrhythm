@@ -226,7 +226,7 @@ async function getFeaturedListings(state, city, excludeId = null) {
 }
 
 export const dynamicParams = true;
-export const revalidate = 3600; // 1h , balance bump-up freshness vs CPU (was 60s, see incident 06/abr/2026)
+export const revalidate = 86400; // 24h — zombie mode: minimize CPU, crons keep data fresh
 
 export async function generateMetadata({ params: paramsPromise }) {
   const params = await paramsPromise;
